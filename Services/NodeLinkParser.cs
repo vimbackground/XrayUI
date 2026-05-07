@@ -47,6 +47,18 @@ namespace XrayUI.Services
                     rest = rest.Substring(0, hashIdx);
                 }
 
+                // SS share links may carry a query (e.g. ?type=tcp from cross-protocol generators).
+                // We ignore unknown params, but reject SIP003 plugin links — xray-core has no
+                // SIP003 outbound, so silently dropping `plugin=...` would save an unconnectable node.
+                var queryIdx = rest.IndexOf('?');
+                if (queryIdx >= 0)
+                {
+                    var query = ParseQuery(rest.Substring(queryIdx));
+                    if (query.ContainsKey("plugin"))
+                        return null;
+                    rest = rest.Substring(0, queryIdx);
+                }
+
                 // Try SIP002: BASE64(method:password)@host:port
                 // Look for '@' that separates the base64 userinfo from host:port
                 // The base64 part must NOT contain '@' — so find last '@' and try decoding left side
