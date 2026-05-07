@@ -233,7 +233,7 @@ namespace XrayUI.Services
             var user = new JsonObject
             {
                 ["id"] = server.Uuid,
-                ["encryption"] = "none"
+                ["encryption"] = string.IsNullOrEmpty(server.VlessEncryption) ? "none" : server.VlessEncryption
             };
 
             if (!string.IsNullOrWhiteSpace(server.Flow))

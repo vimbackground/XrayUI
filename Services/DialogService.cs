@@ -146,6 +146,13 @@ namespace XrayUI.Services
             var txtSid  = new TextBox { Header = "ShortId (Reality)", Text = existing?.ShortId ?? string.Empty };
             var txtSpx  = new TextBox { Header = "SpiderX (Reality)", Text = existing?.SpiderX ?? string.Empty };
             var txtFlow = new TextBox { Header = "Flow (VLESS)", PlaceholderText = "xtls-rprx-vision 或留空", Text = existing?.Flow ?? string.Empty };
+            var txtVlessEncryption = new TextBox
+            {
+                Header = "VLESS encryption (PQ)",
+                PlaceholderText = "留空 = none;或 mlkem768x25519plus.native.0rtt....",
+                Text = existing?.VlessEncryption ?? string.Empty,
+                TextWrapping = TextWrapping.Wrap
+            };
             var txtFinalmask = new TextBox
             {
                 Header = "Finalmask (JSON)",
@@ -169,6 +176,7 @@ namespace XrayUI.Services
             var rowSid        = Wrap(txtSid);
             var rowSpx        = Wrap(txtSpx);
             var rowFlow       = Wrap(txtFlow);
+            var rowVlessEncryption = Wrap(txtVlessEncryption);
             var rowFinalmask  = Wrap(txtFinalmask);
 
             void UpdateVisibility()
@@ -205,6 +213,7 @@ namespace XrayUI.Services
                 rowSid       .Visibility = hasReality                 ? Visibility.Visible : Visibility.Collapsed;
                 rowSpx       .Visibility = hasReality                 ? Visibility.Visible : Visibility.Collapsed;
                 rowFlow      .Visibility = isVless                    ? Visibility.Visible : Visibility.Collapsed;
+                rowVlessEncryption.Visibility = isVless               ? Visibility.Visible : Visibility.Collapsed;
             }
 
             cmbProtocol.SelectionChanged += (_, _) =>
@@ -230,7 +239,7 @@ namespace XrayUI.Services
                     txtName, txtHost, numPort, cmbProtocol,
                     rowEncryption, rowPassword, rowUuid, rowAlterId,
                     cmbNetwork, rowPath, rowWsHost,
-                    cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowPk, rowSid, rowSpx, rowFlow,
+                    cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowPk, rowSid, rowSpx, rowFlow, rowVlessEncryption,
                     rowFinalmask
                 }
             };
@@ -272,6 +281,7 @@ namespace XrayUI.Services
             entry.ShortId     = txtSid.Text.Trim();
             entry.SpiderX     = txtSpx.Text.Trim();
             entry.Flow        = txtFlow.Text.Trim();
+            entry.VlessEncryption = txtVlessEncryption.Text.Trim();
             entry.Finalmask   = FinalmaskJson.NormalizeForStorage(txtFinalmask.Text);
 
             if (entry.Protocol == "hysteria2")

@@ -58,6 +58,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <!-- Row 0: 名称 -->
@@ -127,6 +128,21 @@
                                        Grid.Column="1"
                                        Text="{x:Bind ViewModel.SelectedTransport, Mode=OneWay}"
                                        FontSize="16" />
+
+                            <!-- Row 6: VLESS encryption (PQ) — VLESS only, hidden if empty -->
+                            <TextBlock Grid.Row="6"
+                                       Grid.Column="0"
+                                       Text="加密(PQ)"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Visibility="{x:Bind ViewModel.VlessEncryptionVisibility, Mode=OneWay}" />
+                            <TextBlock Grid.Row="6"
+                                       Grid.Column="1"
+                                       Text="{x:Bind ViewModel.SelectedVlessEncryption, Mode=OneWay}"
+                                       ToolTipService.ToolTip="{x:Bind ViewModel.SelectedVlessEncryption, Mode=OneWay}"
+                                       FontSize="13"
+                                       TextTrimming="CharacterEllipsis"
+                                       Visibility="{x:Bind ViewModel.VlessEncryptionVisibility, Mode=OneWay}" />
                         </Grid>
 
                         <!-- AI 服务监测区 -->
