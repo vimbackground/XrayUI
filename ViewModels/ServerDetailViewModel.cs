@@ -97,6 +97,15 @@ namespace XrayUI.ViewModels
 
         public string SelectedEncryption => SelectedServer?.Encryption ?? "-";
 
+        public string SelectedVlessEncryption
+            => string.IsNullOrEmpty(SelectedServer?.VlessEncryption) ? string.Empty : SelectedServer.VlessEncryption;
+
+        public Visibility VlessEncryptionVisibility
+            => string.Equals(SelectedServer?.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
+               && !string.IsNullOrEmpty(SelectedServer?.VlessEncryption)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
         public string SelectedShareLink
             => SelectedServer is null ? string.Empty : (NodeLinkSerializer.ToLink(SelectedServer) ?? string.Empty);
 
@@ -244,9 +253,15 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedProtocol));
                     OnPropertyChanged(nameof(SelectedSecurityLabel));
                     OnPropertyChanged(nameof(SelectedTransport));
+                    OnPropertyChanged(nameof(VlessEncryptionVisibility));
                     break;
                 case nameof(ServerEntry.Encryption):
                     OnPropertyChanged(nameof(SelectedEncryption));
+                    break;
+                case nameof(ServerEntry.VlessEncryption):
+                    OnPropertyChanged(nameof(SelectedVlessEncryption));
+                    OnPropertyChanged(nameof(VlessEncryptionVisibility));
+                    OnPropertyChanged(nameof(SelectedShareLink));
                     break;
                 case nameof(ServerEntry.Network):
                     OnPropertyChanged(nameof(SelectedTransport));
@@ -268,6 +283,8 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(SelectedProtocol));
             OnPropertyChanged(nameof(SelectedSecurityLabel));
             OnPropertyChanged(nameof(SelectedEncryption));
+            OnPropertyChanged(nameof(SelectedVlessEncryption));
+            OnPropertyChanged(nameof(VlessEncryptionVisibility));
             OnPropertyChanged(nameof(SelectedTransport));
             OnPropertyChanged(nameof(SelectedShareLink));
             OnPropertyChanged(nameof(CanTestLatency));

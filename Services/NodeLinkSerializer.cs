@@ -127,6 +127,10 @@ namespace XrayUI.Services
             if (network == "ws" || network == "xhttp")
                 AppendIfNotEmpty(sb, "host", s.WsHost);
 
+            // VLESS-level encryption (Xray PR #5067). Always emit, matching v2rayN parity & spec.
+            var vlessEnc = string.IsNullOrEmpty(s.VlessEncryption) ? "none" : s.VlessEncryption;
+            AppendParam(sb, "encryption", vlessEnc, first: false);
+
             // VLESS flow (xtls-rprx-vision etc.)
             AppendIfNotEmpty(sb, "flow", s.Flow);
             AppendIfNotEmpty(sb, "fm", FinalmaskJson.NormalizeForShare(s.Finalmask));

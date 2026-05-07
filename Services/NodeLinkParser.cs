@@ -231,6 +231,7 @@ namespace XrayUI.Services
                 var path     = Q(query, "path") ?? Q(query, "serviceName") ?? string.Empty;
                 var wsHost   = Q(query, "host", string.Empty) ?? string.Empty;
                 var flow     = Q(query, "flow", string.Empty) ?? string.Empty;
+                var vlessEncryption = Q(query, "encryption", string.Empty) ?? string.Empty;
                 var finalmask = FinalmaskJson.NormalizeForStorage(Q(query, "fm"));
                 var allowInsecure = IsTruthy(Q(query, "allowInsecure")) || IsTruthy(Q(query, "insecure"));
 
@@ -252,6 +253,7 @@ namespace XrayUI.Services
                     Path        = path,
                     WsHost      = wsHost,
                     Flow        = flow,
+                    VlessEncryption = vlessEncryption == "none" ? string.Empty : vlessEncryption,
                     Finalmask   = finalmask,
                     Encryption  = security == "reality" ? "Reality"
                                 : security == "tls"     ? "TLS"

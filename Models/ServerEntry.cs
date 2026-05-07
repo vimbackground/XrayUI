@@ -27,6 +27,7 @@ namespace XrayUI.Models
             ShortId = string.Empty;
             SpiderX = string.Empty;
             Flow = string.Empty;
+            VlessEncryption = string.Empty;
             Finalmask = string.Empty;
         }
 
@@ -104,6 +105,10 @@ namespace XrayUI.Models
         /// <summary>VLESS flow: "xtls-rprx-vision" or empty string.</summary>
         [ObservableProperty]
         public partial string Flow { get; set; }
+
+        /// <summary>VLESS user-level encryption (Xray PR #5067 PQ encryption, e.g. "mlkem768x25519plus...."). Empty = "none".</summary>
+        [ObservableProperty]
+        public partial string VlessEncryption { get; set; }
 
         /// <summary>Raw Xray streamSettings.finalmask JSON, shared as the "fm" URI parameter.</summary>
         [ObservableProperty]
