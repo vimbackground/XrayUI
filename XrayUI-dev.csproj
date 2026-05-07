@@ -14,7 +14,6 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WindowsPackageType>None</WindowsPackageType>
-    <RemoveUnusedWindowsMlNativeAssetsFromPublish>true</RemoveUnusedWindowsMlNativeAssetsFromPublish>
   </PropertyGroup>
 
 
@@ -69,6 +68,18 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.2.251219" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1839" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
+    <!-- Promote these two transitive deps of WindowsAppSDK to direct references so we can
+         strip their runtime assets (DirectML.dll / onnxruntime.dll / Microsoft.Windows.AI.MachineLearning.dll).
+         IncludeAssets=compile keeps the reference assemblies for compile-time use; PrivateAssets=all
+         prevents them from flowing to consumers. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="WinUIEx" Version="2.9.0" />
   </ItemGroup>
 
@@ -99,17 +110,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-  <!-- Windows App SDK 2.x brings Windows ML as a transitive component. XrayUI does
-       not use local ML inference, so keep those native runtime DLLs out of publish
-       folders even when publishing to a custom output path. -->
-  <Target Name="CleanUnusedWindowsMlNativeAssetsFromPublish" AfterTargets="Publish;PublishUpdaterAlongside" Condition="'$(RemoveUnusedWindowsMlNativeAssetsFromPublish)' == 'true'">
-    <ItemGroup>
-      <_UnusedWindowsMlNativeAsset Include="$(PublishDir)DirectML.dll;$(PublishDir)onnxruntime.dll;$(PublishDir)Microsoft.Windows.AI.MachineLearning.dll" />
-      <_ExistingUnusedWindowsMlNativeAsset Include="@(_UnusedWindowsMlNativeAsset)" Condition="Exists('%(_UnusedWindowsMlNativeAsset.Identity)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExistingUnusedWindowsMlNativeAsset)" />
-  </Target>
 
   <!-- Auto-publish the standalone Updater alongside the main app on local
        `dotnet publish`, so testing the in-app upgrade flow doesn't require
