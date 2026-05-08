@@ -112,6 +112,12 @@ namespace XrayUI.Services
                     AppendParam(sb, "allowInsecure", "1", first: false);
             }
 
+            if (security == "tls" && !string.IsNullOrWhiteSpace(s.EchConfigList))
+            {
+                AppendIfNotEmpty(sb, "echConfigList", s.EchConfigList);
+                AppendIfNotEmpty(sb, "echForceQuery", EchSettings.NormalizeForceQuery(s.EchForceQuery));
+            }
+
             // Reality-only params
             if (security == "reality")
             {
