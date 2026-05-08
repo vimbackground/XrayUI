@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using XrayUI.Models;
@@ -334,12 +335,26 @@ namespace XrayUI.Services
             {
                 var sni = string.IsNullOrWhiteSpace(server.Sni) ? server.Host : server.Sni;
                 var fingerprint = string.IsNullOrWhiteSpace(server.Fingerprint) ? "chrome" : server.Fingerprint;
-                stream["tlsSettings"] = new JsonObject
+                var tlsSettings = new JsonObject
                 {
                     ["serverName"] = sni,
                     ["fingerprint"] = fingerprint,
                     ["allowInsecure"] = server.AllowInsecure
                 };
+
+                if (string.Equals(server.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrWhiteSpace(server.EchConfigList))
+                {
+                    tlsSettings["echConfigList"] = server.EchConfigList;
+
+                    var echForceQuery = EchSettings.NormalizeForceQuery(server.EchForceQuery);
+                    if (!string.IsNullOrEmpty(echForceQuery))
+                    {
+                        tlsSettings["echForceQuery"] = echForceQuery;
+                    }
+                }
+
+                stream["tlsSettings"] = tlsSettings;
             }
             else if (security == "reality")
             {

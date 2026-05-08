@@ -106,6 +106,29 @@ namespace XrayUI.ViewModels
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+        public string SelectedEch
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(SelectedServer?.EchConfigList))
+                {
+                    return string.Empty;
+                }
+
+                var echForceQuery = EchSettings.NormalizeForceQuery(SelectedServer.EchForceQuery);
+                return string.IsNullOrEmpty(echForceQuery)
+                    ? SelectedServer.EchConfigList
+                    : $"{SelectedServer.EchConfigList} ({echForceQuery})";
+            }
+        }
+
+        public Visibility EchVisibility
+            => string.Equals(SelectedServer?.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
+               && string.Equals(SelectedServer?.Security, "tls", StringComparison.OrdinalIgnoreCase)
+               && !string.IsNullOrWhiteSpace(SelectedServer?.EchConfigList)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
         public string SelectedShareLink
             => SelectedServer is null ? string.Empty : (NodeLinkSerializer.ToLink(SelectedServer) ?? string.Empty);
 
@@ -254,13 +277,25 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedSecurityLabel));
                     OnPropertyChanged(nameof(SelectedTransport));
                     OnPropertyChanged(nameof(VlessEncryptionVisibility));
+                    OnPropertyChanged(nameof(EchVisibility));
+                    OnPropertyChanged(nameof(SelectedShareLink));
                     break;
                 case nameof(ServerEntry.Encryption):
                     OnPropertyChanged(nameof(SelectedEncryption));
                     break;
+                case nameof(ServerEntry.Security):
+                    OnPropertyChanged(nameof(EchVisibility));
+                    OnPropertyChanged(nameof(SelectedShareLink));
+                    break;
                 case nameof(ServerEntry.VlessEncryption):
                     OnPropertyChanged(nameof(SelectedVlessEncryption));
                     OnPropertyChanged(nameof(VlessEncryptionVisibility));
+                    OnPropertyChanged(nameof(SelectedShareLink));
+                    break;
+                case nameof(ServerEntry.EchConfigList):
+                case nameof(ServerEntry.EchForceQuery):
+                    OnPropertyChanged(nameof(SelectedEch));
+                    OnPropertyChanged(nameof(EchVisibility));
                     OnPropertyChanged(nameof(SelectedShareLink));
                     break;
                 case nameof(ServerEntry.Network):
@@ -285,6 +320,8 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(SelectedEncryption));
             OnPropertyChanged(nameof(SelectedVlessEncryption));
             OnPropertyChanged(nameof(VlessEncryptionVisibility));
+            OnPropertyChanged(nameof(SelectedEch));
+            OnPropertyChanged(nameof(EchVisibility));
             OnPropertyChanged(nameof(SelectedTransport));
             OnPropertyChanged(nameof(SelectedShareLink));
             OnPropertyChanged(nameof(CanTestLatency));

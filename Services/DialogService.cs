@@ -142,6 +142,20 @@ namespace XrayUI.Services
             var txtSni  = new TextBox { Header = "SNI", Text = existing?.Sni ?? string.Empty };
             var txtFp   = new TextBox { Header = "指纹 (uTLS)", Text = existing?.Fingerprint ?? string.Empty };
             var chkAllowInsecure = new CheckBox { Content = "允许不安全连接（跳过证书校验）", IsChecked = existing?.AllowInsecure ?? false };
+            var txtEchConfigList = new TextBox
+            {
+                Header = "ECH ConfigList",
+                PlaceholderText = "例如 udp://1.1.1.1 或服务端生成的 ECHConfig",
+                Text = existing?.EchConfigList ?? string.Empty,
+                TextWrapping = TextWrapping.Wrap
+            };
+            var cmbEchForceQuery = new ComboBox { Header = "ECH Force Query", MinWidth = 200 };
+            foreach (var q in new[] { EchSettings.None, EchSettings.Half, EchSettings.Full })
+                cmbEchForceQuery.Items.Add(q);
+            var existingEchForceQuery = EchSettings.NormalizeForceQuery(existing?.EchForceQuery);
+            cmbEchForceQuery.SelectedItem = string.IsNullOrEmpty(existingEchForceQuery)
+                ? EchSettings.None
+                : existingEchForceQuery;
             var txtPk   = new TextBox { Header = "PublicKey (Reality)", Text = existing?.PublicKey ?? string.Empty };
             var txtSid  = new TextBox { Header = "ShortId (Reality)", Text = existing?.ShortId ?? string.Empty };
             var txtSpx  = new TextBox { Header = "SpiderX (Reality)", Text = existing?.SpiderX ?? string.Empty };
@@ -172,6 +186,8 @@ namespace XrayUI.Services
             var rowSni        = Wrap(txtSni);
             var rowFp         = Wrap(txtFp);
             var rowAllowInsecure = Wrap(chkAllowInsecure);
+            var rowEchConfigList = Wrap(txtEchConfigList);
+            var rowEchForceQuery = Wrap(cmbEchForceQuery);
             var rowPk         = Wrap(txtPk);
             var rowSid        = Wrap(txtSid);
             var rowSpx        = Wrap(txtSpx);
@@ -195,6 +211,7 @@ namespace XrayUI.Services
                 bool hasGrpc     = !isHysteria2 && net == "grpc";
                 bool hasTls      = !isHysteria2 && (sec == "tls" || sec == "reality");
                 bool hasReality  = !isHysteria2 && sec == "reality";
+                bool hasEch      = isVless && sec == "tls";
 
                 cmbNetwork .Visibility = isHysteria2                 ? Visibility.Collapsed : Visibility.Visible;
                 cmbSecurity.Visibility = isHysteria2                 ? Visibility.Collapsed : Visibility.Visible;
@@ -209,6 +226,8 @@ namespace XrayUI.Services
                 rowSni       .Visibility = (hasTls || isHysteria2)    ? Visibility.Visible : Visibility.Collapsed;
                 rowFp        .Visibility = hasTls                     ? Visibility.Visible : Visibility.Collapsed;
                 rowAllowInsecure.Visibility = (hasTls || isHysteria2) ? Visibility.Visible : Visibility.Collapsed;
+                rowEchConfigList.Visibility = hasEch                  ? Visibility.Visible : Visibility.Collapsed;
+                rowEchForceQuery.Visibility = hasEch                  ? Visibility.Visible : Visibility.Collapsed;
                 rowPk        .Visibility = hasReality                 ? Visibility.Visible : Visibility.Collapsed;
                 rowSid       .Visibility = hasReality                 ? Visibility.Visible : Visibility.Collapsed;
                 rowSpx       .Visibility = hasReality                 ? Visibility.Visible : Visibility.Collapsed;
@@ -239,7 +258,8 @@ namespace XrayUI.Services
                     txtName, txtHost, numPort, cmbProtocol,
                     rowEncryption, rowPassword, rowUuid, rowAlterId,
                     cmbNetwork, rowPath, rowWsHost,
-                    cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowPk, rowSid, rowSpx, rowFlow, rowVlessEncryption,
+                    cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowEchConfigList, rowEchForceQuery,
+                    rowPk, rowSid, rowSpx, rowFlow, rowVlessEncryption,
                     rowFinalmask
                 }
             };
@@ -277,6 +297,8 @@ namespace XrayUI.Services
             entry.Sni         = txtSni.Text.Trim();
             entry.Fingerprint = txtFp.Text.Trim();
             entry.AllowInsecure = chkAllowInsecure.IsChecked == true;
+            entry.EchConfigList = txtEchConfigList.Text.Trim();
+            entry.EchForceQuery = EchSettings.NormalizeForceQuery(cmbEchForceQuery.SelectedItem?.ToString());
             entry.PublicKey   = txtPk.Text.Trim();
             entry.ShortId     = txtSid.Text.Trim();
             entry.SpiderX     = txtSpx.Text.Trim();
@@ -287,6 +309,14 @@ namespace XrayUI.Services
             if (entry.Protocol == "hysteria2")
             {
                 entry.Security = "tls";
+            }
+
+            if (!string.Equals(entry.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(entry.Security, "tls", StringComparison.OrdinalIgnoreCase)
+                || string.IsNullOrWhiteSpace(entry.EchConfigList))
+            {
+                entry.EchConfigList = string.Empty;
+                entry.EchForceQuery = string.Empty;
             }
 
             if (entry.Protocol != "ss")

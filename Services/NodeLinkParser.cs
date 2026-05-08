@@ -232,6 +232,9 @@ namespace XrayUI.Services
                 var wsHost   = Q(query, "host", string.Empty) ?? string.Empty;
                 var flow     = Q(query, "flow", string.Empty) ?? string.Empty;
                 var vlessEncryption = Q(query, "encryption", string.Empty) ?? string.Empty;
+                var echConfigList = Q(query, "echConfigList") ?? Q(query, "ech") ?? string.Empty;
+                var echForceQuery = EchSettings.NormalizeForceQuery(
+                    Q(query, "echForceQuery") ?? Q(query, "echfq"));
                 var finalmask = FinalmaskJson.NormalizeForStorage(Q(query, "fm"));
                 var allowInsecure = IsTruthy(Q(query, "allowInsecure")) || IsTruthy(Q(query, "insecure"));
 
@@ -247,6 +250,8 @@ namespace XrayUI.Services
                     Sni         = sni,
                     Fingerprint = fp,
                     AllowInsecure = allowInsecure,
+                    EchConfigList = echConfigList,
+                    EchForceQuery = echForceQuery,
                     PublicKey   = pk,
                     ShortId     = sid,
                     SpiderX     = spx,

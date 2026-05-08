@@ -23,6 +23,8 @@ namespace XrayUI.Models
             Security = string.Empty;
             Sni = string.Empty;
             Fingerprint = string.Empty;
+            EchConfigList = string.Empty;
+            EchForceQuery = string.Empty;
             PublicKey = string.Empty;
             ShortId = string.Empty;
             SpiderX = string.Empty;
@@ -91,6 +93,14 @@ namespace XrayUI.Models
 
         [ObservableProperty]
         public partial bool AllowInsecure { get; set; }
+
+        /// <summary>Client-side TLS ECH config list. Empty = disabled.</summary>
+        [ObservableProperty]
+        public partial string EchConfigList { get; set; }
+
+        /// <summary>ECH force query mode: "half", "full", or empty/none.</summary>
+        [ObservableProperty]
+        public partial string EchForceQuery { get; set; }
 
         // VLESS Reality
         [ObservableProperty]
