@@ -23,7 +23,9 @@ namespace XrayUI.Services
         private const int LogBufferMax = 500;
 
         private Process? _process;
-        private readonly StringBuilder _startupLog = new();
+        private StringBuilder _startupLog = new();
+        private bool _collectStartupLog;
+        private readonly Lock _startupLogLock = new();
 
         // Fixed-size ring buffer: O(1) append + oldest-drop, no array shifting.
         private readonly string[] _logBuffer = new string[LogBufferMax];
@@ -90,6 +92,50 @@ namespace XrayUI.Services
             LogReceived?.Invoke(this, line);
         }
 
+        private void BeginStartupLogCapture()
+        {
+            lock (_startupLogLock)
+            {
+                _startupLog = new StringBuilder();
+                _collectStartupLog = true;
+            }
+        }
+
+        private void AppendStartupLog(string line)
+        {
+            lock (_startupLogLock)
+            {
+                if (!_collectStartupLog)
+                {
+                    return;
+                }
+
+                _startupLog.AppendLine(line);
+            }
+        }
+
+        private string StopStartupLogCaptureAndRead()
+        {
+            lock (_startupLogLock)
+            {
+                _collectStartupLog = false;
+                var text = _startupLog.Length > 0
+                    ? _startupLog.ToString().Trim()
+                    : string.Empty;
+                _startupLog = new StringBuilder();
+                return text;
+            }
+        }
+
+        private void StopStartupLogCapture()
+        {
+            lock (_startupLogLock)
+            {
+                _collectStartupLog = false;
+                _startupLog = new StringBuilder();
+            }
+        }
+
         public async Task<bool> StartAsync(string configJson)
         {
             if (IsRunning)
@@ -98,7 +144,6 @@ namespace XrayUI.Services
             }
 
             LastError = string.Empty;
-            _startupLog.Clear();
 
             if (!File.Exists(ExePath))
             {
@@ -129,23 +174,20 @@ namespace XrayUI.Services
                 _process.OutputDataReceived += (_, e) =>
                 {
                     if (e.Data is null) return;
-                    _startupLog.AppendLine(e.Data);
+                    AppendStartupLog(e.Data);
                     AppendLog(e.Data);
                 };
 
                 _process.ErrorDataReceived += (_, e) =>
                 {
                     if (e.Data is null) return;
-                    _startupLog.AppendLine(e.Data);
+                    AppendStartupLog(e.Data);
                     AppendLog(e.Data);
                 };
 
-                _process.Exited += (_, _) =>
-                {
-                    AppendLog("[xray 进程已退出]");
-                    RunningChanged?.Invoke(this, false);
-                };
+                _process.Exited += OnProcessExited;
 
+                BeginStartupLogCapture();
                 _process.Start();
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
@@ -157,18 +199,21 @@ namespace XrayUI.Services
 
                 if (_process.HasExited)
                 {
-                    LastError = _startupLog.Length > 0
-                        ? _startupLog.ToString().Trim()
+                    var startupLog = StopStartupLogCaptureAndRead();
+                    LastError = startupLog.Length > 0
+                        ? startupLog
                         : $"xray 立即退出（退出码 {_process.ExitCode}）";
                     AppendLog("[错误] 启动失败：" + LastError);
                     return false;
                 }
 
+                StopStartupLogCapture();
                 RunningChanged?.Invoke(this, true);
                 return true;
             }
             catch (Exception ex)
             {
+                StopStartupLogCapture();
                 LastError = ex.Message;
                 AppendLog("[异常] " + ex.Message);
                 return false;
@@ -181,6 +226,8 @@ namespace XrayUI.Services
             {
                 return;
             }
+
+            _process.Exited -= OnProcessExited;
 
             try
             {
@@ -212,6 +259,7 @@ namespace XrayUI.Services
                 return;
             }
 
+            process.Exited -= OnProcessExited;
             _process = null;
 
             try
@@ -231,6 +279,12 @@ namespace XrayUI.Services
             }
 
             AppendLog("[shutdown] xray stopped");
+            RunningChanged?.Invoke(this, false);
+        }
+
+        private void OnProcessExited(object? sender, EventArgs e)
+        {
+            AppendLog("[xray 进程已退出]");
             RunningChanged?.Invoke(this, false);
         }
     }
