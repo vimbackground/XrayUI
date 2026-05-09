@@ -74,6 +74,11 @@ namespace XrayUI.Views
             await ViewModel.SaveOrderAsync();
         }
 
+        private void ServersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ViewModel.SetSelectedServers(ServersListView.SelectedItems.OfType<ServerEntry>().ToArray());
+        }
+
         private async void ServerItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (sender is not FrameworkElement element)
@@ -95,6 +100,12 @@ namespace XrayUI.Views
 
         private void ServerItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
         {
+            if (ViewModel.HasMultipleSelectedServers)
+            {
+                e.Handled = true;
+                return;
+            }
+
             if (sender is not FrameworkElement element)
             {
                 e.Handled = true;

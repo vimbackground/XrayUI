@@ -190,7 +190,8 @@
                   CanReorderItems="{x:Bind ViewModel.CanReorderInCurrentChip, Mode=OneWay}"
                   AllowDrop="{x:Bind ViewModel.CanReorderInCurrentChip, Mode=OneWay}"
                   DragItemsCompleted="ServersListView_DragItemsCompleted"
-                  SelectionMode="Single"
+                  SelectionChanged="ServersListView_SelectionChanged"
+                  SelectionMode="Extended"
                   ScrollViewer.VerticalScrollBarVisibility="Auto">
 
             <ListView.ItemTemplate>
