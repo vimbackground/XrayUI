@@ -210,7 +210,9 @@ namespace XrayUI.ViewModels
             set
             {
                 if (SetProperty(ref _selectedServer, value))
-                    NotifyServerActionStateChanged();
+                    SetSelectedServers(value is null
+                        ? Array.Empty<ServerEntry>()
+                        : new[] { value });
             }
         }
 
@@ -230,11 +232,15 @@ namespace XrayUI.ViewModels
 
         public bool IsSelectedServerLocked => IsProxyRunning && SelectedServer?.IsActive == true;
 
-        public int SelectedServerCount => GetSelectedServersSnapshot().Count;
+        public int SelectedServerCount =>
+            _selectedServers.Count > 0 ? _selectedServers.Count : (SelectedServer is null ? 0 : 1);
 
-        public bool HasMultipleSelectedServers => SelectedServerCount > 1;
+        public bool HasMultipleSelectedServers => _selectedServers.Count > 1;
 
-        public bool HasLockedSelectedServer => IsProxyRunning && GetSelectedServersSnapshot().Any(s => s.IsActive);
+        public bool HasLockedSelectedServer => IsProxyRunning && (
+            _selectedServers.Count > 0
+                ? _selectedServers.Any(s => s.IsActive)
+                : SelectedServer?.IsActive == true);
 
         public bool CanEditSelectedServer => SelectedServer != null
             && !HasMultipleSelectedServers
@@ -927,9 +933,6 @@ namespace XrayUI.ViewModels
             }
 
             SelectedServer = nextSelected;
-            SetSelectedServers(nextSelected is null
-                ? Array.Empty<ServerEntry>()
-                : new[] { nextSelected });
 
             await SaveAsync();
         }
