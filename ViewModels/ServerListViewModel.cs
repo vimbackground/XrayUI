@@ -43,6 +43,7 @@ namespace XrayUI.ViewModels
         private readonly SemaphoreSlim   _settingsWriteLock = new(1, 1);
         private ObservableCollection<ServerEntry> _servers = new();
         private ServerEntry? _selectedServer;
+        private readonly List<ServerEntry> _selectedServers = new();
         private bool _isProxyRunning;
         private bool _disposed;
 
@@ -78,6 +79,10 @@ namespace XrayUI.ViewModels
             _disposed = true;
             ProtocolColorStore.ColorsChanged -= OnProtocolColorsChanged;
             _servers.CollectionChanged -= OnServersCollectionChanged;
+            foreach (var server in _selectedServers)
+            {
+                server.PropertyChanged -= OnSelectedItemPropertyChanged;
+            }
         }
 
         public ObservableCollection<ServerEntry> Servers
@@ -117,7 +122,8 @@ namespace XrayUI.ViewModels
         public bool CanReorderInCurrentChip =>
             string.IsNullOrWhiteSpace(_searchQuery)
             && _sortMode == ServerSortMode.Default
-            && VisibleServers.Count > 1;
+            && VisibleServers.Count > 1
+            && !HasMultipleSelectedServers;
 
         public ServerSortMode SortMode
         {
@@ -203,11 +209,8 @@ namespace XrayUI.ViewModels
             get => _selectedServer;
             set
             {
-                var previous = _selectedServer;
                 if (SetProperty(ref _selectedServer, value))
-                {
-                    OnSelectedServerChanged(previous, value);
-                }
+                    NotifyServerActionStateChanged();
             }
         }
 
@@ -227,13 +230,35 @@ namespace XrayUI.ViewModels
 
         public bool IsSelectedServerLocked => IsProxyRunning && SelectedServer?.IsActive == true;
 
-        public bool CanEditSelectedServer => SelectedServer != null && !IsSelectedServerLocked;
+        public int SelectedServerCount => GetSelectedServersSnapshot().Count;
 
-        public bool CanRemoveSelectedServer => SelectedServer != null && !IsSelectedServerLocked;
+        public bool HasMultipleSelectedServers => SelectedServerCount > 1;
 
-        public bool CanEditServer => CanEditSelectedServer;
+        public bool HasLockedSelectedServer => IsProxyRunning && GetSelectedServersSnapshot().Any(s => s.IsActive);
 
-        public bool CanRemoveServer => CanRemoveSelectedServer;
+        public bool CanEditSelectedServer => SelectedServer != null
+            && !HasMultipleSelectedServers
+            && !IsSelectedServerLocked;
+
+        public bool CanRemoveSelectedServer => SelectedServerCount > 0 && !HasLockedSelectedServer;
+
+        private List<ServerEntry> GetSelectedServersSnapshot() => _selectedServers.Count > 0
+            ? _selectedServers.ToList()
+            : SelectedServer is null ? new List<ServerEntry>() : new List<ServerEntry> { SelectedServer };
+
+        public void SetSelectedServers(IReadOnlyList<ServerEntry> selectedServers)
+        {
+            foreach (var server in _selectedServers)
+                server.PropertyChanged -= OnSelectedItemPropertyChanged;
+
+            _selectedServers.Clear();
+            _selectedServers.AddRange(selectedServers);
+
+            foreach (var server in _selectedServers)
+                server.PropertyChanged += OnSelectedItemPropertyChanged;
+
+            NotifyServerActionStateChanged();
+        }
 
         // ── Search ────────────────────────────────────────────────────────────
 
@@ -486,38 +511,23 @@ namespace XrayUI.ViewModels
                 : new List<SubscriptionEntry>();
         }
 
-        private void OnSelectedServerChanged(ServerEntry? previous, ServerEntry? current)
+        private void OnSelectedItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (previous is not null)
-            {
-                previous.PropertyChanged -= OnSelectedServerPropertyChanged;
-            }
-
-            if (current is not null)
-            {
-                current.PropertyChanged += OnSelectedServerPropertyChanged;
-            }
-
+            if (e.PropertyName != nameof(ServerEntry.IsActive)) return;
             NotifyServerActionStateChanged();
-        }
-
-        private void OnSelectedServerPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ServerEntry.IsActive))
-            {
-                NotifyServerActionStateChanged();
-                if (_sortMode == ServerSortMode.Active)
-                    RebuildGroupedView();
-            }
+            if (_sortMode == ServerSortMode.Active)
+                RebuildGroupedView();
         }
 
         private void NotifyServerActionStateChanged()
         {
             OnPropertyChanged(nameof(IsSelectedServerLocked));
+            OnPropertyChanged(nameof(SelectedServerCount));
+            OnPropertyChanged(nameof(HasMultipleSelectedServers));
+            OnPropertyChanged(nameof(HasLockedSelectedServer));
             OnPropertyChanged(nameof(CanEditSelectedServer));
             OnPropertyChanged(nameof(CanRemoveSelectedServer));
-            OnPropertyChanged(nameof(CanEditServer));
-            OnPropertyChanged(nameof(CanRemoveServer));
+            OnPropertyChanged(nameof(CanReorderInCurrentChip));
         }
 
         // ── Import via link ───────────────────────────────────────────────────
@@ -792,6 +802,7 @@ namespace XrayUI.ViewModels
         private async Task EditServer()
         {
             if (SelectedServer is null) return;
+            if (HasMultipleSelectedServers) return;
 
             // Pass existing so dialog can pre-populate; dialog mutates and returns same ref on Primary
             var result = await _dialogs.ShowEditServerDialogAsync(SelectedServer);
@@ -868,23 +879,57 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private async Task RemoveServer()
         {
-            if (SelectedServer is null) return;
+            var selectedServers = GetSelectedServersSnapshot();
+            if (selectedServers.Count == 0) return;
+            if (IsProxyRunning && selectedServers.Any(s => s.IsActive)) return;
+
+            var isBatchDelete = selectedServers.Count > 1;
+            var message = isBatchDelete
+                ? $"确定要删除当前 {selectedServers.Count} 个项目?"
+                : $"确定要删除 {selectedServers[0].Name}?";
 
             var confirmed = await _dialogs.ShowConfirmationAsync(
                 "确认删除",
-                $"确定要删除 {SelectedServer.Name}?",
+                message,
                 "删除",
                 "取消",
                 isDanger: true);
             if (!confirmed) return;
 
-            var toRemove = SelectedServer;
-            var idx      = Servers.IndexOf(toRemove);
-            Servers.Remove(toRemove);
+            ServerEntry? nextSelected;
+            if (isBatchDelete)
+            {
+                var firstVisibleIdx = selectedServers
+                    .Select(s => VisibleServers.IndexOf(s))
+                    .Where(i => i >= 0)
+                    .DefaultIfEmpty(0)
+                    .Min();
 
-            SelectedServer = Servers.Count > 0
-                ? Servers[Math.Max(0, idx - 1)]
-                : null;
+                MutateServersInBatch(() =>
+                {
+                    foreach (var server in selectedServers)
+                        Servers.Remove(server);
+                });
+
+                nextSelected = VisibleServers.Count > 0
+                    ? VisibleServers[Math.Min(firstVisibleIdx, VisibleServers.Count - 1)]
+                    : Servers.FirstOrDefault();
+            }
+            else
+            {
+                var toRemove = selectedServers[0];
+                var idx      = Servers.IndexOf(toRemove);
+                Servers.Remove(toRemove);
+
+                nextSelected = Servers.Count > 0
+                    ? Servers[Math.Max(0, idx - 1)]
+                    : null;
+            }
+
+            SelectedServer = nextSelected;
+            SetSelectedServers(nextSelected is null
+                ? Array.Empty<ServerEntry>()
+                : new[] { nextSelected });
 
             await SaveAsync();
         }
