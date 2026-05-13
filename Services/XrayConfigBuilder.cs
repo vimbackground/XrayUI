@@ -30,8 +30,28 @@ namespace XrayUI.Services
                 ["routing"] = BuildRouting(settings)
             };
 
+            if (IsFakeDnsActive(settings))
+            {
+                var pools = new JsonArray();
+                AddNode(pools, new JsonObject
+                {
+                    ["ipPool"] = XrayConfigConstants.FakeDnsPoolV4,
+                    ["poolSize"] = 65535,
+                });
+                AddNode(pools, new JsonObject
+                {
+                    ["ipPool"] = XrayConfigConstants.FakeDnsPoolV6,
+                    ["poolSize"] = 65535,
+                });
+                config["fakedns"] = pools;
+            }
+
             return config.ToJsonString(JsonOpts);
         }
+
+        /// <summary>True when xray will be built with a fakedns pool wired to the TUN inbound.</summary>
+        private static bool IsFakeDnsActive(AppSettings settings) =>
+            settings.IsTunMode && settings.FakeDnsEnabled;
 
         private static JsonObject BuildLog(AppSettings settings)
         {
@@ -54,12 +74,12 @@ namespace XrayUI.Services
 
             if (settings.IsTunMode)
             {
-                AddNode(list, BuildTunInbound());
+                AddNode(list, BuildTunInbound(settings));
             }
 
             AddNode(list, new JsonObject
             {
-                ["tag"] = "mixed-in",
+                ["tag"] = XrayConfigConstants.MixedInboundTag,
                 ["protocol"] = "socks",
                 ["listen"] = "127.0.0.1",
                 ["port"] = settings.LocalMixedPort,
@@ -73,11 +93,25 @@ namespace XrayUI.Services
             return list;
         }
 
-        private static JsonObject BuildTunInbound()
+        private static JsonObject BuildTunInbound(AppSettings settings)
         {
+            var destOverride = settings.FakeDnsEnabled
+                ? CreateStringArray(XrayConfigConstants.FakeDnsServerTag, "http", "tls", "quic")
+                : CreateStringArray("http", "tls", "quic");
+
+            var sniffing = new JsonObject
+            {
+                ["enabled"] = true,
+                ["destOverride"] = destOverride,
+            };
+            if (settings.FakeDnsEnabled)
+            {
+                sniffing["metadataOnly"] = false;
+            }
+
             return new JsonObject
             {
-                ["tag"] = "tun-in",
+                ["tag"] = XrayConfigConstants.TunInboundTag,
                 ["protocol"] = "tun",
                 ["settings"] = new JsonObject
                 {
@@ -87,11 +121,7 @@ namespace XrayUI.Services
                     ["autoSystemRoutingTable"] = CreateStringArray("0.0.0.0/0"),
                     ["autoOutboundsInterface"] = "auto"
                 },
-                ["sniffing"] = new JsonObject
-                {
-                    ["enabled"] = true,
-                    ["destOverride"] = CreateStringArray("http", "tls", "quic")
-                }
+                ["sniffing"] = sniffing,
             };
         }
 
@@ -127,6 +157,15 @@ namespace XrayUI.Services
                     ["tag"] = "block",
                     ["protocol"] = "blackhole",
                     ["settings"] = new JsonObject()
+                });
+            }
+
+            if (IsFakeDnsActive(settings))
+            {
+                AddNode(list, new JsonObject
+                {
+                    ["tag"] = XrayConfigConstants.DnsOutboundTag,
+                    ["protocol"] = "dns",
                 });
             }
 
@@ -434,6 +473,20 @@ namespace XrayUI.Services
 
             if (settings.IsTunMode)
             {
+                if (settings.FakeDnsEnabled)
+                {
+                    // Must precede the self/xray direct rule so DNS queries from tun-in get
+                    // intercepted by xray's internal DNS handler (and the fakedns pool) rather
+                    // than being forwarded upstream.
+                    AddNode(rules, new JsonObject
+                    {
+                        ["type"] = "field",
+                        ["inboundTag"] = CreateStringArray(XrayConfigConstants.TunInboundTag),
+                        ["port"] = "53",
+                        ["outboundTag"] = XrayConfigConstants.DnsOutboundTag,
+                    });
+                }
+
                 AddNode(rules, new JsonObject
                 {
                     ["type"] = "field",
@@ -479,10 +532,12 @@ namespace XrayUI.Services
                         ["type"] = "field",
                         ["outboundTag"] = rule.OutboundTag,
                     };
-                    if (rule.Type == "ip")
-                        node["ip"] = CreateStringArray(rule.Match);
-                    else
-                        node["domain"] = CreateStringArray(rule.Match);
+                    switch (rule.Type)
+                    {
+                        case "ip":      node["ip"]      = CreateStringArray(rule.Match); break;
+                        case "process": node["process"] = CreateStringArray(rule.Match); break;
+                        default:        node["domain"]  = CreateStringArray(rule.Match); break;
+                    }
 
                     AddNode(rules, node);
                 }
@@ -524,15 +579,48 @@ namespace XrayUI.Services
 
         private static JsonObject BuildDns(AppSettings settings)
         {
-            return settings.IsTunMode
-                ? new JsonObject
-                {
-                    ["servers"] = CreateStringArray("223.5.5.5", "119.29.29.29", "localhost")
-                }
-                : new JsonObject
-                {
-                    ["servers"] = CreateStringArray("8.8.8.8", "114.114.114.114", "localhost")
-                };
+            var directDns = settings.DirectDnsServer
+                ?? (settings.IsTunMode ? "223.5.5.5" : "114.114.114.114");
+            var proxyDns = settings.ProxyDnsServer ?? "8.8.8.8";
+
+            var directEntry = new JsonObject
+            {
+                ["address"]   = directDns,
+                ["domains"]   = CreateStringArray("geosite:cn"),
+                ["expectIPs"] = CreateStringArray("geoip:cn"),
+            };
+
+            var localEntry = new JsonObject
+            {
+                ["address"]      = "localhost",
+                ["domains"]      = CreateStringArray("geosite:private"),
+                ["skipFallback"] = true,
+            };
+
+            var proxyEntry = new JsonObject
+            {
+                ["address"]      = proxyDns,
+                ["skipFallback"] = true,
+            };
+
+            var servers = new JsonArray();
+            if (IsFakeDnsActive(settings))
+            {
+                // FakeDNS must be first: it answers initial client lookups with fake IPs. The
+                // real DNS entries below handle outbound-side resolution after sniffing recovers
+                // the original domain.
+                AddValue(servers, XrayConfigConstants.FakeDnsServerTag);
+            }
+            AddNode(servers, directEntry);
+            AddNode(servers, localEntry);
+            AddNode(servers, proxyEntry);
+
+            return new JsonObject
+            {
+                ["servers"]       = servers,
+                ["queryStrategy"] = settings.DnsQueryStrategy,
+                ["disableCache"]  = !settings.DnsCacheEnabled
+            };
         }
 
         private static JsonArray CreateStringArray(params string[] values)

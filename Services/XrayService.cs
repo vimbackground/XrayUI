@@ -247,8 +247,37 @@ namespace XrayUI.Services
                 _process = null;
             }
 
+            FlushSystemDnsCache();
+
             AppendLog("[已停止]");
             RunningChanged?.Invoke(this, false);
+        }
+
+        /// <summary>
+        /// Best-effort `ipconfig /flushdns` to clear any cached fake IPs (198.18.0.0/15) that
+        /// might linger in the Windows resolver cache after a FakeDNS-enabled run. Harmless
+        /// when FakeDNS was not used. Runs unconditionally on every stop to keep XrayService
+        /// stateless w.r.t. last-run config.
+        /// </summary>
+        private void FlushSystemDnsCache()
+        {
+            try
+            {
+                using var p = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "ipconfig",
+                    Arguments = "/flushdns",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                });
+                p?.WaitForExit(2000);
+            }
+            catch
+            {
+                // best-effort, never block stop on this
+            }
         }
 
         public void StopForShutdown()

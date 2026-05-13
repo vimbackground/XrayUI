@@ -34,6 +34,17 @@ namespace XrayUI.Models
         public bool ShowLatencyInDetails { get; set; } = true;
         public bool ShowAiUnlockInDetails { get; set; } = true;
 
+        // ── DNS ───────────────────────────────────────────────────────────────
+        /// <summary>直连 DNS，用于国内域名 (geosite:cn)。null = 按 TUN 模式自动选取默认值。</summary>
+        public string? DirectDnsServer { get; set; }
+        /// <summary>代理 DNS，用于境外域名，经代理出站解析。null = 使用默认 8.8.8.8。</summary>
+        public string? ProxyDnsServer { get; set; }
+        /// <summary>Values from <see cref="XrayUI.Services.DnsQueryStrategy"/>.</summary>
+        public string DnsQueryStrategy { get; set; } = "UseIPv4";
+        public bool DnsCacheEnabled { get; set; } = true;
+        /// <summary>Enable xray FakeDNS. Only takes effect when IsTunMode is true.</summary>
+        public bool FakeDnsEnabled { get; set; } = false;
+
         // ── Custom routing rules ──────────────────────────────────────────────
         /// <summary>User-defined routing rules. Applied only when RoutingMode == "smart".</summary>
         public List<CustomRoutingRule>? CustomRules { get; set; }

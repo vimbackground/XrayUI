@@ -97,38 +97,6 @@ namespace XrayUI.ViewModels
 
         public string SelectedEncryption => SelectedServer?.Encryption ?? "-";
 
-        public string SelectedVlessEncryption
-            => string.IsNullOrEmpty(SelectedServer?.VlessEncryption) ? string.Empty : SelectedServer.VlessEncryption;
-
-        public Visibility VlessEncryptionVisibility
-            => string.Equals(SelectedServer?.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
-               && !string.IsNullOrEmpty(SelectedServer?.VlessEncryption)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-        public string SelectedEch
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(SelectedServer?.EchConfigList))
-                {
-                    return string.Empty;
-                }
-
-                var echForceQuery = EchSettings.NormalizeForceQuery(SelectedServer.EchForceQuery);
-                return string.IsNullOrEmpty(echForceQuery)
-                    ? SelectedServer.EchConfigList
-                    : $"{SelectedServer.EchConfigList} ({echForceQuery})";
-            }
-        }
-
-        public Visibility EchVisibility
-            => string.Equals(SelectedServer?.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
-               && string.Equals(SelectedServer?.Security, "tls", StringComparison.OrdinalIgnoreCase)
-               && !string.IsNullOrWhiteSpace(SelectedServer?.EchConfigList)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
         public string SelectedShareLink
             => SelectedServer is null ? string.Empty : (NodeLinkSerializer.ToLink(SelectedServer) ?? string.Empty);
 
@@ -138,7 +106,7 @@ namespace XrayUI.ViewModels
             {
                 if (SelectedServer is null)
                 {
-                    return "TCP";
+                    return "-";
                 }
 
                 if (string.Equals(SelectedServer.Protocol, "hysteria2", StringComparison.OrdinalIgnoreCase))
@@ -276,26 +244,15 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedProtocol));
                     OnPropertyChanged(nameof(SelectedSecurityLabel));
                     OnPropertyChanged(nameof(SelectedTransport));
-                    OnPropertyChanged(nameof(VlessEncryptionVisibility));
-                    OnPropertyChanged(nameof(EchVisibility));
                     OnPropertyChanged(nameof(SelectedShareLink));
                     break;
                 case nameof(ServerEntry.Encryption):
                     OnPropertyChanged(nameof(SelectedEncryption));
                     break;
                 case nameof(ServerEntry.Security):
-                    OnPropertyChanged(nameof(EchVisibility));
-                    OnPropertyChanged(nameof(SelectedShareLink));
-                    break;
                 case nameof(ServerEntry.VlessEncryption):
-                    OnPropertyChanged(nameof(SelectedVlessEncryption));
-                    OnPropertyChanged(nameof(VlessEncryptionVisibility));
-                    OnPropertyChanged(nameof(SelectedShareLink));
-                    break;
                 case nameof(ServerEntry.EchConfigList):
                 case nameof(ServerEntry.EchForceQuery):
-                    OnPropertyChanged(nameof(SelectedEch));
-                    OnPropertyChanged(nameof(EchVisibility));
                     OnPropertyChanged(nameof(SelectedShareLink));
                     break;
                 case nameof(ServerEntry.Network):
@@ -318,10 +275,6 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(SelectedProtocol));
             OnPropertyChanged(nameof(SelectedSecurityLabel));
             OnPropertyChanged(nameof(SelectedEncryption));
-            OnPropertyChanged(nameof(SelectedVlessEncryption));
-            OnPropertyChanged(nameof(VlessEncryptionVisibility));
-            OnPropertyChanged(nameof(SelectedEch));
-            OnPropertyChanged(nameof(EchVisibility));
             OnPropertyChanged(nameof(SelectedTransport));
             OnPropertyChanged(nameof(SelectedShareLink));
             OnPropertyChanged(nameof(CanTestLatency));
