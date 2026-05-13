@@ -171,8 +171,16 @@ namespace XrayUI.Services
 
             if (settings.IsTunMode && !string.IsNullOrWhiteSpace(tunOutboundInterfaceName))
             {
+                // sockopt.interface only matters for outbounds that actually open sockets
+                // to remote hosts. block (blackhole) drops traffic without a socket, and
+                // dns-out is xray-internal — applying the binding to them produces
+                // redundant fields in the generated config.
                 foreach (var outbound in list.OfType<JsonObject>())
-                    ApplyOutboundInterface(outbound, tunOutboundInterfaceName);
+                {
+                    var tag = outbound["tag"]?.GetValue<string>();
+                    if (tag is "proxy" or "direct")
+                        ApplyOutboundInterface(outbound, tunOutboundInterfaceName);
+                }
             }
 
             return list;
