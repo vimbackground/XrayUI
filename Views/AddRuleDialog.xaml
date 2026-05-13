@@ -40,7 +40,7 @@
                         Visibility="Collapsed">
                 <Button x:Name="BrowseButton">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <FontIcon Glyph="&#xE8E5;" FontSize="12" />
+                        <FontIcon x:Name="BrowseButtonIcon" Glyph="&#xE8E5;" FontSize="12" />
                         <TextBlock x:Name="BrowseButtonText" Text="浏览 exe..." />
                     </StackPanel>
                 </Button>

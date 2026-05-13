@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
@@ -96,8 +96,12 @@ namespace XrayUI.Views
         private void ApplyBrowseFormatUiState()
         {
             if (BrowseButtonText is null) return;
-            var fmt = GetSelectedBrowseFormat();
-            BrowseButtonText.Text = fmt == "folder" ? "浏览文件夹..." : "浏览 exe...";
+            var isFolder = GetSelectedBrowseFormat() == "folder";
+            BrowseButtonText.Text = isFolder ? "浏览文件夹..." : "浏览 exe...";
+            if (BrowseButtonIcon is not null)
+            {
+                BrowseButtonIcon.Glyph = isFolder ? "\uE8DA" : "\uE8E5";
+            }
         }
 
         // Native AOT can be brittle around object-valued ComboBoxItem.Tag from XAML.
