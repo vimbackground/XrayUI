@@ -223,23 +223,8 @@ namespace XrayUI.ViewModels
             string? tunOutboundInterfaceName = null;
             if (IsTunMode)
             {
-                // Pre-check: wintun.dll must be present so xray can create the TUN adapter.
-                if (!_tunService.IsWintunAvailable())
-                {
-                    await _dialogs.ShowErrorAsync("TUN mode error",
-                        $"Could not find wintun.dll\nPath: {_tunService.GetExpectedWintunPath()}");
-                    return false;
-                }
-
-                tunOutboundInterfaceName = _tunService.DetectDefaultOutboundInterfaceName();
-                if (string.IsNullOrWhiteSpace(tunOutboundInterfaceName))
-                {
-                    await _dialogs.ShowErrorAsync("TUN mode error",
-                        "Could not determine the default outbound network interface. Please check that Wi-Fi/Ethernet is connected, then try TUN mode again as administrator.");
-                    return false;
-                }
-
-                SystemProxyService.ClearProxy();
+                tunOutboundInterfaceName = await RunTunPreflightAsync("TUN mode error");
+                if (tunOutboundInterfaceName is null) return false;
                 await CleanupPersistedTunRoutesAsync(appSettings);
             }
 
@@ -300,8 +285,8 @@ namespace XrayUI.ViewModels
         /// <summary>
         /// Rebuild xray config from persisted settings and restart xray. No-op if not running.
         /// Always reapplies against the live _activeServer, not the currently-selected list entry.
-        /// Not safe in TUN mode: restarting xray tears down the TUN adapter but we don't
-        /// re-invoke SetupTunRoutes, so traffic would silently fall off the tunnel.
+        /// Not used in TUN mode: changing DNS/routing there is saved and takes effect
+        /// after the user restarts the proxy session.
         /// </summary>
         public async Task ReapplyRoutingAsync()
         {
@@ -312,13 +297,20 @@ namespace XrayUI.ViewModels
             await _reapplyLock.WaitAsync();
             try
             {
-                if (!IsRunning || _activeServer is null) return;
+                var activeServer = _activeServer;
+                if (!IsRunning || activeServer is null) return;
 
                 IsReapplying = true;
                 try
                 {
                     var settings = await _settings.LoadSettingsAsync();
-                    var cfg = XrayConfigBuilder.Build(_activeServer, settings);
+                    settings.LocalMixedPort        = LocalPort;
+                    settings.RoutingMode           = RoutingMode == "智能分流" ? "smart" : "global";
+                    settings.IsTunMode             = IsTunMode;
+                    settings.IsSystemProxyEnabled  = _isSystemProxyEnabled;
+
+                    var cfg = XrayConfigBuilder.Build(activeServer, settings);
+
                     var ok = await _xray.StartAsync(cfg);
                     if (!ok)
                     {
@@ -326,7 +318,16 @@ namespace XrayUI.ViewModels
                             ? "xray 应用新配置失败，已停止。"
                             : _xray.LastError;
                         await HandleReapplyFailureAsync(detail);
+                        return;
                     }
+
+                    if (_isSystemProxyEnabled)
+                    {
+                        SystemProxyService.SetProxy("127.0.0.1", settings.LocalMixedPort);
+                    }
+                    // IsRunning is managed manually by this VM (no subscription to
+                    // _xray.RunningChanged), and the guard at the top of this method
+                    // already proves it's true here — so no reassignment is needed.
                 }
                 catch (Exception ex)
                 {
@@ -375,6 +376,32 @@ namespace XrayUI.ViewModels
         }
 
 
+
+        /// <summary>
+        /// Runs the shared TUN-mode preflight: wintun availability, outbound interface detection,
+        /// and system-proxy clearing. Returns the detected interface name, or null when a check
+        /// fails (the user has already seen an error dialog with <paramref name="errorTitle"/>).
+        /// </summary>
+        private async Task<string?> RunTunPreflightAsync(string errorTitle)
+        {
+            if (!_tunService.IsWintunAvailable())
+            {
+                await _dialogs.ShowErrorAsync(errorTitle,
+                    $"Could not find wintun.dll\nPath: {_tunService.GetExpectedWintunPath()}");
+                return null;
+            }
+
+            var iface = _tunService.DetectDefaultOutboundInterfaceName();
+            if (string.IsNullOrWhiteSpace(iface))
+            {
+                await _dialogs.ShowErrorAsync(errorTitle,
+                    "Could not determine the default outbound network interface. Please check that Wi-Fi/Ethernet is connected, then try again.");
+                return null;
+            }
+
+            SystemProxyService.ClearProxy();
+            return iface;
+        }
 
         private void CleanupTunRoutesSafely()
         {
@@ -655,6 +682,24 @@ namespace XrayUI.ViewModels
                 // When xray is stopped, null = direct connection.
                 () => _xray.IsRunning ? $"socks5://127.0.0.1:{LocalPort}" : null);
             ShowCustomRulesRequested?.Invoke(this, vm);
+        }
+
+        [RelayCommand]
+        private async Task ShowDnsSettings()
+        {
+            var s = await _settings.LoadSettingsAsync();
+            var saved = await _dialogs.ShowDnsSettingsDialogAsync(s, IsTunMode);
+            if (!saved) return;
+
+            await TrySaveSettingsAsync(s, "persist DNS settings");
+
+            if (IsRunning && IsTunMode) return;
+
+            if (IsRunning)
+            {
+                try { await ReapplyRoutingAsync(); }
+                catch (Exception ex) { Debug.WriteLine($"[ControlPanel] Reapply after DNS change failed: {ex.Message}"); }
+            }
         }
 
         // ── Routing mode ──────────────────────────────────────────────────────

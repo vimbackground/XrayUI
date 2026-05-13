@@ -29,5 +29,14 @@ namespace XrayUI.Services
         /// </summary>
         /// <param name="xamlRoot">Override which window the dialog is rooted in. Null = MainWindow.</param>
         Task ShowProgressBarDialogAsync(string title, Func<IProgress<ProgressDialogUpdate>, CancellationToken, Task> work, XamlRoot? xamlRoot = null);
+
+        /// <summary>
+        /// Shows the DNS settings dialog. Mutates <paramref name="settings"/> in-place on save.
+        /// Returns true if the user saved, false if cancelled.
+        /// </summary>
+        /// <param name="isTunMode">Live UI TUN-mode state (not <c>settings.IsTunMode</c>, which is
+        /// the persisted runtime state and lags behind the UI toggle until the next connect).
+        /// Used to gate FakeDNS availability in the dialog.</param>
+        Task<bool> ShowDnsSettingsDialogAsync(AppSettings settings, bool isTunMode);
     }
 }

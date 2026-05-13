@@ -86,6 +86,9 @@
                                 <MenuFlyoutItem Text="自定义规则..."
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.ShowCustomRulesCommand}" />
+                                <MenuFlyoutItem Text="DNS设置"
+                                                IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
+                                                Command="{x:Bind ViewModel.ShowDnsSettingsCommand}" />
                             </MenuFlyoutSubItem>
                         </MenuFlyout>
                     </Button.Flyout>

@@ -25,10 +25,8 @@
                    Margin="0,0,0,16" />
 
         <StackPanel Orientation="Vertical"
-                    
                     Grid.Row="1"
-                    Spacing="8"
-                    Padding="0,0,12,80">
+                Padding="0,0,12,40"    >
 
 
             <Border 
@@ -52,8 +50,6 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -130,35 +126,7 @@
                                        Text="{x:Bind ViewModel.SelectedTransport, Mode=OneWay}"
                                        FontSize="16" />
 
-                            <!-- Row 6: VLESS encryption (PQ) — VLESS only, hidden if empty -->
-                            <TextBlock Grid.Row="6"
-                                       Grid.Column="0"
-                                       Text="加密(PQ)"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       VerticalAlignment="Center"
-                                       Visibility="{x:Bind ViewModel.VlessEncryptionVisibility, Mode=OneWay}" />
-                            <TextBlock Grid.Row="6"
-                                        Grid.Column="1"
-                                        Text="{x:Bind ViewModel.SelectedVlessEncryption, Mode=OneWay}"
-                                        ToolTipService.ToolTip="{x:Bind ViewModel.SelectedVlessEncryption, Mode=OneWay}"
-                                        FontSize="13"
-                                        TextTrimming="CharacterEllipsis"
-                                        Visibility="{x:Bind ViewModel.VlessEncryptionVisibility, Mode=OneWay}" />
 
-                            <!-- Row 7: ECH - VLESS + TLS only, hidden if empty -->
-                            <TextBlock Grid.Row="7"
-                                       Grid.Column="0"
-                                       Text="ECH"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       VerticalAlignment="Center"
-                                       Visibility="{x:Bind ViewModel.EchVisibility, Mode=OneWay}" />
-                            <TextBlock Grid.Row="7"
-                                       Grid.Column="1"
-                                       Text="{x:Bind ViewModel.SelectedEch, Mode=OneWay}"
-                                       ToolTipService.ToolTip="{x:Bind ViewModel.SelectedEch, Mode=OneWay}"
-                                       FontSize="13"
-                                       TextTrimming="CharacterEllipsis"
-                                       Visibility="{x:Bind ViewModel.EchVisibility, Mode=OneWay}" />
                         </Grid>
 
                         <!-- AI 服务监测区 -->

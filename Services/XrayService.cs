@@ -140,7 +140,10 @@ namespace XrayUI.Services
         {
             if (IsRunning)
             {
-                await StopAsync();
+                // Restart path (e.g. ReapplyRoutingAsync): skip the DNS flush — the new xray
+                // session is about to repopulate the resolver cache anyway, and ipconfig
+                // /flushdns adds ~hundreds of ms to every routing/DNS/proxy-mode toggle.
+                await StopCoreAsync();
             }
 
             LastError = string.Empty;
@@ -222,6 +225,17 @@ namespace XrayUI.Services
 
         public async Task StopAsync()
         {
+            await StopCoreAsync();
+            await FlushSystemDnsCacheAsync();
+        }
+
+        /// <summary>
+        /// Kills the xray process and tears down state, without flushing the OS DNS cache.
+        /// Used by StartAsync on the restart path so reapply doesn't pay the ipconfig
+        /// /flushdns cost on every routing/DNS/proxy-mode toggle. No-op if not running.
+        /// </summary>
+        private async Task StopCoreAsync()
+        {
             if (_process is null)
             {
                 return;
@@ -249,6 +263,36 @@ namespace XrayUI.Services
 
             AppendLog("[已停止]");
             RunningChanged?.Invoke(this, false);
+        }
+
+        /// <summary>
+        /// Best-effort `ipconfig /flushdns` to clear any cached fake IPs (198.18.0.0/15) that
+        /// might linger in the Windows resolver cache after a FakeDNS-enabled run. Harmless
+        /// when FakeDNS was not used. Runs unconditionally on every stop to keep XrayService
+        /// stateless w.r.t. last-run config.
+        /// </summary>
+        private async Task FlushSystemDnsCacheAsync()
+        {
+            try
+            {
+                using var p = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "ipconfig",
+                    Arguments = "/flushdns",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                });
+                if (p is null) return;
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                try { await p.WaitForExitAsync(cts.Token); }
+                catch (OperationCanceledException) { try { p.Kill(); } catch { } }
+            }
+            catch
+            {
+                // best-effort, never block stop on this
+            }
         }
 
         public void StopForShutdown()
