@@ -583,11 +583,21 @@ namespace XrayUI.Services
                 ?? (settings.IsTunMode ? "223.5.5.5" : "114.114.114.114");
             var proxyDns = settings.ProxyDnsServer ?? "8.8.8.8";
 
+            // skipFallback semantics (xray-core):
+            //   1) Servers with `domains` match by domain first; if none match, xray walks
+            //      the fallback list — servers WITHOUT `skipFallback: true`.
+            //   2) directEntry / localEntry are domain-matched only; we set skipFallback so
+            //      they don't accidentally answer queries that didn't match their `domains`.
+            //   3) proxyEntry has no `domains` and no skipFallback, so it is the sole catch-all
+            //      fallback. Its address (e.g. 8.8.8.8) is non-CN, so the routing rules send
+            //      these DNS queries out via the proxy outbound — that's what realises the
+            //      "代理 DNS 用于境外域名" intent.
             var directEntry = new JsonObject
             {
-                ["address"]   = directDns,
-                ["domains"]   = CreateStringArray("geosite:cn"),
-                ["expectIPs"] = CreateStringArray("geoip:cn"),
+                ["address"]      = directDns,
+                ["domains"]      = CreateStringArray("geosite:cn"),
+                ["expectIPs"]    = CreateStringArray("geoip:cn"),
+                ["skipFallback"] = true,
             };
 
             var localEntry = new JsonObject
@@ -599,8 +609,7 @@ namespace XrayUI.Services
 
             var proxyEntry = new JsonObject
             {
-                ["address"]      = proxyDns,
-                ["skipFallback"] = true,
+                ["address"] = proxyDns,
             };
 
             var servers = new JsonArray();
