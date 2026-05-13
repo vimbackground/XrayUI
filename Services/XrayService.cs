@@ -247,7 +247,7 @@ namespace XrayUI.Services
                 _process = null;
             }
 
-            FlushSystemDnsCache();
+            await FlushSystemDnsCacheAsync();
 
             AppendLog("[已停止]");
             RunningChanged?.Invoke(this, false);
@@ -259,7 +259,7 @@ namespace XrayUI.Services
         /// when FakeDNS was not used. Runs unconditionally on every stop to keep XrayService
         /// stateless w.r.t. last-run config.
         /// </summary>
-        private void FlushSystemDnsCache()
+        private async Task FlushSystemDnsCacheAsync()
         {
             try
             {
@@ -272,7 +272,10 @@ namespace XrayUI.Services
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                 });
-                p?.WaitForExit(2000);
+                if (p is null) return;
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                try { await p.WaitForExitAsync(cts.Token); }
+                catch (OperationCanceledException) { try { p.Kill(); } catch { } }
             }
             catch
             {

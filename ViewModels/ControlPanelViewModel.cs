@@ -325,8 +325,9 @@ namespace XrayUI.ViewModels
                     {
                         SystemProxyService.SetProxy("127.0.0.1", settings.LocalMixedPort);
                     }
-
-                    IsRunning = true;
+                    // IsRunning is managed manually by this VM (no subscription to
+                    // _xray.RunningChanged), and the guard at the top of this method
+                    // already proves it's true here — so no reassignment is needed.
                 }
                 catch (Exception ex)
                 {
