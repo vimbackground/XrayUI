@@ -140,7 +140,10 @@ namespace XrayUI.Services
         {
             if (IsRunning)
             {
-                await StopAsync();
+                // Restart path (e.g. ReapplyRoutingAsync): skip the DNS flush — the new xray
+                // session is about to repopulate the resolver cache anyway, and ipconfig
+                // /flushdns adds ~hundreds of ms to every routing/DNS/proxy-mode toggle.
+                await StopCoreAsync();
             }
 
             LastError = string.Empty;
@@ -222,6 +225,17 @@ namespace XrayUI.Services
 
         public async Task StopAsync()
         {
+            await StopCoreAsync();
+            await FlushSystemDnsCacheAsync();
+        }
+
+        /// <summary>
+        /// Kills the xray process and tears down state, without flushing the OS DNS cache.
+        /// Used by StartAsync on the restart path so reapply doesn't pay the ipconfig
+        /// /flushdns cost on every routing/DNS/proxy-mode toggle. No-op if not running.
+        /// </summary>
+        private async Task StopCoreAsync()
+        {
             if (_process is null)
             {
                 return;
@@ -246,8 +260,6 @@ namespace XrayUI.Services
                 _process.Dispose();
                 _process = null;
             }
-
-            await FlushSystemDnsCacheAsync();
 
             AppendLog("[已停止]");
             RunningChanged?.Invoke(this, false);
