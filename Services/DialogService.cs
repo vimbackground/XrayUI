@@ -802,10 +802,11 @@ namespace XrayUI.Services
             };
 
             var directPresets = CreatePresetButtons(directBox,
-                ("阿里", "223.5.5.5"),
-                ("腾讯", "119.29.29.29"),
-                ("114", "114.114.114.114"),
-                ("DoH", "https://dns.alidns.com/dns-query"));
+                ("阿里",      "223.5.5.5"),
+                ("腾讯",      "119.29.29.29"),
+                ("114",       "114.114.114.114"),
+                ("DoH",       "https://dns.alidns.com/dns-query"),
+                ("localhost", "localhost"));
 
             var proxyPresets = CreatePresetButtons(proxyBox,
                 ("谷歌", "8.8.8.8"),
