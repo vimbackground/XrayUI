@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using XrayUI.Helpers;
@@ -39,6 +40,10 @@ namespace XrayUI.ViewModels
 
         public Func<ServerEntry?> GetSelectedServer { get; set; } = () => null;
 
+        public Func<IEnumerable<ServerEntry>> GetAllServers { get; set; } = () => Array.Empty<ServerEntry>();
+
+        public Func<bool> CanStartSelectedServer { get; set; } = () => false;
+
         // Snapshot of the server xray is actually running with, so reapply restarts
         // against the live session rather than whatever is now selected in the list.
         private ServerEntry? _activeServer;
@@ -61,6 +66,7 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(IsModeToggleEnabled));
                     OnPropertyChanged(nameof(IsTunToggleEnabled));
                     OnPropertyChanged(nameof(IsNotReapplying));
+                    NotifyStartStopStateChanged();
                     OnPropertyChanged(nameof(StatusText));
                 }
             }
@@ -69,6 +75,14 @@ namespace XrayUI.ViewModels
         /// <summary>Inverse of <see cref="IsReapplying"/> for x:Bind IsEnabled targets
         /// (x:Bind doesn't support expression negation).</summary>
         public bool IsNotReapplying => !_isReapplying;
+
+        public bool CanStartStop => !IsReapplying && (IsRunning || CanStartSelectedServer());
+
+        public void NotifyStartStopStateChanged()
+        {
+            OnPropertyChanged(nameof(CanStartStop));
+            StartStopCommand.NotifyCanExecuteChanged();
+        }
 
         public event EventHandler? ShowLogsRequested;
         public event EventHandler? ShowPersonalizeRequested;
@@ -128,14 +142,15 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(IsModeToggleEnabled));
             OnPropertyChanged(nameof(IsTunToggleEnabled));
+            NotifyStartStopStateChanged();
         }
 
         // ── Start / Stop ──────────────────────────────────────────────────────
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanStartStop))]
         private async Task StartStop()
         {
-            if (IsReapplying) return;
+            if (!CanStartStop) return;
 
             try
             {
@@ -228,7 +243,7 @@ namespace XrayUI.ViewModels
                 await CleanupPersistedTunRoutesAsync(appSettings);
             }
 
-            var configJson = XrayConfigBuilder.Build(server, appSettings, tunOutboundInterfaceName);
+            var configJson = XrayConfigBuilder.Build(server, appSettings, tunOutboundInterfaceName, GetAllServers());
             var ok = await _xray.StartAsync(configJson);
 
             if (!ok)
@@ -309,7 +324,7 @@ namespace XrayUI.ViewModels
                     settings.IsTunMode             = IsTunMode;
                     settings.IsSystemProxyEnabled  = _isSystemProxyEnabled;
 
-                    var cfg = XrayConfigBuilder.Build(activeServer, settings);
+                    var cfg = XrayConfigBuilder.Build(activeServer, settings, availableServers: GetAllServers());
 
                     var ok = await _xray.StartAsync(cfg);
                     if (!ok)

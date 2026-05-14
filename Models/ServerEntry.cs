@@ -15,6 +15,7 @@ namespace XrayUI.Models
             Host = string.Empty;
             Protocol = string.Empty;
             Encryption = string.Empty;
+            Username = string.Empty;
             Password = string.Empty;
             Uuid = string.Empty;
             Network = "tcp";
@@ -31,6 +32,8 @@ namespace XrayUI.Models
             Flow = string.Empty;
             VlessEncryption = string.Empty;
             Finalmask = string.Empty;
+            ChainEntryServerId = string.Empty;
+            ChainExitServerId = string.Empty;
         }
 
         /// <summary>ID of the subscription this node was imported from; empty = manually added.</summary>
@@ -46,9 +49,10 @@ namespace XrayUI.Models
         [ObservableProperty]
         public partial int Port { get; set; }
 
-        /// <summary>ss | vmess | vless | hysteria2 | trojan</summary>
+        /// <summary>ss | vmess | vless | hysteria2 | trojan | socks | chain</summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayProtocol))]
+        [NotifyPropertyChangedFor(nameof(IsChain))]
         public partial string Protocol { get; set; }
 
         /// <summary>Cipher for ss; "TLS" or "Reality" label for vless/vmess/hysteria2</summary>
@@ -62,6 +66,9 @@ namespace XrayUI.Models
         public partial bool IsFavorite { get; set; }
 
         // Auth
+        [ObservableProperty]
+        public partial string Username { get; set; }
+
         [ObservableProperty]
         public partial string Password { get; set; }
 
@@ -124,6 +131,13 @@ namespace XrayUI.Models
         [ObservableProperty]
         public partial string Finalmask { get; set; }
 
+        // Proxy chain
+        [ObservableProperty]
+        public partial string ChainEntryServerId { get; set; }
+
+        [ObservableProperty]
+        public partial string ChainExitServerId { get; set; }
+
         public string Id
         {
             get => _id;
@@ -138,8 +152,13 @@ namespace XrayUI.Models
             "vless" => "VLESS",
             "hysteria2" => "Hysteria 2",
             "trojan" => "Trojan",
+            "socks" => "SOCKS",
+            "chain" => "ProxyChain",
             _ => Protocol ?? string.Empty
         };
+
+        [JsonIgnore]
+        public bool IsChain => string.Equals(Protocol, "chain", System.StringComparison.OrdinalIgnoreCase);
 
         public void RefreshProtocolColor() => OnPropertyChanged(nameof(Protocol));
     }

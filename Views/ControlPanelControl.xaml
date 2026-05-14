@@ -127,7 +127,7 @@
                 <ToggleButton MinWidth="88"
                               Content="{x:Bind ViewModel.StartStopButtonContent, Mode=OneWay}"
                               IsChecked="{x:Bind ViewModel.StartStopButtonChecked, Mode=OneWay}"
-                              IsEnabled="{x:Bind ViewModel.IsNotReapplying, Mode=OneWay}"
+                              IsEnabled="{x:Bind ViewModel.CanStartStop, Mode=OneWay}"
                               Command="{x:Bind ViewModel.StartStopCommand}" />
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Center"
