@@ -24,11 +24,6 @@ namespace XrayUI.ViewModels
 
     public partial class ServerListViewModel : ObservableObject, IDisposable
     {
-        private static readonly HttpClient Http = new()
-        {
-            Timeout = TimeSpan.FromSeconds(15)
-        };
-
         private const string AllChipKey            = "__all__";
         private const string UngroupedChipKey      = "__ungrouped__";
         private const string FavoritesChipKey      = "__favorites__";
@@ -37,6 +32,16 @@ namespace XrayUI.ViewModels
         private const string FavoritesName         = "收藏列表";
         private const string UnnamedSubLabel       = "(未命名订阅)";
         private const string OrphanSubLabel        = "(已删除订阅)";
+        private const string SubscriptionUserAgent = "v2rayN/7.0";
+
+        private static readonly HttpClient Http = CreateSubscriptionHttpClient();
+
+        private static HttpClient CreateSubscriptionHttpClient()
+        {
+            var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(SubscriptionUserAgent);
+            return client;
+        }
 
         private readonly IDialogService  _dialogs;
         private readonly SettingsService _settings;
@@ -93,7 +98,10 @@ namespace XrayUI.ViewModels
                 if (_servers != null)
                     _servers.CollectionChanged -= OnServersCollectionChanged;
                 if (SetProperty(ref _servers, value) && _servers != null)
+                {
                     _servers.CollectionChanged += OnServersCollectionChanged;
+                    NotifySelectedServerRunStateChanged();
+                }
             }
         }
 
@@ -248,6 +256,29 @@ namespace XrayUI.ViewModels
 
         public bool CanRemoveSelectedServer => SelectedServerCount > 0 && !HasLockedSelectedServer;
 
+        public bool CanRunSelectedServer => CanRunServer(SelectedServer);
+
+        public bool CanRunServer(ServerEntry? server)
+        {
+            if (server is null) return false;
+            if (!server.IsChain) return true;
+
+            return IsResolvableChainEndpoint(server.ChainEntryServerId)
+                   && IsResolvableChainEndpoint(server.ChainExitServerId)
+                   && !string.Equals(
+                       server.ChainEntryServerId,
+                       server.ChainExitServerId,
+                       StringComparison.Ordinal);
+        }
+
+        private bool IsResolvableChainEndpoint(string serverId)
+        {
+            return !string.IsNullOrWhiteSpace(serverId)
+                   && Servers.Any(server =>
+                       !server.IsChain
+                       && string.Equals(server.Id, serverId, StringComparison.Ordinal));
+        }
+
         private List<ServerEntry> GetSelectedServersSnapshot() => _selectedServers.Count > 0
             ? _selectedServers.ToList()
             : SelectedServer is null ? new List<ServerEntry>() : new List<ServerEntry> { SelectedServer };
@@ -353,6 +384,7 @@ namespace XrayUI.ViewModels
             {
                 _suppressRebuild = false;
                 if (rebuild) RebuildAll();
+                NotifySelectedServerRunStateChanged();
             }
         }
 
@@ -371,6 +403,7 @@ namespace XrayUI.ViewModels
             if (e.Action == NotifyCollectionChangedAction.Move) return;
 
             RebuildAll();
+            NotifySelectedServerRunStateChanged();
         }
 
         private void RebuildGroupChips()
@@ -519,10 +552,19 @@ namespace XrayUI.ViewModels
 
         private void OnSelectedItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(ServerEntry.IsActive)) return;
-            NotifyServerActionStateChanged();
-            if (_sortMode == ServerSortMode.Active)
-                RebuildGroupedView();
+            if (e.PropertyName is nameof(ServerEntry.Protocol)
+                or nameof(ServerEntry.ChainEntryServerId)
+                or nameof(ServerEntry.ChainExitServerId))
+            {
+                NotifySelectedServerRunStateChanged();
+            }
+
+            if (e.PropertyName == nameof(ServerEntry.IsActive))
+            {
+                NotifyServerActionStateChanged();
+                if (_sortMode == ServerSortMode.Active)
+                    RebuildGroupedView();
+            }
         }
 
         private void NotifyServerActionStateChanged()
@@ -534,6 +576,12 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(CanEditSelectedServer));
             OnPropertyChanged(nameof(CanRemoveSelectedServer));
             OnPropertyChanged(nameof(CanReorderInCurrentChip));
+            NotifySelectedServerRunStateChanged();
+        }
+
+        private void NotifySelectedServerRunStateChanged()
+        {
+            OnPropertyChanged(nameof(CanRunSelectedServer));
         }
 
         // ── Import via link ───────────────────────────────────────────────────
@@ -802,6 +850,17 @@ namespace XrayUI.ViewModels
             await SaveAsync();
         }
 
+        [RelayCommand]
+        private async Task AddChainProxy()
+        {
+            var entry = await _dialogs.ShowChainProxyDialogAsync(Servers);
+            if (entry == null) return;
+
+            Servers.Add(entry);
+            SelectedServer = entry;
+            await SaveAsync();
+        }
+
         // ── Edit ──────────────────────────────────────────────────────────────
 
         [RelayCommand]
@@ -809,6 +868,15 @@ namespace XrayUI.ViewModels
         {
             if (SelectedServer is null) return;
             if (HasMultipleSelectedServers) return;
+
+            if (SelectedServer.IsChain)
+            {
+                var chainResult = await _dialogs.ShowChainProxyDialogAsync(Servers, SelectedServer);
+                if (chainResult == null) return;
+
+                await SaveAsync();
+                return;
+            }
 
             // Pass existing so dialog can pre-populate; dialog mutates and returns same ref on Primary
             var result = await _dialogs.ShowEditServerDialogAsync(SelectedServer);

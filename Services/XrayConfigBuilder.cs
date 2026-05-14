@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using XrayUI.Models;
@@ -13,20 +14,28 @@ namespace XrayUI.Services
     public static class XrayConfigBuilder
     {
         private const string DefaultLogLevel = "info";
+        private const string ProxyOutboundTag = "proxy";
+        private const string DirectOutboundTag = "direct";
+        private const string BlockOutboundTag = "block";
+        private const string ChainEntryOutboundTag = "chain-entry";
 
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
             WriteIndented = true
         };
 
-        public static string Build(ServerEntry server, AppSettings settings, string? tunOutboundInterfaceName = null)
+        public static string Build(
+            ServerEntry server,
+            AppSettings settings,
+            string? tunOutboundInterfaceName = null,
+            IEnumerable<ServerEntry>? availableServers = null)
         {
             var config = new JsonObject
             {
                 ["log"] = BuildLog(settings),
                 ["dns"] = BuildDns(settings),
                 ["inbounds"] = BuildInbounds(settings),
-                ["outbounds"] = BuildOutbounds(server, settings, tunOutboundInterfaceName),
+                ["outbounds"] = BuildOutbounds(server, settings, tunOutboundInterfaceName, availableServers),
                 ["routing"] = BuildRouting(settings)
             };
 
@@ -125,19 +134,35 @@ namespace XrayUI.Services
             };
         }
 
-        private static JsonArray BuildOutbounds(ServerEntry server, AppSettings settings, string? tunOutboundInterfaceName)
+        private static JsonArray BuildOutbounds(
+            ServerEntry server,
+            AppSettings settings,
+            string? tunOutboundInterfaceName,
+            IEnumerable<ServerEntry>? availableServers)
         {
-            var proxy = BuildProxyOutbound(server);
+            var list = new JsonArray();
+
+            if (server.IsChain)
+            {
+                var (entryServer, exitServer) = ResolveChainServers(server, availableServers);
+                var proxy = BuildProxyOutbound(exitServer, ProxyOutboundTag);
+                var chainEntry = BuildProxyOutbound(entryServer, ChainEntryOutboundTag);
+                ApplyProxySettings(proxy, ChainEntryOutboundTag);
+                AddNode(list, proxy);
+                AddNode(list, chainEntry);
+            }
+            else
+            {
+                AddNode(list, BuildProxyOutbound(server, ProxyOutboundTag));
+            }
 
             var direct = new JsonObject
             {
-                ["tag"] = "direct",
+                ["tag"] = DirectOutboundTag,
                 ["protocol"] = "freedom",
                 ["settings"] = new JsonObject()
             };
 
-            var list = new JsonArray();
-            AddNode(list, proxy);
             AddNode(list, direct);
 
             // block outbound is needed by:
@@ -148,13 +173,13 @@ namespace XrayUI.Services
                 && settings.CustomRules is { } rules
                 && rules.Any(r => r.IsEnabled
                                   && !string.IsNullOrWhiteSpace(r.Match)
-                                  && r.OutboundTag == "block");
+                                  && r.OutboundTag == BlockOutboundTag);
 
             if (settings.IsTunMode || customRulesUseBlock)
             {
                 AddNode(list, new JsonObject
                 {
-                    ["tag"] = "block",
+                    ["tag"] = BlockOutboundTag,
                     ["protocol"] = "blackhole",
                     ["settings"] = new JsonObject()
                 });
@@ -178,12 +203,52 @@ namespace XrayUI.Services
                 foreach (var outbound in list.OfType<JsonObject>())
                 {
                     var tag = outbound["tag"]?.GetValue<string>();
-                    if (tag is "proxy" or "direct")
+                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag)
                         ApplyOutboundInterface(outbound, tunOutboundInterfaceName);
                 }
             }
 
             return list;
+        }
+
+        private static (ServerEntry entryServer, ServerEntry exitServer) ResolveChainServers(
+            ServerEntry chain,
+            IEnumerable<ServerEntry>? availableServers)
+        {
+            if (availableServers is null)
+            {
+                throw new InvalidOperationException("链式代理需要服务器列表才能解析入口和出口节点。");
+            }
+
+            ServerEntry? entryServer = null;
+            ServerEntry? exitServer = null;
+            foreach (var s in availableServers)
+            {
+                if (entryServer is null && s.Id == chain.ChainEntryServerId) entryServer = s;
+                if (exitServer is null && s.Id == chain.ChainExitServerId) exitServer = s;
+                if (entryServer is not null && exitServer is not null) break;
+            }
+
+            if (entryServer is null || exitServer is null)
+            {
+                throw new InvalidOperationException("链式代理引用的入口或出口节点不存在，请重新编辑该链式代理。");
+            }
+
+            if (entryServer.IsChain || exitServer.IsChain)
+            {
+                throw new InvalidOperationException("链式代理不能嵌套链式代理，请重新选择入口和出口节点。");
+            }
+
+            return (entryServer, exitServer);
+        }
+
+        private static void ApplyProxySettings(JsonObject outbound, string tag)
+        {
+            outbound["proxySettings"] = new JsonObject
+            {
+                ["tag"] = tag,
+                ["transportLayer"] = true
+            };
         }
 
         private static void ApplyOutboundInterface(JsonObject outbound, string interfaceName)
@@ -205,19 +270,20 @@ namespace XrayUI.Services
             sockopt["interface"] = interfaceName;
         }
 
-        private static JsonObject BuildProxyOutbound(ServerEntry server)
+        private static JsonObject BuildProxyOutbound(ServerEntry server, string tag)
         {
             return server.Protocol.ToLowerInvariant() switch
             {
-                "vmess" => BuildVmessOutbound(server),
-                "vless" => BuildVlessOutbound(server),
-                "hysteria2" => BuildHysteria2Outbound(server),
-                "trojan" => BuildTrojanOutbound(server),
-                _ => BuildSsOutbound(server)
+                "vmess" => BuildVmessOutbound(server, tag),
+                "vless" => BuildVlessOutbound(server, tag),
+                "hysteria2" => BuildHysteria2Outbound(server, tag),
+                "trojan" => BuildTrojanOutbound(server, tag),
+                "socks" => BuildSocksOutbound(server, tag),
+                _ => BuildSsOutbound(server, tag)
             };
         }
 
-        private static JsonObject BuildSsOutbound(ServerEntry server)
+        private static JsonObject BuildSsOutbound(ServerEntry server, string tag)
         {
             var servers = new JsonArray();
             AddNode(servers, new JsonObject
@@ -230,7 +296,7 @@ namespace XrayUI.Services
 
             var outbound = new JsonObject
             {
-                ["tag"] = "proxy",
+                ["tag"] = tag,
                 ["protocol"] = "shadowsocks",
                 ["settings"] = new JsonObject
                 {
@@ -246,7 +312,7 @@ namespace XrayUI.Services
             return outbound;
         }
 
-        private static JsonObject BuildVmessOutbound(ServerEntry server)
+        private static JsonObject BuildVmessOutbound(ServerEntry server, string tag)
         {
             var users = new JsonArray();
             AddNode(users, new JsonObject
@@ -266,7 +332,7 @@ namespace XrayUI.Services
 
             return new JsonObject
             {
-                ["tag"] = "proxy",
+                ["tag"] = tag,
                 ["protocol"] = "vmess",
                 ["settings"] = new JsonObject
                 {
@@ -276,7 +342,7 @@ namespace XrayUI.Services
             };
         }
 
-        private static JsonObject BuildVlessOutbound(ServerEntry server)
+        private static JsonObject BuildVlessOutbound(ServerEntry server, string tag)
         {
             var user = new JsonObject
             {
@@ -302,7 +368,7 @@ namespace XrayUI.Services
 
             return new JsonObject
             {
-                ["tag"] = "proxy",
+                ["tag"] = tag,
                 ["protocol"] = "vless",
                 ["settings"] = new JsonObject
                 {
@@ -312,7 +378,7 @@ namespace XrayUI.Services
             };
         }
 
-        private static JsonObject BuildHysteria2Outbound(ServerEntry server)
+        private static JsonObject BuildHysteria2Outbound(ServerEntry server, string tag)
         {
             var sni = string.IsNullOrWhiteSpace(server.Sni) ? server.Host : server.Sni;
 
@@ -335,7 +401,7 @@ namespace XrayUI.Services
 
             return new JsonObject
             {
-                ["tag"] = "proxy",
+                ["tag"] = tag,
                 ["protocol"] = "hysteria",
                 ["settings"] = new JsonObject
                 {
@@ -347,11 +413,11 @@ namespace XrayUI.Services
             };
         }
 
-        private static JsonObject BuildTrojanOutbound(ServerEntry server)
+        private static JsonObject BuildTrojanOutbound(ServerEntry server, string tag)
         {
             return new JsonObject
             {
-                ["tag"] = "proxy",
+                ["tag"] = tag,
                 ["protocol"] = "trojan",
                 ["settings"] = new JsonObject
                 {
@@ -360,6 +426,40 @@ namespace XrayUI.Services
                     ["password"] = server.Password
                 },
                 ["streamSettings"] = BuildStreamSettings(server)
+            };
+        }
+
+        private static JsonObject BuildSocksOutbound(ServerEntry server, string tag)
+        {
+            var serverObject = new JsonObject
+            {
+                ["address"] = server.Host,
+                ["port"] = server.Port,
+            };
+
+            if (!string.IsNullOrWhiteSpace(server.Username)
+                || !string.IsNullOrWhiteSpace(server.Password))
+            {
+                var users = new JsonArray();
+                AddNode(users, new JsonObject
+                {
+                    ["user"] = server.Username,
+                    ["pass"] = server.Password,
+                });
+                serverObject["users"] = users;
+            }
+
+            var servers = new JsonArray();
+            AddNode(servers, serverObject);
+
+            return new JsonObject
+            {
+                ["tag"] = tag,
+                ["protocol"] = "socks",
+                ["settings"] = new JsonObject
+                {
+                    ["servers"] = servers
+                }
             };
         }
 
@@ -498,14 +598,14 @@ namespace XrayUI.Services
                 AddNode(rules, new JsonObject
                 {
                     ["type"] = "field",
-                    ["outboundTag"] = "direct",
+                    ["outboundTag"] = DirectOutboundTag,
                     ["process"] = CreateStringArray("self/", "xray/")
                 });
 
                 AddNode(rules, new JsonObject
                 {
                     ["type"] = "field",
-                    ["outboundTag"] = "block",
+                    ["outboundTag"] = BlockOutboundTag,
                     ["network"] = "udp",
                     ["port"] = "443"
                 });
@@ -516,7 +616,7 @@ namespace XrayUI.Services
                 AddNode(rules, new JsonObject
                 {
                     ["type"] = "field",
-                    ["outboundTag"] = "proxy",
+                    ["outboundTag"] = ProxyOutboundTag,
                     ["network"] = "tcp,udp"
                 });
 
@@ -554,7 +654,7 @@ namespace XrayUI.Services
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
-                ["outboundTag"] = "proxy",
+                ["outboundTag"] = ProxyOutboundTag,
                 ["domain"] = CreateStringArray(
 					"geosite:google"
 				)
@@ -562,19 +662,19 @@ namespace XrayUI.Services
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
-                ["outboundTag"] = "direct",
+                ["outboundTag"] = DirectOutboundTag,
                 ["domain"] = CreateStringArray("geosite:cn", "geosite:private")
             });
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
-                ["outboundTag"] = "direct",
+                ["outboundTag"] = DirectOutboundTag,
                 ["ip"] = CreateStringArray("geoip:cn", "geoip:private")
             });
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
-                ["outboundTag"] = "proxy",
+                ["outboundTag"] = ProxyOutboundTag,
                 ["network"] = "tcp,udp"
             });
 

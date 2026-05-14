@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
@@ -38,6 +40,11 @@ namespace XrayUI.ViewModels
             _aiUnlockCheck = aiUnlockCheck;
             ResetAiUnlockDisplay();
         }
+
+        public Func<IEnumerable<ServerEntry>> GetAllServers { get; set; } = () => Array.Empty<ServerEntry>();
+
+        private ServerEntry? ResolveChainServer(string id)
+            => string.IsNullOrEmpty(id) ? null : GetAllServers().FirstOrDefault(s => s.Id == id);
 
         public ServerEntry? SelectedServer
         {
@@ -84,18 +91,54 @@ namespace XrayUI.ViewModels
 
         public string SelectedName => SelectedServer?.Name ?? "未选择服务器";
 
-        public string SelectedHost => SelectedServer?.Host ?? "-";
+        public string SelectedHostLabel
+            => SelectedServer?.IsChain == true ? "入口" : "地址";
 
-        public string SelectedPort => SelectedServer?.Port.ToString() ?? "-";
+        public string SelectedHost
+            => SelectedServer?.IsChain == true
+                ? ResolveChainServer(SelectedServer.ChainEntryServerId)?.Name ?? "(入口节点缺失)"
+                : SelectedServer?.Host ?? "-";
+
+        public string SelectedPortLabel
+            => SelectedServer?.IsChain == true ? "出口" : "端口";
+
+        public string SelectedPort
+            => SelectedServer?.IsChain == true
+                ? ResolveChainServer(SelectedServer.ChainExitServerId)?.Name ?? "(出口节点缺失)"
+                : SelectedServer?.Port.ToString() ?? "-";
 
         public string SelectedProtocol => SelectedServer?.DisplayProtocol ?? "-";
 
         public string SelectedSecurityLabel
-            => string.Equals(SelectedServer?.Protocol, "ss", StringComparison.OrdinalIgnoreCase)
-                ? "加密"
-                : "安全";
+            => (SelectedServer?.Protocol?.ToLowerInvariant()) switch
+            {
+                "ss" => "加密",
+                "socks" => "认证",
+                "chain" => "链路",
+                _ => "安全"
+            };
 
-        public string SelectedEncryption => SelectedServer?.Encryption ?? "-";
+        public string SelectedEncryption
+        {
+            get
+            {
+                if (SelectedServer is null) return "-";
+                switch (SelectedServer.Protocol?.ToLowerInvariant())
+                {
+                    case "socks":
+                        return string.IsNullOrWhiteSpace(SelectedServer.Username)
+                               && string.IsNullOrWhiteSpace(SelectedServer.Password)
+                            ? "无认证"
+                            : "用户名/密码";
+                    case "chain":
+                        var entry = ResolveChainServer(SelectedServer.ChainEntryServerId)?.DisplayProtocol ?? "?";
+                        var exit = ResolveChainServer(SelectedServer.ChainExitServerId)?.DisplayProtocol ?? "?";
+                        return $"{entry} -> {exit}";
+                    default:
+                        return SelectedServer.Encryption ?? "-";
+                }
+            }
+        }
 
         public string SelectedShareLink
             => SelectedServer is null ? string.Empty : (NodeLinkSerializer.ToLink(SelectedServer) ?? string.Empty);
@@ -123,6 +166,9 @@ namespace XrayUI.ViewModels
                 };
             }
         }
+
+        public Visibility SelectedTransportVisibility
+            => SelectedServer?.IsChain == true ? Visibility.Collapsed : Visibility.Visible;
 
         public string LatencyText
         {
@@ -231,22 +277,40 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedName));
                     break;
                 case nameof(ServerEntry.Host):
+                    OnPropertyChanged(nameof(SelectedHostLabel));
                     OnPropertyChanged(nameof(SelectedHost));
                     CancelPendingLatencyTest();
                     ResetLatencyDisplay();
                     break;
                 case nameof(ServerEntry.Port):
+                    OnPropertyChanged(nameof(SelectedPortLabel));
                     OnPropertyChanged(nameof(SelectedPort));
                     CancelPendingLatencyTest();
                     ResetLatencyDisplay();
                     break;
                 case nameof(ServerEntry.Protocol):
                     OnPropertyChanged(nameof(SelectedProtocol));
+                    OnPropertyChanged(nameof(SelectedHostLabel));
+                    OnPropertyChanged(nameof(SelectedHost));
+                    OnPropertyChanged(nameof(SelectedPortLabel));
+                    OnPropertyChanged(nameof(SelectedPort));
                     OnPropertyChanged(nameof(SelectedSecurityLabel));
                     OnPropertyChanged(nameof(SelectedTransport));
+                    OnPropertyChanged(nameof(SelectedTransportVisibility));
                     OnPropertyChanged(nameof(SelectedShareLink));
                     break;
                 case nameof(ServerEntry.Encryption):
+                case nameof(ServerEntry.Username):
+                case nameof(ServerEntry.Password):
+                    OnPropertyChanged(nameof(SelectedEncryption));
+                    OnPropertyChanged(nameof(SelectedShareLink));
+                    break;
+                case nameof(ServerEntry.ChainEntryServerId):
+                    OnPropertyChanged(nameof(SelectedHost));
+                    OnPropertyChanged(nameof(SelectedEncryption));
+                    break;
+                case nameof(ServerEntry.ChainExitServerId):
+                    OnPropertyChanged(nameof(SelectedPort));
                     OnPropertyChanged(nameof(SelectedEncryption));
                     break;
                 case nameof(ServerEntry.Security):
@@ -270,12 +334,15 @@ namespace XrayUI.ViewModels
         private void NotifySelectedServerFieldsChanged()
         {
             OnPropertyChanged(nameof(SelectedName));
+            OnPropertyChanged(nameof(SelectedHostLabel));
             OnPropertyChanged(nameof(SelectedHost));
+            OnPropertyChanged(nameof(SelectedPortLabel));
             OnPropertyChanged(nameof(SelectedPort));
             OnPropertyChanged(nameof(SelectedProtocol));
             OnPropertyChanged(nameof(SelectedSecurityLabel));
             OnPropertyChanged(nameof(SelectedEncryption));
             OnPropertyChanged(nameof(SelectedTransport));
+            OnPropertyChanged(nameof(SelectedTransportVisibility));
             OnPropertyChanged(nameof(SelectedShareLink));
             OnPropertyChanged(nameof(CanTestLatency));
             TestLatencyCommand.NotifyCanExecuteChanged();

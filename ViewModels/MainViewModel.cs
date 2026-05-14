@@ -78,6 +78,9 @@ namespace XrayUI.ViewModels
 
             // Wire ControlPanel so it knows the current selected server
             ControlPanel.GetSelectedServer = () => ServerList.SelectedServer;
+            ControlPanel.GetAllServers = () => ServerList.Servers;
+            ControlPanel.CanStartSelectedServer = () => ServerList.CanRunSelectedServer;
+            ServerDetail.GetAllServers = () => ServerList.Servers;
 
             ServerList.PropertyChanged   += OnServerListPropertyChanged;
             ControlPanel.PropertyChanged += OnControlPanelPropertyChanged;
@@ -187,6 +190,7 @@ namespace XrayUI.ViewModels
 
             if (target is null) return;
             ServerList.SelectedServer = target;
+            if (!ControlPanel.StartStopCommand.CanExecute(null)) return;
             await ControlPanel.StartStopCommand.ExecuteAsync(null);
         }
 
@@ -197,6 +201,7 @@ namespace XrayUI.ViewModels
             return ControlPanel.IsRunning
                 && !ControlPanel.IsReapplying
                 && ServerList.SelectedServer is not null
+                && ServerList.CanRunSelectedServer
                 && !ReferenceEquals(ServerList.SelectedServer, _activeServer);
         }
 
@@ -243,6 +248,12 @@ namespace XrayUI.ViewModels
             {
                 ServerDetail.SelectedServer = ServerList.SelectedServer;
                 OnPropertyChanged(nameof(ActiveServerName));
+                ControlPanel.NotifyStartStopStateChanged();
+                SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
+            }
+            else if (e.PropertyName == nameof(ServerListViewModel.CanRunSelectedServer))
+            {
+                ControlPanel.NotifyStartStopStateChanged();
                 SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
             }
         }
