@@ -129,7 +129,7 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private async Task Save()
         {
-            // The user may have edited settings.json externally via "高级编辑" while this
+            // The user may have edited settings.json externally via Advanced Edit while this
             // window was open. Reload so we only overwrite CustomRules; AdvancedRouting
             // and unrelated fields stay as they are on disk.
             var s = await _settings.ReloadAsync();

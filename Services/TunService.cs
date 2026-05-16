@@ -12,16 +12,16 @@ using XrayUI.Helpers;
 namespace XrayUI.Services;
 
 /// <summary>
-/// TUN 模式相关服务。
-/// 现在主要负责 wintun.dll 探测和 fallback 路由清理：
-/// xray 启动时用 elevated 权限通过 autoSystemRoutingTable 自己加路由，
-/// 这里只是兜底（xray 异常退出时清掉残留路由）。
+/// TUN mode service.
+/// Currently mainly handles wintun.dll detection and fallback route cleanup:
+/// xray adds routes itself at startup with elevated permissions through autoSystemRoutingTable,
+/// so this only acts as a fallback for clearing stale routes after an abnormal xray exit.
 /// </summary>
 public class TunService
 {
     private readonly string _engineDirectory;
 
-    /// <summary>默认 TUN 接口名称（必须与 XrayConfigBuilder.BuildTunInbound 中的 name 字段一致）</summary>
+    /// <summary>Default TUN interface name; must match the name field in XrayConfigBuilder.BuildTunInbound.</summary>
     private const string DefaultTunInterfaceName = "xray-tun";
 
     public TunService()
@@ -29,7 +29,7 @@ public class TunService
         _engineDirectory = Path.Combine(AppContext.BaseDirectory, "Assets", "engine");
     }
 
-    /// <summary>检查 wintun.dll 是否存在</summary>
+    /// <summary>Checks whether wintun.dll exists.</summary>
     public bool IsWintunAvailable()
     {
         var wintunPath = Path.Combine(_engineDirectory, "wintun.dll");
@@ -38,7 +38,7 @@ public class TunService
         return exists;
     }
 
-    /// <summary>获取 wintun.dll 的预期路径（用于错误提示）</summary>
+    /// <summary>Gets the expected wintun.dll path for error messages.</summary>
     public string GetExpectedWintunPath() => Path.Combine(_engineDirectory, "wintun.dll");
 
     /// <summary>
@@ -87,8 +87,9 @@ public class TunService
     }
 
     /// <summary>
-    /// 兜底清理：xray 正常退出会自己删它加的路由；这个方法只在 xray 异常退出
-    /// 或退出后路由仍残留时使用。删除 0.0.0.0/0 的兜底路由 + 服务器直连路由。
+    /// Fallback cleanup: xray removes its own routes on normal exit, so this is only used
+    /// after an abnormal xray exit or when routes remain after exit. Removes the 0.0.0.0/0
+    /// fallback route plus the direct route to the server.
     /// </summary>
     public void CleanupTunRoutes(string? serverAddress)
     {
@@ -110,8 +111,8 @@ public class TunService
                 "route delete 128.0.0.0 mask 128.0.0.0",
             };
 
-            // serverAddress 可能是主机名 (e.g. proxy.example.com)，但 Windows `route delete`
-            // 不解析域名，没法直接处理；非 IPv4 就跳过 server-IP 清理。
+            // serverAddress may be a host name (e.g. proxy.example.com), but Windows `route delete`
+            // does not resolve domains. Skip server-IP cleanup unless it is IPv4.
             if (TryParseSafeIPv4Address(serverAddress, out var serverIPv4))
             {
                 batch.Add($"netsh interface ipv4 delete route {serverIPv4}/32 \"{DefaultTunInterfaceName}\" store=active");

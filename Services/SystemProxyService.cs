@@ -4,7 +4,7 @@ using Microsoft.Win32;
 
 namespace XrayUI.Services
 {
-    // 设置 / 清除 Windows 系统代理（WinInet / IE 代理，浏览器及大多数应用遵循此设置）。
+    // Sets and clears the Windows system proxy (WinInet / IE proxy, honored by browsers and most apps).
     public static class SystemProxyService
     {
         private const string RegPath =
@@ -19,7 +19,7 @@ namespace XrayUI.Services
 
         // ── Public API ────────────────────────────────────────────────────────
 
-        /// <summary>启用系统代理，将 HTTP/HTTPS 流量指向 host:port。</summary>
+        /// <summary>Enables the system proxy and points HTTP/HTTPS traffic to host:port.</summary>
         public static void SetProxy(string host, int port)
         {
             try
@@ -29,7 +29,7 @@ namespace XrayUI.Services
 
                 key.SetValue("ProxyEnable", 1, RegistryValueKind.DWord);
                 key.SetValue("ProxyServer", $"{host}:{port}", RegistryValueKind.String);
-                // 本地地址绕过代理
+                // Bypass proxy for local addresses.
                 key.SetValue("ProxyOverride",
                     "localhost;127.*;10.*;172.16.*;172.17.*;172.18.*;172.19.*;" +
                     "172.20.*;172.21.*;172.22.*;172.23.*;172.24.*;172.25.*;172.26.*;" +
@@ -45,7 +45,7 @@ namespace XrayUI.Services
             }
         }
 
-        /// <summary>关闭系统代理。</summary>
+        /// <summary>Disables the system proxy.</summary>
         public static void ClearProxy()
         {
             try
@@ -66,7 +66,7 @@ namespace XrayUI.Services
 
         // ── Helpers ───────────────────────────────────────────────────────────
 
-        /// <summary>通知 Windows 代理设置已变更，立即生效。</summary>
+        /// <summary>Notifies Windows that proxy settings changed so they take effect immediately.</summary>
         private static void NotifyWindows()
         {
             InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);

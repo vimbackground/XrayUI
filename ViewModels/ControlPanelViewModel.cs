@@ -55,7 +55,7 @@ namespace XrayUI.ViewModels
         private bool _isReapplying;
 
         /// <summary>True while ReapplyRoutingAsync is mid-restart. UI uses this to
-        /// disable related menu items and show "正在应用...".</summary>
+        /// disable related menu items and show the applying state.</summary>
         public bool IsReapplying
         {
             get => _isReapplying;
@@ -436,7 +436,7 @@ namespace XrayUI.ViewModels
             }
         }
 
-        /// <summary>供 MainWindow.StopBackgroundServicesOnExit 调用，确保退出时清理路由</summary>
+        /// <summary>Used by MainWindow.StopBackgroundServicesOnExit to ensure routes are cleaned up on exit.</summary>
         private string? ResolveTunServerHostForCleanup()
         {
             if (!string.IsNullOrWhiteSpace(_currentTunServerHost))
@@ -538,14 +538,14 @@ namespace XrayUI.ViewModels
         public string TunModeText => IsTunMode ? "On" : "Off";
 
         /// <summary>
-        /// 路由模式 / 代理模式的可切换性。
-        /// 运行时切换会自动 reapply；但 TUN 模式运行中禁止改，避免把 TUN 管道搞混。
-        /// Reapply 进行时也禁用，防止重入。
+        /// Whether routing mode and proxy mode can be toggled.
+        /// Runtime changes automatically reapply settings, but they are blocked while TUN mode is running
+        /// to avoid disturbing the TUN pipeline. Toggles are also disabled during reapply to prevent re-entry.
         /// </summary>
         public bool IsModeToggleEnabled => !IsReapplying && !(IsRunning && IsTunMode);
 
-        /// <summary>TUN 开关自身：运行中禁止切换（切 TUN 要重启 xray + 改网络栈）。
-        /// Reapply 进行时也禁用。</summary>
+        /// <summary>The TUN toggle itself is disabled while running because changing TUN requires
+        /// restarting xray and updating the network stack. It is also disabled during reapply.</summary>
         public bool IsTunToggleEnabled => !IsRunning && !IsReapplying;
 
         private void OnIsTunModeChanged(bool value)
@@ -557,8 +557,8 @@ namespace XrayUI.ViewModels
         }
 
         /// <summary>
-        /// 处理用户切换 TUN 开关：非管理员时还原开关并弹出确认对话框，
-        /// 用户确认后以管理员身份重启 App。
+        /// Handles user changes to the TUN toggle: when not elevated, restores the toggle and shows
+        /// a confirmation dialog, then restarts the app as administrator after confirmation.
         /// </summary>
         private async Task HandleTunToggleAsync(bool wantEnable)
         {
@@ -625,7 +625,7 @@ namespace XrayUI.ViewModels
             }
             catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
             {
-                // 用户点击了 UAC 对话框的"否"
+                // The user clicked "No" in the UAC dialog.
                 Debug.WriteLine("[TUN] 用户取消了管理员授权");
             }
             catch (Exception ex)
@@ -635,8 +635,8 @@ namespace XrayUI.ViewModels
         }
 
         /// <summary>
-        /// 静默设置 TUN 开关（不触发权限检查和对话框）。
-        /// 供 App.xaml.cs 在检测到 --tun 参数后调用。
+        /// Sets the TUN toggle silently without permission checks or dialogs.
+        /// Called by App.xaml.cs after it detects the --tun argument.
         /// </summary>
         public void SetTunEnabledSilently(bool value)
         {
@@ -879,7 +879,7 @@ namespace XrayUI.ViewModels
         // ── App update notification ───────────────────────────────────────────────
 
         /// <summary>True iff a newer release was found at startup. Drives the gear
-        /// button's yellow dot and the "更新至新版" menu item.</summary>
+        /// button's yellow dot and the update menu item.</summary>
         public bool IsUpdateAvailable
         {
             get => _isUpdateAvailable;

@@ -46,7 +46,7 @@ namespace XrayUI
             _window = new MainWindow(startMinimized);
             _window.Closed += (_, _) => CleanupOnExit();
 
-            // 检测 --tun 参数：以管理员身份重启后自动开启 TUN 模式
+            // Check for --tun: after restarting as administrator, enable TUN mode automatically.
             if (isTunLaunch)
             {
                 if (_window is MainWindow mw)
