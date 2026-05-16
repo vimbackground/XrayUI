@@ -132,7 +132,7 @@ namespace XrayUI.Services
             progress.Report(new ProgressDialogUpdate("正在解压更新包…"));
             try
             {
-                ZipFile.ExtractToDirectory(zipPath, extractDir, overwriteFiles: true);
+                await ZipFile.ExtractToDirectoryAsync(zipPath, extractDir, overwriteFiles: true, cancellationToken: ct);
             }
             catch (Exception ex)
             {
