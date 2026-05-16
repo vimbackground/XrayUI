@@ -24,6 +24,33 @@ namespace XrayUI.Services
             Directory.CreateDirectory(DataDir);
         }
 
+        /// <summary>Drop the in-memory cache so the next LoadSettingsAsync re-reads the file.
+        /// Used when an external process (e.g. the user's text editor) may have modified
+        /// settings.json on disk.</summary>
+        public void InvalidateCache() => _cachedSettings = null;
+
+        /// <summary>Invalidate the cache and reload from disk in one call.</summary>
+        public async Task<AppSettings> ReloadAsync()
+        {
+            InvalidateCache();
+            return await LoadSettingsAsync().ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Drop the cache and shell-open settings.json in the user's default .json editor.
+        /// Cache is dropped first so subsequent reads pick up whatever the editor writes.
+        /// Throws if the OS reports no association for .json.
+        /// </summary>
+        public void OpenInExternalEditor()
+        {
+            InvalidateCache();
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = SettingsFile,
+                UseShellExecute = true,
+            });
+        }
+
         // ── AppSettings ───────────────────────────────────────────────────────
 
         public async Task<AppSettings> LoadSettingsAsync()

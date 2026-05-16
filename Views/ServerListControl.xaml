@@ -125,7 +125,7 @@
                           VerticalAlignment="Center"
                           AutomationProperties.Name="筛选">
                 <FontIcon Glyph="&#xE8A9;"
-                          FontSize="15" />
+                          FontSize="16" />
             </ToggleButton>
         </Grid>
         <Grid Grid.Row="2"
@@ -168,7 +168,7 @@
                             BorderBrush="Transparent"
                             AutomationProperties.Name="排序">
                 <DropDownButton.Content>
-                    <FontIcon Glyph="&#xE8CB;" FontSize="15" />
+                    <FontIcon Glyph="&#xE8CB;" FontSize="16" />
                 </DropDownButton.Content>
                 <DropDownButton.Flyout>
                     <MenuFlyout Placement="Bottom">

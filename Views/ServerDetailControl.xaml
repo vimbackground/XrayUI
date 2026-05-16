@@ -406,7 +406,7 @@
                                     ToolTipService.ToolTip="重新测试延迟"
                                     VerticalAlignment="Center">
                                 <FontIcon Glyph="&#xE895;"
-                                          FontSize="14" />
+                                          FontSize="16" />
                             </Button>
                         </Grid>
 
@@ -419,6 +419,7 @@
                                          Content="&#xE8C8;"
                                          AutomationProperties.Name="复制分享链接"
                                          ToolTipService.ToolTip="复制分享链接"
+                                         IsEnabled="{x:Bind ViewModel.CanCopyShareLink, Mode=OneWay}"
                                          TextToCopy="{x:Bind ViewModel.SelectedShareLink, Mode=OneWay}" />
                 </Grid>
             </Border>

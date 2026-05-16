@@ -190,6 +190,8 @@ namespace XrayUI.ViewModels
 
         public bool CanTestLatency => !IsTestingLatency && SelectedServer is not null;
 
+        public bool CanCopyShareLink => !string.IsNullOrWhiteSpace(SelectedShareLink);
+
         public bool ShowLatencyInDetails
         {
             get => _showLatencyInDetails;
@@ -298,12 +300,14 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedTransport));
                     OnPropertyChanged(nameof(SelectedTransportVisibility));
                     OnPropertyChanged(nameof(SelectedShareLink));
+                    OnPropertyChanged(nameof(CanCopyShareLink));
                     break;
                 case nameof(ServerEntry.Encryption):
                 case nameof(ServerEntry.Username):
                 case nameof(ServerEntry.Password):
                     OnPropertyChanged(nameof(SelectedEncryption));
                     OnPropertyChanged(nameof(SelectedShareLink));
+                    OnPropertyChanged(nameof(CanCopyShareLink));
                     break;
                 case nameof(ServerEntry.ChainEntryServerId):
                     OnPropertyChanged(nameof(SelectedHost));
@@ -318,6 +322,7 @@ namespace XrayUI.ViewModels
                 case nameof(ServerEntry.EchConfigList):
                 case nameof(ServerEntry.EchForceQuery):
                     OnPropertyChanged(nameof(SelectedShareLink));
+                    OnPropertyChanged(nameof(CanCopyShareLink));
                     break;
                 case nameof(ServerEntry.Network):
                     OnPropertyChanged(nameof(SelectedTransport));
@@ -344,6 +349,7 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(SelectedTransport));
             OnPropertyChanged(nameof(SelectedTransportVisibility));
             OnPropertyChanged(nameof(SelectedShareLink));
+            OnPropertyChanged(nameof(CanCopyShareLink));
             OnPropertyChanged(nameof(CanTestLatency));
             TestLatencyCommand.NotifyCanExecuteChanged();
         }

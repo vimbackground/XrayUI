@@ -949,7 +949,7 @@ namespace XrayUI.ViewModels
                 return;
             }
 
-            if (Microsoft.UI.Xaml.Application.Current is App app)
+            if (Application.Current is App app)
                 app.RequestShutdown(fastShutdown: true);
             else
             {
