@@ -594,14 +594,17 @@ namespace XrayUI.Services
 
             // baseRouting is exclusively owned (fresh clone or fresh build), so mutate
             // its rules array in place. Final order:
-            //   TUN prefix → AdvancedRouting/default rules → CustomRules → default fallback.
+            //   TUN prefix → CustomRules → AdvancedRouting/default rules → default fallback.
+            // CustomRules sit *before* the base rules so a user rule like
+            // "domain:*.cn → proxy" preempts the default geosite:cn → direct, and so any
+            // terminal catch-all the user keeps in their advanced JSON does not shadow them.
             if (baseRouting["rules"] is not JsonArray rules)
             {
                 rules = new JsonArray();
                 baseRouting["rules"] = rules;
             }
 
-            PrependTunPrefixRules(rules, settings);
+            var insertIdx = PrependTunPrefixRules(rules, settings);
 
             if (settings.CustomRules is { } customRules)
             {
@@ -609,7 +612,7 @@ namespace XrayUI.Services
                 {
                     if (!rule.IsEnabled || string.IsNullOrWhiteSpace(rule.Match))
                         continue;
-                    AddNode(rules, CustomRuleToJsonObject(rule));
+                    rules.Insert(insertIdx++, CustomRuleToJsonObject(rule));
                 }
             }
 
@@ -646,13 +649,14 @@ namespace XrayUI.Services
         }
 
         /// <summary>
-        /// Inserts the fixed TUN-prefix rules at the head of <paramref name="rules"/>.
-        /// They keep system/self traffic out of the tunnel and suppress QUIC over UDP/443;
+        /// Inserts the fixed TUN-prefix rules at the head of <paramref name="rules"/> and
+        /// returns the number inserted, so callers know where the user-rule region starts.
+        /// These keep system/self traffic out of the tunnel and suppress QUIC over UDP/443;
         /// never user-editable and must precede any user/advanced rules.
         /// </summary>
-        private static void PrependTunPrefixRules(JsonArray rules, AppSettings settings)
+        private static int PrependTunPrefixRules(JsonArray rules, AppSettings settings)
         {
-            if (!settings.IsTunMode) return;
+            if (!settings.IsTunMode) return 0;
 
             var i = 0;
             if (settings.FakeDnsEnabled)
@@ -683,6 +687,8 @@ namespace XrayUI.Services
                 ["network"] = "udp",
                 ["port"] = "443"
             });
+
+            return i;
         }
 
         /// <summary>
