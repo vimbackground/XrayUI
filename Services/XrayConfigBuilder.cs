@@ -577,87 +577,129 @@ namespace XrayUI.Services
 
         private static JsonObject BuildRouting(AppSettings settings)
         {
-            var rules = new JsonArray();
-
-            if (settings.IsTunMode)
-            {
-                if (settings.FakeDnsEnabled)
-                {
-                    // Must precede the self/xray direct rule so DNS queries from tun-in get
-                    // intercepted by xray's internal DNS handler (and the fakedns pool) rather
-                    // than being forwarded upstream.
-                    AddNode(rules, new JsonObject
-                    {
-                        ["type"] = "field",
-                        ["inboundTag"] = CreateStringArray(XrayConfigConstants.TunInboundTag),
-                        ["port"] = "53",
-                        ["outboundTag"] = XrayConfigConstants.DnsOutboundTag,
-                    });
-                }
-
-                AddNode(rules, new JsonObject
-                {
-                    ["type"] = "field",
-                    ["outboundTag"] = DirectOutboundTag,
-                    ["process"] = CreateStringArray("self/", "xray/")
-                });
-
-                AddNode(rules, new JsonObject
-                {
-                    ["type"] = "field",
-                    ["outboundTag"] = BlockOutboundTag,
-                    ["network"] = "udp",
-                    ["port"] = "443"
-                });
-            }
-
+            // Global mode bypasses both AdvancedRouting and the smart-mode default template;
+            // it always force-routes everything to the proxy outbound after the TUN prefix.
             if (settings.RoutingMode == "global")
             {
-                AddNode(rules, new JsonObject
-                {
-                    ["type"] = "field",
-                    ["outboundTag"] = ProxyOutboundTag,
-                    ["network"] = "tcp,udp"
-                });
-
-                return new JsonObject
-                {
-                    ["domainStrategy"] = "AsIs",
-                    ["rules"] = rules
-                };
+                return BuildGlobalRouting(settings);
             }
 
-            // User-defined custom rules run first (smart mode only, first-match-wins).
+            // Smart mode: AdvancedRouting (if set) replaces the default routing template.
+            // TUN prefix rules and CustomRules are merged on top, so the user cannot lock
+            // themselves out of TUN-required system traffic by writing a bad advanced JSON.
+            var hasAdvancedRouting = settings.AdvancedRouting is not null;
+            var baseRouting = hasAdvancedRouting
+                ? (JsonObject)settings.AdvancedRouting!.DeepClone()
+                : BuildDefaultRoutingTemplate(settings, includeFallback: false);
+
+            // baseRouting is exclusively owned (fresh clone or fresh build), so mutate
+            // its rules array in place. Final order:
+            //   TUN prefix → AdvancedRouting/default rules → CustomRules → default fallback.
+            if (baseRouting["rules"] is not JsonArray rules)
+            {
+                rules = new JsonArray();
+                baseRouting["rules"] = rules;
+            }
+
+            PrependTunPrefixRules(rules, settings);
+
             if (settings.CustomRules is { } customRules)
             {
                 foreach (var rule in customRules)
                 {
                     if (!rule.IsEnabled || string.IsNullOrWhiteSpace(rule.Match))
                         continue;
-
-                    var node = new JsonObject
-                    {
-                        ["type"] = "field",
-                        ["outboundTag"] = rule.OutboundTag,
-                    };
-                    switch (rule.Type)
-                    {
-                        case "ip":      node["ip"]      = CreateStringArray(rule.Match); break;
-                        case "process": node["process"] = CreateStringArray(rule.Match); break;
-                        default:        node["domain"]  = CreateStringArray(rule.Match); break;
-                    }
-
-                    AddNode(rules, node);
+                    AddNode(rules, CustomRuleToJsonObject(rule));
                 }
             }
+
+            if (!hasAdvancedRouting)
+            {
+                AddDefaultProxyFallbackRule(rules);
+            }
+
+            if (baseRouting["domainStrategy"] is null)
+            {
+                baseRouting["domainStrategy"] = "AsIs";
+            }
+
+            return baseRouting;
+        }
+
+        private static JsonObject BuildGlobalRouting(AppSettings settings)
+        {
+            var rules = new JsonArray();
+            PrependTunPrefixRules(rules, settings);
 
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
                 ["outboundTag"] = ProxyOutboundTag,
-                ["domain"] = CreateStringArray(
-					"geosite:google"
-				)
+                ["network"] = "tcp,udp"
+            });
+
+            return new JsonObject
+            {
+                ["domainStrategy"] = "AsIs",
+                ["rules"] = rules
+            };
+        }
+
+        /// <summary>
+        /// Inserts the fixed TUN-prefix rules at the head of <paramref name="rules"/>.
+        /// They keep system/self traffic out of the tunnel and suppress QUIC over UDP/443;
+        /// never user-editable and must precede any user/advanced rules.
+        /// </summary>
+        private static void PrependTunPrefixRules(JsonArray rules, AppSettings settings)
+        {
+            if (!settings.IsTunMode) return;
+
+            var i = 0;
+            if (settings.FakeDnsEnabled)
+            {
+                // Must precede the self/xray direct rule so DNS queries from tun-in get
+                // intercepted by xray's internal DNS handler (and the fakedns pool) rather
+                // than being forwarded upstream.
+                rules.Insert(i++, new JsonObject
+                {
+                    ["type"] = "field",
+                    ["inboundTag"] = CreateStringArray(XrayConfigConstants.TunInboundTag),
+                    ["port"] = "53",
+                    ["outboundTag"] = XrayConfigConstants.DnsOutboundTag,
+                });
+            }
+
+            rules.Insert(i++, new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = DirectOutboundTag,
+                ["process"] = CreateStringArray("self/", "xray/")
+            });
+
+            rules.Insert(i++, new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = BlockOutboundTag,
+                ["network"] = "udp",
+                ["port"] = "443"
+            });
+        }
+
+        /// <summary>
+        /// The default smart-mode routing object — proxy Google, direct geosite:cn / geoip:cn,
+        /// fallback everything else to proxy. Returned as a fresh JsonObject so callers can
+        /// either inject it into the live xray config or persist it as the seed of
+        /// settings.AdvancedRouting (the "advanced editor" template).
+        /// </summary>
+        public static JsonObject BuildDefaultRoutingTemplate(AppSettings settings, bool includeFallback = true)
+        {
+            var rules = new JsonArray();
+
+            AddNode(rules, new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = ProxyOutboundTag,
+                ["domain"] = CreateStringArray("geosite:google")
             });
             AddNode(rules, new JsonObject
             {
@@ -671,18 +713,42 @@ namespace XrayUI.Services
                 ["outboundTag"] = DirectOutboundTag,
                 ["ip"] = CreateStringArray("geoip:cn", "geoip:private")
             });
-            AddNode(rules, new JsonObject
+            if (includeFallback)
             {
-                ["type"] = "field",
-                ["outboundTag"] = ProxyOutboundTag,
-                ["network"] = "tcp,udp"
-            });
+                AddDefaultProxyFallbackRule(rules);
+            }
 
             return new JsonObject
             {
                 ["domainStrategy"] = "AsIs",
                 ["rules"] = rules
             };
+        }
+
+        private static void AddDefaultProxyFallbackRule(JsonArray rules)
+        {
+            AddNode(rules, new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = ProxyOutboundTag,
+                ["network"] = "tcp,udp"
+            });
+        }
+
+        private static JsonObject CustomRuleToJsonObject(CustomRoutingRule rule)
+        {
+            var node = new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = rule.OutboundTag,
+            };
+            switch (rule.Type)
+            {
+                case "ip":      node["ip"]      = CreateStringArray(rule.Match); break;
+                case "process": node["process"] = CreateStringArray(rule.Match); break;
+                default:        node["domain"]  = CreateStringArray(rule.Match); break;
+            }
+            return node;
         }
 
         private static JsonObject BuildDns(AppSettings settings)

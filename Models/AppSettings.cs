@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 
 namespace XrayUI.Models
 {
@@ -48,6 +49,13 @@ namespace XrayUI.Models
         // ── Custom routing rules ──────────────────────────────────────────────
         /// <summary>User-defined routing rules. Applied only when RoutingMode == "smart".</summary>
         public List<CustomRoutingRule>? CustomRules { get; set; }
+
+        /// <summary>
+        /// 高级路由 JSON：完整 xray routing 对象 ({ domainStrategy, balancers?, rules })。
+        /// 非 null 时替换默认 routing 模板；TUN 必要规则仍由程序注入到 rules 头部，
+        /// CustomRules 仍追加到 rules 末尾。仅 RoutingMode == "smart" 生效。
+        /// </summary>
+        public JsonObject? AdvancedRouting { get; set; }
 
         // ── Subscriptions ─────────────────────────────────────────────────────
         /// <summary>Persisted subscription sources. Nodes derived from these carry SubscriptionId = the entry's Id.</summary>

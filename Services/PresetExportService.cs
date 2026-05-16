@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using XrayUI.Models;
 
@@ -31,6 +32,7 @@ namespace XrayUI.Services
                 CustomRules = settings.CustomRules is { Count: > 0 }
                     ? settings.CustomRules.ToList()
                     : null,
+                AdvancedRouting = settings.AdvancedRouting?.DeepClone() as JsonObject,
             };
 
             var serversJson = JsonSerializer.Serialize(

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using XrayUI.Models;
@@ -67,7 +68,8 @@ namespace XrayUI.Services
 
             var hasSubscriptions = preset.Subscriptions is { Count: > 0 };
             var hasRules = preset.CustomRules is { Count: > 0 };
-            if (!hasSubscriptions && !hasRules)
+            var hasAdvancedRouting = preset.AdvancedRouting is not null;
+            if (!hasSubscriptions && !hasRules && !hasAdvancedRouting)
                 return;
 
             var target = await _settings.LoadSettingsAsync().ConfigureAwait(false);
@@ -85,11 +87,17 @@ namespace XrayUI.Services
                 changed = true;
             }
 
+            if (hasAdvancedRouting && target.AdvancedRouting is null)
+            {
+                target.AdvancedRouting = preset.AdvancedRouting!.DeepClone() as JsonObject;
+                changed = true;
+            }
+
             if (!changed)
                 return;
 
             await _settings.SaveSettingsAsync(target).ConfigureAwait(false);
-            Debug.WriteLine("[InitialImport] Imported subscriptions/custom rules.");
+            Debug.WriteLine("[InitialImport] Imported subscriptions/custom rules/advanced routing.");
         }
 
         private static async Task<T> ReadJsonAsync<T>(string path, JsonTypeInfo<T> typeInfo, Func<T> fallback)

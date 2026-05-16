@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 
 namespace XrayUI.Models
 {
@@ -6,5 +7,6 @@ namespace XrayUI.Models
     {
         public List<SubscriptionEntry>? Subscriptions { get; set; }
         public List<CustomRoutingRule>? CustomRules { get; set; }
+        public JsonObject? AdvancedRouting { get; set; }
     }
 }

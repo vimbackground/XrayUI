@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -57,18 +58,51 @@ namespace XrayUI.Views
             // VM events
             ViewModel.ShowAddOrEditDialogRequested += OnShowAddOrEditDialogRequested;
             ViewModel.CloseRequested               += OnCloseRequested;
+            ViewModel.AdvancedEditorOpened         += OnAdvancedEditorOpened;
 
             // Initial load — fire-and-forget; LoadAsync populates Rules + IsEffectiveNow.
             _ = ViewModel.LoadAsync();
 
-            this.Closed += OnClosed;
+            this.Closed    += OnClosed;
+            this.Activated += OnWindowActivated;
         }
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
+            this.Activated                         -= OnWindowActivated;
             ViewModel.ShowAddOrEditDialogRequested -= OnShowAddOrEditDialogRequested;
             ViewModel.CloseRequested               -= OnCloseRequested;
+            ViewModel.AdvancedEditorOpened         -= OnAdvancedEditorOpened;
             _owner.Activate();
+        }
+
+        private bool _reloadAfterAdvancedEditor;
+
+        private void OnAdvancedEditorOpened(object? sender, EventArgs e)
+        {
+            _reloadAfterAdvancedEditor = true;
+        }
+
+        /// <summary>
+        /// After the advanced editor opens settings.json, reload once when the window
+        /// returns to the foreground. The flag is single-use — only set on successful
+        /// editor launch and cleared after the reload — so alt-tab activations that
+        /// aren't preceded by an editor open are no-ops.
+        /// </summary>
+        private async void OnWindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated) return;
+            if (!_reloadAfterAdvancedEditor) return;
+            _reloadAfterAdvancedEditor = false;
+
+            try
+            {
+                await ViewModel.ReloadFromDiskAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CustomRulesWindow] ReloadFromDiskAsync failed: {ex.Message}");
+            }
         }
 
         private void OnCloseRequested(object? sender, EventArgs e) => Close();

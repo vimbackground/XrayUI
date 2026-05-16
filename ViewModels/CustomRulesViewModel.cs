@@ -52,6 +52,9 @@ namespace XrayUI.ViewModels
         /// <summary>View closes the window when this fires.</summary>
         public event EventHandler? CloseRequested;
 
+        /// <summary>Raised after settings.json is opened in an external editor.</summary>
+        public event EventHandler? AdvancedEditorOpened;
+
         /// <summary>
         /// Returns the XamlRoot of the hosting CustomRulesWindow. Set by the View in its ctor.
         /// Used so dialogs raised from this VM (progress, success/error toasts) render on the
@@ -91,6 +94,17 @@ namespace XrayUI.ViewModels
             IsEffectiveNow = s.RoutingMode == "smart";
         }
 
+        /// <summary>
+        /// Drop the SettingsService cache and reload Rules from disk. Called by the window
+        /// when it regains focus, so externally-edited customRules / advancedRouting changes
+        /// show up immediately and don't get clobbered by a subsequent Save.
+        /// </summary>
+        public async Task ReloadFromDiskAsync()
+        {
+            _settings.InvalidateCache();
+            await LoadAsync();
+        }
+
         // ── Called by View after dialog returns ───────────────────────────────
         public void AddNewRule(CustomRoutingRule rule) => Rules.Add(rule);
 
@@ -115,7 +129,10 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private async Task Save()
         {
-            var s = await _settings.LoadSettingsAsync();
+            // The user may have edited settings.json externally via "高级编辑" while this
+            // window was open. Reload so we only overwrite CustomRules; AdvancedRouting
+            // and unrelated fields stay as they are on disk.
+            var s = await _settings.ReloadAsync();
             s.CustomRules = Rules.Count == 0
                 ? null
                 : Rules.Select(r => r.Clone()).ToList();
@@ -147,6 +164,48 @@ namespace XrayUI.ViewModels
 
         [RelayCommand]
         private void Cancel() => CloseRequested?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
+        /// Seed settings.AdvancedRouting with the current default routing template on first
+        /// use, then shell-open settings.json so the user can freely edit the full xray
+        /// routing object. Cache is invalidated so the next read picks up the user's edits.
+        /// </summary>
+        [RelayCommand]
+        private async Task OpenAdvancedEditor()
+        {
+            var xamlRoot = GetXamlRoot?.Invoke();
+
+            try
+            {
+                var s = await _settings.LoadSettingsAsync();
+                if (s.AdvancedRouting is null)
+                {
+                    s.AdvancedRouting = XrayConfigBuilder.BuildDefaultRoutingTemplate(s);
+                    await _settings.SaveSettingsAsync(s);
+                }
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowErrorAsync(
+                    "无法准备 settings.json",
+                    ex.Message,
+                    xamlRoot);
+                return;
+            }
+
+            try
+            {
+                _settings.OpenInExternalEditor();
+                AdvancedEditorOpened?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                await _dialogs.ShowErrorAsync(
+                    "无法打开编辑器",
+                    $"未找到 .json 关联程序或启动失败：{ex.Message}",
+                    xamlRoot);
+            }
+        }
 
         // ── Update geo data ──────────────────────────────────────────────────
 
