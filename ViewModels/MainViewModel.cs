@@ -46,6 +46,9 @@ namespace XrayUI.ViewModels
         public string ActiveServerName =>
             (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? "未选择";
 
+        public string MiniRoutingMode => ControlPanel.RoutingMode;
+        public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
+        public bool MiniIsRunning => ControlPanel.IsRunning;
         public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : "未连接";
         public Visibility MiniDotVisibility => ControlPanel.IsRunning ? Visibility.Visible : Visibility.Collapsed;
 
@@ -290,12 +293,19 @@ namespace XrayUI.ViewModels
                 return;
             }
 
+            if (e.PropertyName == nameof(ControlPanelViewModel.RoutingMode))
+            {
+                OnPropertyChanged(nameof(MiniRoutingMode));
+                return;
+            }
+
             if (e.PropertyName != nameof(ControlPanelViewModel.IsRunning)) return;
 
             var isRunning = ControlPanel.IsRunning;
             UpdateActiveServer(isRunning ? ServerList.SelectedServer : null);
             ServerList.IsProxyRunning = isRunning;
             OnPropertyChanged(nameof(ActiveServerName));
+            OnPropertyChanged(nameof(MiniIsRunning));
             OnPropertyChanged(nameof(MiniStatusText));
             OnPropertyChanged(nameof(MiniDotVisibility));
             SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
