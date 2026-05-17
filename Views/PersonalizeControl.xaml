@@ -323,7 +323,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- 其他 (fallback) card -->
+                <!-- Other fallback card -->
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         BorderThickness="1"
@@ -381,7 +381,7 @@
                 </Border>
             </StackPanel>
 
-            <!-- ── 详情设置 ────────────────────────────────────────────────── -->
+            <!-- Detail settings -->
             <StackPanel Spacing="10">
                 <TextBlock Text="详情设置"
                            FontSize="15"
@@ -457,7 +457,7 @@
             </Expander>
             </StackPanel>
 
-            <!-- ── 数据管理 ────────────────────────────────────────────────── -->
+            <!-- Data management -->
             <StackPanel Spacing="10">
                 <StackPanel Spacing="2">
                     <TextBlock Text="数据管理"

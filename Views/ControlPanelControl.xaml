@@ -93,7 +93,7 @@
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
-                <!-- GitHub 按钮 -->
+                <!-- GitHub button -->
                 <Button Background="Transparent"
                         BorderBrush="Transparent"
                         VerticalAlignment="Center"
@@ -109,7 +109,7 @@
             </StackPanel>
         </Grid>
 
-        <!-- ── Row 1: 左中右分布的主控制区 ───────────────────────────── -->
+        <!-- Row 1: main control area laid out left, center, and right -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />

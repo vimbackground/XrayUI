@@ -114,7 +114,8 @@ namespace XrayUI.ViewModels
                 {
                     OnPropertyChanged(nameof(CanSortByActive));
 
-                    // 离开 "所有" chip 时若当前正按活跃节点排序，回退到默认 — 避免菜单项被禁用却仍处于选中态的不一致。
+                    // When leaving the All chip while sorting by active server, fall back to default
+                    // to avoid a disabled menu item remaining checked.
                     if (_sortMode == ServerSortMode.Active && !CanSortByActive)
                     {
                         SortMode = ServerSortMode.Default;
@@ -149,7 +150,8 @@ namespace XrayUI.ViewModels
             }
         }
 
-        // "当前连接" 排序仅在 chip = All 时可用 — 其他 chip 下没必要把单一活跃节点顶到子集顶部。
+        // Active-server sorting is only available for chip = All; other chips should not
+        // promote a single active server to the top of the subset.
         public bool CanSortByActive => _selectedChip?.Kind == ServerGroupChip.ChipKind.All;
 
         // Shadow props for RadioMenuFlyoutItem.IsChecked TwoWay binding.
@@ -917,7 +919,7 @@ namespace XrayUI.ViewModels
             if (isFavoritesChip && !server.IsFavorite)
             {
                 RebuildAll();
-                // 当前节点已不属于收藏列表，重建后选中列表里的第一个节点。
+                // The current node is no longer in Favorites; select the first node after rebuilding.
                 SelectedServer = VisibleServers.FirstOrDefault();
             }
             else
@@ -935,7 +937,7 @@ namespace XrayUI.ViewModels
 
             if (hasFavorites && favoritesChip == null)
             {
-                // RebuildGroupChips 总是把 All chip 放在 index 0，收藏紧跟其后。
+                // RebuildGroupChips always places the All chip at index 0, with Favorites immediately after it.
                 GroupChips.Insert(1, new ServerGroupChip
                 {
                     Kind        = ServerGroupChip.ChipKind.Favorites,

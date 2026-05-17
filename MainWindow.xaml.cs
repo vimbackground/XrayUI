@@ -176,6 +176,11 @@ namespace XrayUI
             AppWindow.IsShownInSwitchers = false;
             AppWindow.Hide();
 
+            // Collapse the root content so the compositor drops cached materials
+            // for the visual tree while we're in the tray. Object graph stays
+            // intact; restoring is one synchronous frame.
+            _rootElement.Visibility = Visibility.Collapsed;
+
             ReleaseUiResources();
         }
 
@@ -183,6 +188,7 @@ namespace XrayUI
         {
             _isHiddenToTray = false;
             AppWindow.IsShownInSwitchers = true;
+            _rootElement.Visibility = Visibility.Visible;
 
             if (_needsCenterOnFirstShow)
             {
@@ -227,7 +233,7 @@ namespace XrayUI
 
                 try
                 {
-                    if (Microsoft.UI.Xaml.Application.Current is App app)
+                    if (Application.Current is App app)
                     {
                         app.RequestShutdown();
                         return;
@@ -368,7 +374,7 @@ namespace XrayUI
             {
                 try
                 {
-                    if (Microsoft.UI.Xaml.Application.Current is App app)
+                    if (Application.Current is App app)
                     {
                         app.HandleSessionEnding();
                     }
@@ -404,6 +410,11 @@ namespace XrayUI
         {
             try
             {
+                // Compact LOH in this single GC pass — subscription/JSON paths
+                // routinely allocate >85KB buffers that pin into LOH and never
+                // compact under default settings.
+                System.Runtime.GCSettings.LargeObjectHeapCompactionMode =
+                    System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
                 GC.WaitForPendingFinalizers();
 

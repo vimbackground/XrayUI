@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -141,8 +142,8 @@ namespace XrayUI.Services
             if (IsRunning)
             {
                 // Restart path (e.g. ReapplyRoutingAsync): skip the DNS flush — the new xray
-                // session is about to repopulate the resolver cache anyway, and ipconfig
-                // /flushdns adds ~hundreds of ms to every routing/DNS/proxy-mode toggle.
+                // session is about to repopulate the resolver cache anyway, and flushing
+                // adds avoidable latency to every routing/DNS/proxy-mode toggle.
                 await StopCoreAsync();
             }
 
@@ -226,13 +227,13 @@ namespace XrayUI.Services
         public async Task StopAsync()
         {
             await StopCoreAsync();
-            await FlushSystemDnsCacheAsync();
+            FlushSystemDnsCache();
         }
 
         /// <summary>
         /// Kills the xray process and tears down state, without flushing the OS DNS cache.
-        /// Used by StartAsync on the restart path so reapply doesn't pay the ipconfig
-        /// /flushdns cost on every routing/DNS/proxy-mode toggle. No-op if not running.
+        /// Used by StartAsync on the restart path so reapply doesn't pay DNS flush latency
+        /// on every routing/DNS/proxy-mode toggle. No-op if not running.
         /// </summary>
         private async Task StopCoreAsync()
         {
@@ -266,34 +267,30 @@ namespace XrayUI.Services
         }
 
         /// <summary>
-        /// Best-effort `ipconfig /flushdns` to clear any cached fake IPs (198.18.0.0/15) that
+        /// Best-effort DNS resolver cache flush to clear any cached fake IPs (198.18.0.0/15) that
         /// might linger in the Windows resolver cache after a FakeDNS-enabled run. Harmless
         /// when FakeDNS was not used. Runs unconditionally on every stop to keep XrayService
         /// stateless w.r.t. last-run config.
         /// </summary>
-        private async Task FlushSystemDnsCacheAsync()
+        private void FlushSystemDnsCache()
         {
             try
             {
-                using var p = Process.Start(new ProcessStartInfo
+                if (!DnsFlushResolverCache())
                 {
-                    FileName = "ipconfig",
-                    Arguments = "/flushdns",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                });
-                if (p is null) return;
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-                try { await p.WaitForExitAsync(cts.Token); }
-                catch (OperationCanceledException) { try { p.Kill(); } catch { } }
+                    Debug.WriteLine($"[DNS] DnsFlushResolverCache failed: {Marshal.GetLastWin32Error()}");
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 // best-effort, never block stop on this
+                Debug.WriteLine($"[DNS] DnsFlushResolverCache exception: {ex.Message}");
             }
         }
+
+        [DllImport("dnsapi.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DnsFlushResolverCache();
 
         public void StopForShutdown()
         {

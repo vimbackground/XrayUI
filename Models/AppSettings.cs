@@ -8,12 +8,12 @@ namespace XrayUI.Models
         public int LocalMixedPort { get; set; } = 16890;
         /// <summary>"smart" | "global"</summary>
         public string RoutingMode { get; set; } = "smart";
-        /// <summary>TUN 模式是否已启用</summary>
+        /// <summary>Whether TUN mode is enabled.</summary>
         public bool IsTunMode { get; set; } = false;
         public string? LastTunServerHost { get; set; }
         public bool IsStartupEnabled { get; set; } = false;
         public bool IsAutoConnect    { get; set; } = false;
-        /// <summary>true = 全局代理 (default); false = 不接管代理</summary>
+        /// <summary>true = global proxy (default); false = do not take over the system proxy.</summary>
         public bool IsSystemProxyEnabled { get; set; } = true;
         /// <summary>Stable ID (ServerEntry.Id) of the most recently connected server — used for auto-connect on boot.</summary>
         public string? LastAutoConnectServerId { get; set; }
@@ -36,9 +36,9 @@ namespace XrayUI.Models
         public bool ShowAiUnlockInDetails { get; set; } = true;
 
         // ── DNS ───────────────────────────────────────────────────────────────
-        /// <summary>直连 DNS，用于国内域名 (geosite:cn)。null = 按 TUN 模式自动选取默认值。</summary>
+        /// <summary>Direct DNS for domestic domains (geosite:cn). null = choose the default based on TUN mode.</summary>
         public string? DirectDnsServer { get; set; }
-        /// <summary>代理 DNS，用于境外域名，经代理出站解析。null = 使用默认 8.8.8.8。</summary>
+        /// <summary>Proxy DNS for foreign domains, resolved through the proxy outbound. null = use the default 8.8.8.8.</summary>
         public string? ProxyDnsServer { get; set; }
         /// <summary>Values from <see cref="XrayUI.Services.DnsQueryStrategy"/>.</summary>
         public string DnsQueryStrategy { get; set; } = "UseIPv4";
@@ -51,9 +51,10 @@ namespace XrayUI.Models
         public List<CustomRoutingRule>? CustomRules { get; set; }
 
         /// <summary>
-        /// 高级路由 JSON：完整 xray routing 对象 ({ domainStrategy, balancers?, rules })。
-        /// 非 null 时替换默认 routing 模板；TUN 必要规则仍由程序注入到 rules 头部，
-        /// CustomRules 仍追加到 rules 末尾。仅 RoutingMode == "smart" 生效。
+        /// Advanced routing JSON: a complete xray routing object ({ domainStrategy, balancers?, rules }).
+        /// When non-null, replaces the default routing template; required TUN rules are still
+        /// inserted at the start of rules, and CustomRules are still appended to the end.
+        /// Only active when RoutingMode == "smart".
         /// </summary>
         public JsonObject? AdvancedRouting { get; set; }
 

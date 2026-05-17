@@ -13,6 +13,11 @@ namespace XrayUI.Helpers
         private static string _currentBackdrop = "Mica";
         public static string CurrentBackdrop => _currentBackdrop;
 
+        // Cache controller instances so switching backdrop in Personalize doesn't
+        // allocate a fresh DComp controller each time.
+        private static MicaBackdrop? _micaBackdrop;
+        private static DesktopAcrylicBackdrop? _acrylicBackdrop;
+
         /// <summary>Actual resolved theme (Light or Dark) based on current setting.</summary>
         public static ElementTheme ActualTheme
             => RootElement?.ActualTheme ?? ElementTheme.Default;
@@ -31,8 +36,8 @@ namespace XrayUI.Helpers
 
             MainWindow.SystemBackdrop = backdrop switch
             {
-                "Acrylic" => new DesktopAcrylicBackdrop(),
-                _         => new MicaBackdrop(),
+                "Acrylic" => _acrylicBackdrop ??= new DesktopAcrylicBackdrop(),
+                _         => _micaBackdrop ??= new MicaBackdrop(),
             };
             _currentBackdrop = backdrop;
         }

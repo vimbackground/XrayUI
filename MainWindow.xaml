@@ -78,7 +78,7 @@
                     <TextBlock Text="{x:Bind ViewModel.ActiveServerName, Mode=OneWay}"
                                FontSize="16"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="{x:Bind ViewModel.ControlPanel.RoutingMode, Mode=OneWay}"
+                    <TextBlock Text="{x:Bind ViewModel.MiniRoutingMode, Mode=OneWay}"
                                FontSize="12"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
@@ -93,8 +93,8 @@
                     </Grid.ColumnDefinitions>
 
                     <ToggleButton Grid.Column="0"
-                                  Command="{x:Bind ViewModel.ControlPanel.StartStopCommand, Mode=OneWay}"
-                                  IsChecked="{x:Bind ViewModel.ControlPanel.IsRunning, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.MiniStartStopCommand, Mode=OneWay}"
+                                  IsChecked="{x:Bind ViewModel.MiniIsRunning, Mode=OneWay}"
                                   Width="40" Height="40"
                                   CornerRadius="20"
                                   Padding="0"

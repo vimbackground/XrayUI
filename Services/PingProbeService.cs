@@ -24,7 +24,7 @@ namespace XrayUI.Services
 
             try
             {
-                using var registration = cancellationToken.Register(ping.SendAsyncCancel);
+                await using var registration = cancellationToken.Register(ping.SendAsyncCancel);
                 var reply = await ping.SendPingAsync(host, (int)Math.Ceiling(timeout.TotalMilliseconds));
 
                 return reply.Status switch

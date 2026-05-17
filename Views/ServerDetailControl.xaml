@@ -58,7 +58,7 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <!-- Row 0: 名称 -->
+                            <!-- Row 0: name -->
                             <TextBlock Text="名称"
                                        Grid.Row="0"
                                        Grid.Column="0"
@@ -71,7 +71,7 @@
                                        FontWeight="SemiBold"
                                        TextWrapping="WrapWholeWords" />
 
-                            <!-- Row 1: 协议 (NEW) -->
+                            <!-- Row 1: protocol (new) -->
                             <TextBlock Text="协议"
                                        Grid.Row="1"
                                        Grid.Column="0"
@@ -83,7 +83,7 @@
                                        FontSize="16"
                                        TextWrapping="WrapWholeWords" />
 
-                            <!-- Row 2: 地址 -->
+                            <!-- Row 2: address -->
                             <TextBlock Text="{x:Bind ViewModel.SelectedHostLabel, Mode=OneWay}"
                                        Grid.Row="2"
                                        Grid.Column="0"
@@ -95,7 +95,7 @@
                                        FontSize="16"
                                        TextWrapping="WrapWholeWords" />
 
-                            <!-- Row 3: 端口 -->
+                            <!-- Row 3: port -->
                             <TextBlock Text="{x:Bind ViewModel.SelectedPortLabel, Mode=OneWay}"
                                        Grid.Row="3"
                                        Grid.Column="0"
@@ -106,7 +106,7 @@
                                        Text="{x:Bind ViewModel.SelectedPort, Mode=OneWay}"
                                        FontSize="16" />
 
-                            <!-- Row 4: 加密 / 安全 -->
+                            <!-- Row 4: encryption / security -->
                             <TextBlock Text="{x:Bind ViewModel.SelectedSecurityLabel, Mode=OneWay}"
                                        Grid.Row="4"
                                        Grid.Column="0"
@@ -131,7 +131,7 @@
 
                         </Grid>
 
-                        <!-- AI 服务监测区 -->
+                        <!-- AI service check area -->
                         <StackPanel Spacing="12"
                                     Margin="0,2,0,0"
                                     Visibility="{x:Bind ViewModel.AiUnlockVisibility, Mode=OneWay}">

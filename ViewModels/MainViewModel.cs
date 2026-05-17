@@ -46,6 +46,9 @@ namespace XrayUI.ViewModels
         public string ActiveServerName =>
             (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? "未选择";
 
+        public string MiniRoutingMode => ControlPanel.RoutingMode;
+        public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
+        public bool MiniIsRunning => ControlPanel.IsRunning;
         public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : "未连接";
         public Visibility MiniDotVisibility => ControlPanel.IsRunning ? Visibility.Visible : Visibility.Collapsed;
 
@@ -104,6 +107,7 @@ namespace XrayUI.ViewModels
 
             // Sync ServerDetail with whatever was selected
             ServerDetail.SelectedServer = ServerList.SelectedServer;
+            ClearActiveServerFlags();
             UpdateActiveServer(null);
             ServerList.IsProxyRunning = ControlPanel.IsRunning;
 
@@ -289,12 +293,19 @@ namespace XrayUI.ViewModels
                 return;
             }
 
+            if (e.PropertyName == nameof(ControlPanelViewModel.RoutingMode))
+            {
+                OnPropertyChanged(nameof(MiniRoutingMode));
+                return;
+            }
+
             if (e.PropertyName != nameof(ControlPanelViewModel.IsRunning)) return;
 
             var isRunning = ControlPanel.IsRunning;
             UpdateActiveServer(isRunning ? ServerList.SelectedServer : null);
             ServerList.IsProxyRunning = isRunning;
             OnPropertyChanged(nameof(ActiveServerName));
+            OnPropertyChanged(nameof(MiniIsRunning));
             OnPropertyChanged(nameof(MiniStatusText));
             OnPropertyChanged(nameof(MiniDotVisibility));
             SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
@@ -307,14 +318,31 @@ namespace XrayUI.ViewModels
 
         private void UpdateActiveServer(ServerEntry? server)
         {
+            var previous = _activeServer;
+            if (ReferenceEquals(previous, server))
+            {
+                _activeLatencyText = server is not null ? ServerDetail.LatencyText : string.Empty;
+                ServerDetail.ActiveServer = server;
+                if (server is not null)
+                    server.IsActive = true;
+                return;
+            }
+
+            if (previous is not null)
+                previous.IsActive = false;
+
             _activeServer = server;
             _activeLatencyText = server is not null ? ServerDetail.LatencyText : string.Empty;
-            ServerDetail.ActiveServer = _activeServer;
+            ServerDetail.ActiveServer = server;
 
+            if (server is not null)
+                server.IsActive = true;
+        }
+
+        private void ClearActiveServerFlags()
+        {
             foreach (var item in ServerList.Servers)
-            {
-                item.IsActive = ReferenceEquals(item, _activeServer);
-            }
+                item.IsActive = false;
         }
     }
 }

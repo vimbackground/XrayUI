@@ -22,7 +22,7 @@ namespace XrayUI.ViewModels
 
         public ObservableCollection<CustomRoutingRule> Rules { get; } = new();
 
-        /// <summary>True iff current RoutingMode is "smart". UI shows a banner when false.</summary>
+        /// <summary>True, iff current RoutingMode is "smart". UI shows a banner when false.</summary>
         public bool IsEffectiveNow
         {
             get => _isEffectiveNow;
@@ -96,7 +96,7 @@ namespace XrayUI.ViewModels
 
         /// <summary>
         /// Drop the SettingsService cache and reload Rules from disk. Called by the window
-        /// when it regains focus, so externally-edited customRules / advancedRouting changes
+        /// when it regains focus, so externally edited customRules / advancedRouting changes
         /// show up immediately and don't get clobbered by a subsequent Save.
         /// </summary>
         public async Task ReloadFromDiskAsync()
@@ -129,7 +129,7 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private async Task Save()
         {
-            // The user may have edited settings.json externally via "高级编辑" while this
+            // The user may have edited settings.json externally via Advanced Edit while this
             // window was open. Reload so we only overwrite CustomRules; AdvancedRouting
             // and unrelated fields stay as they are on disk.
             var s = await _settings.ReloadAsync();
@@ -168,7 +168,7 @@ namespace XrayUI.ViewModels
         /// <summary>
         /// Seed settings.AdvancedRouting with the current default routing template on first
         /// use, then shell-open settings.json so the user can freely edit the full xray
-        /// routing object. Cache is invalidated so the next read picks up the user's edits.
+        /// routing object. Cache is invalidated, so the next read picks up the user's edits.
         /// </summary>
         [RelayCommand]
         private async Task OpenAdvancedEditor()
