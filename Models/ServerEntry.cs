@@ -59,6 +59,10 @@ namespace XrayUI.Models
         [ObservableProperty]
         public partial string Encryption { get; set; }
 
+        // Runtime-only flag (which server xray is currently proxying through).
+        // Never persisted — otherwise an export captures it and a later import
+        // would resurrect the badge on a stale server.
+        [JsonIgnore]
         [ObservableProperty]
         public partial bool IsActive { get; set; }
 

@@ -77,7 +77,7 @@ namespace XrayUI.ViewModels
             ServerList   = new ServerListViewModel(dialogs, settings);
             ServerDetail = new ServerDetailViewModel(latencyProbe, aiUnlockCheck);
             ControlPanel = new ControlPanelViewModel(dialogs, settings, xray, tunService, startupService, updateService);
-            Personalize  = new PersonalizeViewModel(settings);
+            Personalize  = new PersonalizeViewModel(dialogs, settings);
 
             // Wire ControlPanel so it knows the current selected server
             ControlPanel.GetSelectedServer = () => ServerList.SelectedServer;
@@ -92,6 +92,7 @@ namespace XrayUI.ViewModels
 
             ControlPanel.ShowPersonalizeRequested += (_, _) => OpenPersonalize();
             Personalize.CloseRequested            += (_, _) => ClosePersonalize();
+            Personalize.PresetImported            += OnPresetImported;
 
             ServerDetail.SelectedServer = ServerList.SelectedServer;
         }
@@ -259,6 +260,30 @@ namespace XrayUI.ViewModels
             {
                 ControlPanel.NotifyStartStopStateChanged();
                 SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        private async void OnPresetImported(object? sender, System.EventArgs e)
+        {
+            try
+            {
+                ServerList.SelectedServer = null;
+                ServerList.Servers.Clear();
+                await ServerList.LoadServersAsync();
+                ServerDetail.SelectedServer = ServerList.SelectedServer;
+                // Belt-and-suspenders against any old servers.json on disk that still
+                // carries IsActive=true from before ServerEntry.IsActive got JsonIgnore.
+                ClearActiveServerFlags();
+                // Old _activeServer references a ServerEntry no longer in the list; even if
+                // xray is still running with the old config, the new SelectedServer is not
+                // logically active. Clear so the UI doesn't claim a stale Active state.
+                UpdateActiveServer(null);
+                ServerList.IsProxyRunning = ControlPanel.IsRunning;
+                OnPropertyChanged(nameof(ActiveServerName));
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] OnPresetImported failed: {ex}");
             }
         }
 

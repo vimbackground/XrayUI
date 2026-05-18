@@ -10,6 +10,7 @@ namespace XrayUI.ViewModels
     public partial class PersonalizeViewModel : ObservableObject
     {
         private readonly SettingsService _settings;
+        private readonly IDialogService _dialogs;
 
         private Color _ssColor;
         private Color _vlessColor;
@@ -23,9 +24,11 @@ namespace XrayUI.ViewModels
         private bool _showAiUnlockInDetails = true;
 
         public event EventHandler? CloseRequested;
+        public event EventHandler? PresetImported;
 
-        public PersonalizeViewModel(SettingsService settings)
+        public PersonalizeViewModel(IDialogService dialogs, SettingsService settings)
         {
+            _dialogs = dialogs;
             _settings = settings;
         }
 
@@ -154,6 +157,24 @@ namespace XrayUI.ViewModels
 
         public Task<string> ExportPresetAsync() =>
             new PresetExportService(_settings).ExportAsync();
+
+        public static bool PresetExists() => PresetImportService.PresetExists();
+
+        public async Task<PresetImportResult?> ConfirmAndImportPresetAsync()
+        {
+            var confirmed = await _dialogs.ShowConfirmationAsync(
+                "替换当前配置?",
+                "此操作将覆盖您当前的全部节点和路由规则,强烈建议先导出备份。是否继续?",
+                "替换",
+                "取消",
+                isDanger: true);
+            if (!confirmed)
+                return null;
+
+            var result = await new PresetImportService(_settings).ApplyAsync();
+            PresetImported?.Invoke(this, EventArgs.Empty);
+            return result;
+        }
 
         [RelayCommand]
         private async Task Done()
