@@ -52,7 +52,7 @@
             <TextBox Header="备注名称（可选）"
                      PlaceholderText="留空则使用链接域名"
                      Text="{x:Bind ViewModel.SubscriptionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock Text="将自动拉取并导入订阅中的全部节点"
+            <TextBlock Text="将自动解析并导入该订阅中的全部节点"
                        FontSize="12"
                        Opacity="0.65" />
         </StackPanel>
