@@ -17,13 +17,31 @@ namespace XrayUI.Services
         {
             try
             {
+                return await ReadRequiredJsonAsync(path, typeInfo, logTag).ConfigureAwait(false);
+            }
+            catch
+            {
+                return fallback();
+            }
+        }
+
+        public static async Task<T> ReadRequiredJsonAsync<T>(
+            string path,
+            JsonTypeInfo<T> typeInfo,
+            string logTag)
+        {
+            try
+            {
                 var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
-                return JsonSerializer.Deserialize(json, typeInfo) ?? fallback();
+                return JsonSerializer.Deserialize(json, typeInfo)
+                    ?? throw new JsonException("Preset JSON cannot be null.");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[{logTag}] Failed to read {path}: {ex.Message}");
-                return fallback();
+                throw new InvalidDataException(
+                    $"Failed to import preset file '{Path.GetFileName(path)}'. Please check that it contains valid JSON.",
+                    ex);
             }
         }
     }

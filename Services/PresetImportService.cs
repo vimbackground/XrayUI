@@ -36,10 +36,9 @@ namespace XrayUI.Services
             if (!File.Exists(PresetPaths.ServersFile))
                 return 0;
 
-            var preset = await PresetReader.ReadJsonAsync(
+            var preset = await PresetReader.ReadRequiredJsonAsync(
                 PresetPaths.ServersFile,
                 AppJsonSerializerContext.Default.ListServerEntry,
-                static () => new List<ServerEntry>(),
                 "PresetImport").ConfigureAwait(false);
 
             await _settings.SaveServersAsync(preset).ConfigureAwait(false);
@@ -53,10 +52,9 @@ namespace XrayUI.Services
             if (!File.Exists(PresetPaths.SettingsFile))
                 return (0, 0, false);
 
-            var preset = await PresetReader.ReadJsonAsync(
+            var preset = await PresetReader.ReadRequiredJsonAsync(
                 PresetPaths.SettingsFile,
                 AppJsonSerializerContext.Default.PresetSettings,
-                static () => new PresetSettings(),
                 "PresetImport").ConfigureAwait(false);
 
             var target = await _settings.LoadSettingsAsync().ConfigureAwait(false);
