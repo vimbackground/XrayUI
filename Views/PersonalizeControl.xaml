@@ -21,14 +21,12 @@
 
             <!-- ── Theme ───────────────────────────────────────────────────── -->
             <StackPanel Spacing="10">
-                <StackPanel Spacing="2">
+                
                     <TextBlock Text="主题"
                                FontSize="15"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="选择应用的外观模式"
-                               FontSize="13"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
+                    
+                
 
                 <controls:Segmented HorizontalAlignment="Left"
                                     SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=TwoWay}">
@@ -62,14 +60,10 @@
             </StackPanel>
             <!-- ── Backdrop ────────────────────────────────────────────────── -->
             <StackPanel Spacing="10">
-                <StackPanel Spacing="2">
-                    <TextBlock Text="背景效果"
+                <TextBlock Text="背景效果"
                                FontSize="15"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="选择窗口背景材质"
-                               FontSize="13"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
+                    
                 <ComboBox HorizontalAlignment="Left"
                           MinWidth="160"
                           SelectedIndex="{x:Bind ViewModel.SelectedBackdropIndex, Mode=TwoWay}">
@@ -459,63 +453,60 @@
 
             <!-- Data management -->
             <StackPanel Spacing="10">
-                <StackPanel Spacing="2">
-                    <TextBlock Text="数据管理"
+                <TextBlock Text="数据管理"
                                FontSize="15"
                                FontWeight="SemiBold" />
-                    <TextBlock Text="备份与导出应用配置"
-                               FontSize="13"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                </StackPanel>
 
-                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{ThemeResource OverlayCornerRadius}">
-                    <Grid Padding="16,13"
-                          ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{ThemeResource OverlayCornerRadius}">
+                        <Grid Padding="16,13"
+                              ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <FontIcon Grid.Column="0"
-                                  Glyph="&#xEDE1;"
-                                  FontSize="16"
-                                  VerticalAlignment="Center"
-                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xE8F1;"
+                                      FontSize="16"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Spacing="2">
-                            <TextBlock Text="导出配置"
-                                       FontSize="14" />
-                            <TextBlock Text="将当前的节点和路由规则导出为预置文件"
-                                       FontSize="12"
-                                       TextWrapping="Wrap"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </StackPanel>
-
-                        <Button Grid.Column="2"
-                                VerticalAlignment="Center"
-                                Padding="12,6"
-                                Click="ExportPresetButton_Click">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="6">
-                                <FontIcon Glyph="&#xE898;"
-                                          FontSize="14" />
-                                <TextBlock Text="导出" />
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                            <TextBlock Text="配置导入与导出"
+                                           FontSize="14" />
+                            <TextBlock Text="将当前的节点和路由规则备份到本地，或从已有文件中恢复"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                        </Button>
-                    </Grid>
-                </Border>
-                
-                <InfoBar x:Name="ExportSuccessInfoBar"
+
+                            <StackPanel Grid.Column="2"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        VerticalAlignment="Center">
+                                <Button 
+                                        Padding="12,6"
+                                        Content="导出"
+                                        AutomationProperties.Name="导出预置配置"
+                                        Click="ExportPresetButton_Click" />
+                                <Button 
+                                        Padding="12,6"
+                                        Content="导入"
+                                        AutomationProperties.Name="导入预置配置"
+                                        Click="ImportPresetButton_Click" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                <InfoBar x:Name="OperationInfoBar"
                          IsOpen="False"
                          Severity="Success"
-                         Title="导出成功"
-                         Message="已导出至Import文件夹。"
                          IsClosable="True" />
             </StackPanel>
 

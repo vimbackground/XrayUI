@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -25,6 +26,7 @@ namespace XrayUI
         private bool _allowClose;
         private bool _initialized;
         private bool _isHiddenToTray;
+        private bool _personalizeRealized;
         private readonly bool _startMinimized;
         // Set when we parked the window off-screen at startup; cleared after
         // we re-center it on the first user-initiated show (tray click).
@@ -71,6 +73,12 @@ namespace XrayUI
             ThemeHelper.MainWindow = this;
             ThemeHelper.ApplyBackdrop("Mica");
             _rootElement.ActualThemeChanged += OnRootElementActualThemeChanged;
+
+            // PersonalizeControl is heavy (5x ColorPicker, Expander, etc.). We
+            // realize it lazily into PersonalizeHost on first show — saves the
+            // entire subtree from cold-start construction. See OnViewModelPropertyChanged.
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+
             _miniDragRegion = (Border)_rootElement.FindName("MiniDragRegion");
             _miniExpandButton = (Button)_rootElement.FindName("MiniExpandButton");
 
@@ -332,10 +340,27 @@ namespace XrayUI
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
             _rootElement.ActualThemeChanged -= OnRootElementActualThemeChanged;
             _windowMessageMonitor.WindowMessageReceived -= OnWindowMessageReceived;
             _windowMessageMonitor.Dispose();
             AppWindow.IsShownInSwitchers = true;
+        }
+
+        private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_personalizeRealized) return;
+            if (e.PropertyName != nameof(MainViewModel.PersonalizeVisibility)) return;
+            if (ViewModel.PersonalizeVisibility != Visibility.Visible) return;
+
+            _personalizeRealized = true;
+            // Set ViewModel before adding to the visual tree so that, when the
+            // host fires Loading, the UserControl's x:Bind initializers see a
+            // non-null ViewModel and bind correctly the first time.
+            PersonalizeHost.Children.Add(new Views.PersonalizeControl
+            {
+                ViewModel = ViewModel.Personalize,
+            });
         }
 
         private void OnWindowMessageReceived(object? sender, WindowMessageEventArgs e)
@@ -415,7 +440,7 @@ namespace XrayUI
                 // compact under default settings.
                 System.Runtime.GCSettings.LargeObjectHeapCompactionMode =
                     System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: true, compacting: true);
                 GC.WaitForPendingFinalizers();
 
                 using var process = Process.GetCurrentProcess();

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using XrayUI.Models;
 
@@ -45,10 +43,11 @@ namespace XrayUI.Services
             if (existing.Count > 0)
                 return;
 
-            var preset = await ReadJsonAsync(
+            var preset = await PresetReader.ReadJsonAsync(
                 PresetPaths.ServersFile,
                 AppJsonSerializerContext.Default.ListServerEntry,
-                static () => new List<ServerEntry>()).ConfigureAwait(false);
+                static () => new List<ServerEntry>(),
+                "InitialImport").ConfigureAwait(false);
             if (preset.Count == 0)
                 return;
 
@@ -61,10 +60,11 @@ namespace XrayUI.Services
             if (!File.Exists(PresetPaths.SettingsFile))
                 return;
 
-            var preset = await ReadJsonAsync(
+            var preset = await PresetReader.ReadJsonAsync(
                 PresetPaths.SettingsFile,
                 AppJsonSerializerContext.Default.PresetSettings,
-                static () => new PresetSettings()).ConfigureAwait(false);
+                static () => new PresetSettings(),
+                "InitialImport").ConfigureAwait(false);
 
             var hasSubscriptions = preset.Subscriptions is { Count: > 0 };
             var hasRules = preset.CustomRules is { Count: > 0 };
@@ -98,20 +98,6 @@ namespace XrayUI.Services
 
             await _settings.SaveSettingsAsync(target).ConfigureAwait(false);
             Debug.WriteLine("[InitialImport] Imported subscriptions/custom rules/advanced routing.");
-        }
-
-        private static async Task<T> ReadJsonAsync<T>(string path, JsonTypeInfo<T> typeInfo, Func<T> fallback)
-        {
-            try
-            {
-                var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
-                return JsonSerializer.Deserialize(json, typeInfo) ?? fallback();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[InitialImport] Failed to read {path}: {ex.Message}");
-                return fallback();
-            }
         }
     }
 }

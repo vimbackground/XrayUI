@@ -191,9 +191,12 @@
                                                ViewModel="{x:Bind ViewModel.ControlPanel, Mode=OneWay}" />
                 </Grid>
 
-                <!-- Personalize view -->
-                <views:PersonalizeControl Visibility="{x:Bind ViewModel.PersonalizeVisibility, Mode=OneWay}"
-                                          ViewModel="{x:Bind ViewModel.Personalize, Mode=OneWay}" />
+                <!-- Personalize view — lazily realized in code-behind on first show
+                     (see RealizePersonalizeIfNeeded in MainWindow.xaml.cs). x:Load
+                     can't drive this from a Window-root XAML, so we do the lazy
+                     instantiation manually. -->
+                <Grid x:Name="PersonalizeHost"
+                      Visibility="{x:Bind ViewModel.PersonalizeVisibility, Mode=OneWay}" />
 
             </Grid>
         </Grid>
