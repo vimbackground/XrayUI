@@ -93,7 +93,7 @@
                     </Grid.ColumnDefinitions>
 
                     <ToggleButton Grid.Column="0"
-                                  Command="{x:Bind ViewModel.MiniStartStopCommand, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.MiniStartStopCommand}"
                                   IsChecked="{x:Bind ViewModel.MiniIsRunning, Mode=OneWay}"
                                   Width="40" Height="40"
                                   CornerRadius="20"
@@ -169,8 +169,8 @@
 
             <views:ServerListControl Grid.Column="0"
                                       x:Name="ServerList"
-                                      ViewModel="{x:Bind ViewModel.ServerList, Mode=OneWay}"
-                                      SwitchToSelectedServerCommand="{x:Bind ViewModel.SwitchToSelectedServerCommand, Mode=OneWay}" />
+                                      ViewModel="{x:Bind ViewModel.ServerList, Mode=OneTime}"
+                                      SwitchToSelectedServerCommand="{x:Bind ViewModel.SwitchToSelectedServerCommand, Mode=OneTime}" />
 
             <Grid Grid.Column="1"
                   VerticalAlignment="Stretch">
@@ -184,11 +184,11 @@
 
                     <views:ServerDetailControl Grid.Row="0"
                                                x:Name="ServerDetail"
-                                               ViewModel="{x:Bind ViewModel.ServerDetail, Mode=OneWay}" />
+                                               ViewModel="{x:Bind ViewModel.ServerDetail, Mode=OneTime}" />
 
                     <views:ControlPanelControl x:Name="ControlPanel"
                                                Grid.Row="1"
-                                               ViewModel="{x:Bind ViewModel.ControlPanel, Mode=OneWay}" />
+                                               ViewModel="{x:Bind ViewModel.ControlPanel, Mode=OneTime}" />
                 </Grid>
 
                 <!-- Personalize view — lazily realized in code-behind on first show

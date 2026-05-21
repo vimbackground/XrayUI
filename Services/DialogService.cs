@@ -185,10 +185,12 @@ namespace XrayUI.Services
             var txtFinalmask = new TextBox
             {
                 Header = "Finalmask (JSON)",
-                Text = existing?.Finalmask ?? string.Empty,
+                // AcceptsReturn must be set BEFORE Text — initializer assigns properties in
+                // declared order, and Text setter in single-line mode truncates at the first \r.
                 AcceptsReturn = true,
                 Height = 104,
-                TextWrapping = TextWrapping.NoWrap
+                TextWrapping = TextWrapping.NoWrap,
+                Text = (existing?.Finalmask ?? string.Empty).Replace("\r\n", "\r").Replace("\n", "\r"),
             };
 
             // Row containers for conditional visibility

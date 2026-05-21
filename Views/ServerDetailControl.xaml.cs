@@ -7,13 +7,20 @@ namespace XrayUI.Views
     {
         public ServerDetailViewModel ViewModel { get; set; } = null!;
 
+        // The three AI service Borders share this handler. Without a guard, each Border's
+        // Loaded fire would re-add AIShadowCastGrid to all three Shadows — three Borders ×
+        // three receivers = nine entries, with duplicates causing wasted compositor work.
+        private bool _shadowsWired;
+
         public ServerDetailControl()
         {
             this.InitializeComponent();
         }
-        
+
         private void ShadowRect_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_shadowsWired) return;
+            _shadowsWired = true;
             Shadow1.Receivers.Add(AIShadowCastGrid);
             Shadow2.Receivers.Add(AIShadowCastGrid);
             Shadow3.Receivers.Add(AIShadowCastGrid);
