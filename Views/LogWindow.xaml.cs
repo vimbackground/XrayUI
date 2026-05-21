@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
@@ -28,6 +29,8 @@ namespace XrayUI.Views
 
         // Set from background thread when new lines arrive; consumed on UI thread.
         private volatile bool _dirty;
+        private int _linesReceivedSinceFlush; // Background-thread increments; UI thread reads + clears.
+        private int _prevBufferCount;
 
         public LogWindow(
             XrayService xray,
@@ -72,6 +75,7 @@ namespace XrayUI.Views
         {
             // Called from background thread. Do NOT touch the UI here —
             // just mark dirty; the timer will re-render on the UI thread.
+            Interlocked.Increment(ref _linesReceivedSinceFlush);
             _dirty = true;
         }
 
@@ -85,11 +89,30 @@ namespace XrayUI.Views
             if (!_dirty) return;
             _dirty = false;
 
-            RenderLog();
+            var autoScroll = AutoScrollToggle.IsChecked == true;
+            var prevOffset = LogScrollViewer.VerticalOffset;
+            var prevExtent = LogScrollViewer.ExtentHeight;
+            var prevCount  = _prevBufferCount;
+            var received   = Interlocked.Exchange(ref _linesReceivedSinceFlush, 0);
 
-            if (AutoScrollToggle.IsChecked == true)
+            RenderLog();
+            var newCount = _prevBufferCount; // RenderLog just updated this.
+
+            if (autoScroll)
             {
                 LogScrollViewer.ChangeView(null, double.MaxValue, null, disableAnimation: true);
+            }
+            else
+            {
+                // Ring buffer evicted some lines: (received) − (net buffer growth) = lines pushed out.
+                // Shift the scroll offset down by that height so visible content stays anchored.
+                var evicted = Math.Max(0, received - (newCount - prevCount));
+                if (evicted > 0 && prevCount > 0 && prevExtent > 0)
+                {
+                    var lineHeight = prevExtent / prevCount;
+                    var target = Math.Max(0, prevOffset - evicted * lineHeight);
+                    LogScrollViewer.ChangeView(null, target, null, disableAnimation: true);
+                }
             }
         }
 
@@ -101,6 +124,7 @@ namespace XrayUI.Views
             var lines = _xray.GetLogBuffer();
             LogTextBlock.Text = string.Join('\n', lines);
             LineCountText.Text = $"({lines.Count} 行)";
+            _prevBufferCount = lines.Count;
         }
 
         private async Task InitializeMaskAddressMenuAsync()
@@ -143,6 +167,7 @@ namespace XrayUI.Views
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             _xray.ClearLogBuffer();
+            Interlocked.Exchange(ref _linesReceivedSinceFlush, 0);
             RenderLog();
         }
 

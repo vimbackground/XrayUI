@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using XrayUI.Models;
 
 namespace XrayUI.Services
@@ -287,7 +288,7 @@ namespace XrayUI.Services
 
                 var query = ParseQuery(uri.Query);
                 var sni   = Q(query, "sni", string.Empty) ?? string.Empty;
-                var finalmask = FinalmaskJson.NormalizeForStorage(Q(query, "fm"));
+                var finalmask = BuildHysteria2Finalmask(query);
                 var allowInsecure = IsTruthy(Q(query, "allowInsecure")) || IsTruthy(Q(query, "insecure"));
 
                 return new ServerEntry
@@ -309,6 +310,62 @@ namespace XrayUI.Services
             {
                 return null;
             }
+        }
+
+        private static string BuildHysteria2Finalmask(Dictionary<string, string> query)
+        {
+            var finalmask = FinalmaskJson.NormalizeForStorage(
+                Q(query, "fm") ?? Q(query, "finalmask"));
+
+            var obfs = Q(query, "obfs");
+            if (!string.Equals(obfs, "salamander", StringComparison.OrdinalIgnoreCase))
+                return finalmask;
+
+            var obfsPassword = Q(query, "obfs-password")
+                               ?? Q(query, "obfs_password")
+                               ?? Q(query, "obfsPassword");
+            if (obfsPassword is null)
+                return finalmask;
+
+            return AddHysteria2SalamanderMask(finalmask, obfsPassword);
+        }
+
+        private static string AddHysteria2SalamanderMask(string finalmask, string password)
+        {
+            var parsed = FinalmaskJson.Parse(finalmask);
+            if (parsed is not null and not JsonObject)
+                return finalmask;
+
+            if (parsed is null && !string.IsNullOrWhiteSpace(finalmask))
+                return finalmask;
+
+            var root = parsed as JsonObject ?? [];
+            var udp = root["udp"] as JsonArray;
+            if (udp is null)
+            {
+                udp = [];
+                root["udp"] = udp;
+            }
+
+            foreach (var item in udp)
+            {
+                if (item is JsonObject itemObject
+                    && string.Equals(itemObject["type"]?.GetValue<string>(), "salamander", StringComparison.OrdinalIgnoreCase))
+                {
+                    return root.ToJsonString(AppJsonSerializerContext.WriteReadable);
+                }
+            }
+
+            udp.Insert(0, new JsonObject
+            {
+                ["type"] = "salamander",
+                ["settings"] = new JsonObject
+                {
+                    ["password"] = password
+                }
+            });
+
+            return root.ToJsonString(AppJsonSerializerContext.WriteReadable);
         }
 
         // Trojan

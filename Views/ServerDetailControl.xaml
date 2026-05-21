@@ -142,7 +142,7 @@
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            VerticalAlignment="Center" />
 
-                            <Grid ColumnSpacing="12" 
+                                <Grid ColumnSpacing="12" 
                                   HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />

@@ -727,14 +727,27 @@ namespace XrayUI.ViewModels
 
                 // Preserve Ids for nodes that survived the refresh so LastAutoConnectServerId
                 // (and any other Id-based reference) keeps pointing at the same logical node.
-                var oldByEndpoint = new Dictionary<string, ServerEntry>(removed.Count);
+                var oldByIdentity = new Dictionary<string, Queue<ServerEntry>>(StringComparer.Ordinal);
                 foreach (var s in removed)
-                    oldByEndpoint[$"{s.Protocol}://{s.Host}:{s.Port}"] = s;
+                {
+                    var key = BuildNodeIdentityKey(s);
+                    if (!oldByIdentity.TryGetValue(key, out var matches))
+                    {
+                        matches = new Queue<ServerEntry>();
+                        oldByIdentity[key] = matches;
+                    }
+                    matches.Enqueue(s);
+                }
+
+                var reusedIds = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var e in newEntries)
                 {
-                    if (oldByEndpoint.TryGetValue($"{e.Protocol}://{e.Host}:{e.Port}", out var match))
+                    if (oldByIdentity.TryGetValue(BuildNodeIdentityKey(e), out var matches)
+                        && matches.Count > 0)
                     {
-                        e.Id = match.Id;
+                        var match = matches.Dequeue();
+                        if (!string.IsNullOrWhiteSpace(match.Id) && reusedIds.Add(match.Id))
+                            e.Id = match.Id;
                         e.IsFavorite = match.IsFavorite;
                     }
                 }
@@ -759,6 +772,32 @@ namespace XrayUI.ViewModels
                 await UpsertSubscriptionAsync(sub);
             }
         }
+
+        // Case-insensitive identifiers (host, protocol, uuid, etc.) are lowercased so a
+        // subscription that re-emits "Example.com" still matches a stored "example.com".
+        // Case-sensitive material (credentials, paths, base64/hex keys) is only trimmed.
+        private static string BuildNodeIdentityKey(ServerEntry s) =>
+            string.Join("|",
+                NormalizeIdentityPart(s.Protocol),
+                NormalizeIdentityPart(s.Host),
+                s.Port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                NormalizeIdentityPart(s.Network),
+                NormalizeIdentityPart(s.Security),
+                s.Path?.Trim() ?? string.Empty,
+                NormalizeIdentityPart(s.WsHost),
+                NormalizeIdentityPart(s.Sni),
+                NormalizeIdentityPart(s.Encryption),
+                s.Username?.Trim() ?? string.Empty,
+                s.Password?.Trim() ?? string.Empty,
+                NormalizeIdentityPart(s.Uuid),
+                s.AlterId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                s.VlessEncryption?.Trim() ?? string.Empty,
+                s.Flow?.Trim() ?? string.Empty,
+                s.PublicKey?.Trim() ?? string.Empty,
+                s.ShortId?.Trim() ?? string.Empty);
+
+        private static string NormalizeIdentityPart(string? value) =>
+            value?.Trim().ToLowerInvariant() ?? string.Empty;
 
         private async Task<bool> DeleteSubscriptionAsync(SubscriptionEntry sub)
         {
