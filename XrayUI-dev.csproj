@@ -11,6 +11,10 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- PRI fallback target when the system locale has no matching Strings/{lang}/Resources.resw.
+         Keeps non-zh/en users (ko/ja/ru/...) on English rather than relying on PRI's
+         alphabetical default. -->
+    <DefaultLanguage>en-US</DefaultLanguage>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WindowsPackageType>None</WindowsPackageType>

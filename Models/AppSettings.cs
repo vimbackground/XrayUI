@@ -25,6 +25,10 @@ namespace XrayUI.Models
         /// <summary>"" | "quarter" | "half" | "full"; controls Xray log IP masking.</summary>
         public string LogMaskAddress { get; set; } = string.Empty;
 
+        // ── Internationalization ──────────────────────────────────────────────
+        /// <summary>BCP-47 tag from <see cref="XrayUI.Helpers.LanguageHelper.SupportedLanguages"/>, or null to follow system.</summary>
+        public string? Language { get; set; }
+
         // ── Personalization ───────────────────────────────────────────────────
         /// <summary>"Light" | "Dark" | "Default" (follows system)</summary>
         public string? ThemeSetting { get; set; }

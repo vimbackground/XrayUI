@@ -1,0 +1,100 @@
+using System;
+using System.Diagnostics;
+using Microsoft.Windows.Globalization;
+
+namespace XrayUI.Helpers
+{
+    /// <summary>
+    /// One row in <see cref="LanguageHelper.SupportedLanguages"/>. <c>Tag = null</c>
+    /// means "follow system" (no <c>PrimaryLanguageOverride</c> applied).
+    /// Top-level (not nested) so XAML's <c>x:DataType</c> can reference it directly.
+    /// </summary>
+    public sealed partial class LanguageInfo
+    {
+        public string? Tag { get; }
+        public string DisplayName { get; }
+        public LanguageInfo(string? tag, string displayName)
+        {
+            Tag = tag;
+            DisplayName = displayName;
+        }
+    }
+
+    /// <summary>
+    /// Drives the WinAppSDK <see cref="ApplicationLanguages.PrimaryLanguageOverride"/>.
+    /// Adding a new language means adding one row to <see cref="SupportedLanguages"/> —
+    /// the UI dropdown, persisted-setting normalization and index lookups all read
+    /// from this single table.
+    ///
+    /// Index 0 is the "follow system" choice (Tag = null): when applied, no override
+    /// is set and WinAppSDK falls back to the OS locale.
+    /// </summary>
+    public static class LanguageHelper
+    {
+        public static readonly LanguageInfo[] SupportedLanguages =
+        [
+            new(null,    "跟随系统"),   // index 0 — leaves PrimaryLanguageOverride alone
+            new("zh-CN", "简体中文"),
+            new("en-US", "English"),
+        ];
+
+        /// <summary>
+        /// Returns the canonical tag if supported. A <c>null</c> return is also the
+        /// signal to skip <see cref="ApplyOverride"/> (i.e. follow system) — that
+        /// mapping is deliberate, not an error case.
+        /// </summary>
+        public static string? Normalize(string? tag)
+        {
+            if (string.IsNullOrEmpty(tag)) return null;
+            foreach (var lang in SupportedLanguages)
+            {
+                if (lang.Tag is not null
+                    && string.Equals(lang.Tag, tag, StringComparison.OrdinalIgnoreCase))
+                    return lang.Tag;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 0-based index in <see cref="SupportedLanguages"/>. <c>null</c> and unknown
+        /// tags both map to index 0 ("follow system"), keeping the UI dropdown
+        /// truthful when no explicit choice has been persisted.
+        /// </summary>
+        public static int IndexOf(string? tag)
+        {
+            if (string.IsNullOrEmpty(tag)) return 0;
+            for (int i = 0; i < SupportedLanguages.Length; i++)
+            {
+                if (string.Equals(SupportedLanguages[i].Tag, tag, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+            return 0;
+        }
+
+        /// <summary>Tag at the given index. Index 0 ("follow system") returns <c>null</c>.</summary>
+        public static string? TagAt(int index)
+            => (uint)index < (uint)SupportedLanguages.Length
+                ? SupportedLanguages[index].Tag
+                : null;
+
+        /// <summary>
+        /// Sets (or, when <paramref name="tag"/> is <c>null</c> / unsupported, leaves
+        /// alone) the WinAppSDK language override. Must be called before any XAML
+        /// resource resolution — i.e. before <c>App.InitializeComponent</c>.
+        /// </summary>
+        public static void ApplyOverride(string? tag)
+        {
+            var language = Normalize(tag);
+            if (string.IsNullOrEmpty(language)) return;
+
+            try
+            {
+                ApplicationLanguages.PrimaryLanguageOverride = language;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Language] Failed to apply '{language}': {ex.Message}");
+            }
+        }
+    }
+}

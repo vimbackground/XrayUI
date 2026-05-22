@@ -10,5 +10,7 @@ namespace XrayUI.Helpers
             "XrayUI");
 
         public static string UpdatesDir { get; } = Path.Combine(LocalAppDataDir, "Updates");
+
+        public static string SettingsJsonPath { get; } = Path.Combine(LocalAppDataDir, "settings.json");
     }
 }

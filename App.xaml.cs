@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using XrayUI.Helpers;
 using XrayUI.Services;
 
 namespace XrayUI
@@ -23,11 +27,35 @@ namespace XrayUI
 
         public App()
         {
+            // Must run before InitializeComponent — the XAML resource loader caches the
+            // current locale at first touch, and that happens during component init.
+            ApplyPersistedLanguageOverride();
+
             this.InitializeComponent();
 
             ConfigureProcessShutdownBehavior();
             this.UnhandledException += (_, _) => CleanupOnExit();
             AppDomain.CurrentDomain.ProcessExit += (_, _) => CleanupOnExit();
+        }
+
+        private static void ApplyPersistedLanguageOverride()
+        {
+            try
+            {
+                if (!File.Exists(AppPaths.SettingsJsonPath)) return;
+
+                using var stream = File.OpenRead(AppPaths.SettingsJsonPath);
+                using var doc = JsonDocument.Parse(stream);
+                if (doc.RootElement.TryGetProperty("Language", out var langElem)
+                    && langElem.ValueKind == JsonValueKind.String)
+                {
+                    LanguageHelper.ApplyOverride(langElem.GetString());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Language] Failed to load persisted language: {ex.Message}");
+            }
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
@@ -86,6 +114,45 @@ namespace XrayUI
         public void RequestShutdown(bool fastShutdown = false)
         {
             CleanupOnExit(fastShutdown);
+            Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// Restart the process. xray.exe is a child process not bound to a job object, so
+        /// bare termination would leak it (and the system proxy) — and <see cref="AppInstance.Restart"/>
+        /// itself bypasses Window.Closed / ProcessExit, so cleanup must be triggered explicitly here.
+        /// </summary>
+        public static void Restart()
+        {
+            (Application.Current as App)?.CleanupOnExit(fastShutdown: true);
+
+            // Restart terminates the process on success; any synchronous return (or
+            // exception) means the platform refused — fall through to a manual relaunch.
+            try { AppInstance.Restart(string.Empty); } catch { }
+
+            var exePath = Process.GetCurrentProcess().MainModule?.FileName;
+            if (!string.IsNullOrEmpty(exePath))
+            {
+                // Let an external process wait for this one to exit before relaunching.
+                // An in-process delayed task would be killed by Environment.Exit below.
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe",
+                        Arguments = $"/c ping 127.0.0.1 -n 2 > nul & start \"\" \"{exePath}\"",
+                        WorkingDirectory = AppContext.BaseDirectory,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                    });
+                }
+                catch
+                {
+                    // Worst case the user relaunches manually.
+                }
+            }
+
             Environment.Exit(0);
         }
 

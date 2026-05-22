@@ -119,6 +119,7 @@ namespace XrayUI.ViewModels
             ControlPanel.IsSystemProxyEnabled  = s.IsSystemProxyEnabled;
             ControlPanel.InitializePersonalize(s);
             Personalize.LoadDisplayOptions(s);
+            Personalize.LoadLanguage(s);
             ServerDetail.ShowLatencyInDetails = s.ShowLatencyInDetails;
             ServerDetail.ShowAiUnlockInDetails = s.ShowAiUnlockInDetails;
 

@@ -56,5 +56,11 @@ namespace XrayUI.Views
             OperationInfoBar.Message = message;
             OperationInfoBar.IsOpen = true;
         }
+
+        private async void LanguageRestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.ApplyLanguageAsync();
+            App.Restart();
+        }
     }
 }
