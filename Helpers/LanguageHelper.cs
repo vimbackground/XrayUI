@@ -95,22 +95,22 @@ namespace XrayUI.Helpers
                 : null;
 
         /// <summary>
-        /// Sets (or, when <paramref name="tag"/> is <c>null</c> / unsupported, leaves
-        /// alone) the WinAppSDK language override. Must be called before any XAML
-        /// resource resolution — i.e. before <c>App.InitializeComponent</c>.
+        /// Applies the WinAppSDK language override. <c>null</c> / unsupported means
+        /// "follow system", which must explicitly clear any previously-persisted
+        /// override. Must be called before any XAML resource resolution.
         /// </summary>
         public static void ApplyOverride(string? tag)
         {
             var language = Normalize(tag);
-            if (string.IsNullOrEmpty(language)) return;
 
             try
             {
-                ApplicationLanguages.PrimaryLanguageOverride = language;
+                ApplicationLanguages.PrimaryLanguageOverride = language ?? string.Empty;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Language] Failed to apply '{language}': {ex.Message}");
+                var label = string.IsNullOrEmpty(language) ? "follow system" : language;
+                Debug.WriteLine($"[Language] Failed to apply '{label}': {ex.Message}");
             }
         }
     }

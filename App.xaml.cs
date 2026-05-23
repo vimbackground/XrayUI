@@ -40,22 +40,26 @@ namespace XrayUI
 
         private static void ApplyPersistedLanguageOverride()
         {
+            string? language = null;
             try
             {
-                if (!File.Exists(AppPaths.SettingsJsonPath)) return;
-
-                using var stream = File.OpenRead(AppPaths.SettingsJsonPath);
-                using var doc = JsonDocument.Parse(stream);
-                if (doc.RootElement.TryGetProperty("Language", out var langElem)
-                    && langElem.ValueKind == JsonValueKind.String)
+                if (File.Exists(AppPaths.SettingsJsonPath))
                 {
-                    LanguageHelper.ApplyOverride(langElem.GetString());
+                    using var stream = File.OpenRead(AppPaths.SettingsJsonPath);
+                    using var doc = JsonDocument.Parse(stream);
+                    if (doc.RootElement.TryGetProperty("Language", out var langElem)
+                        && langElem.ValueKind == JsonValueKind.String)
+                    {
+                        language = langElem.GetString();
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Language] Failed to load persisted language: {ex.Message}");
             }
+
+            LanguageHelper.ApplyOverride(language);
         }
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
