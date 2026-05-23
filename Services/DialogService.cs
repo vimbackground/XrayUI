@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
@@ -467,6 +467,25 @@ namespace XrayUI.Services
 
             var result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary;
+        }
+
+        public async Task<bool> ShowTunConfirmationDialogAsync(AppSettings settings)
+        {
+            var content = new TunConfirmationDialog(settings.TunMtu, settings.TunOutboundInterface);
+
+            var dialog = CreateDialog();
+            dialog.Title = "开启TUN模式";
+            dialog.Content = content;
+            dialog.PrimaryButtonText = "确认";
+            dialog.CloseButtonText = "取消";
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary)
+                return false;
+
+            settings.TunMtu = content.Mtu;
+            settings.TunOutboundInterface = content.SelectedInterface;
+            return true;
         }
 
         public async Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null)

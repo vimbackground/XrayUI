@@ -72,11 +72,11 @@
          strip their runtime assets (DirectML.dll / onnxruntime.dll / Microsoft.Windows.AI.MachineLearning.dll).
          IncludeAssets=compile keeps the reference assemblies for compile-time use; PrivateAssets=all
          prevents them from flowing to consumers. -->
-    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="*">
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="2.0.*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="*">
+    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.0.*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
