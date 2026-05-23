@@ -61,13 +61,13 @@
                                                      IsChecked="{x:Bind ViewModel.IsGlobalProxyChecked, Mode=OneWay}"
                                                      IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                      Command="{x:Bind ViewModel.SetProxyModeCommand}"
-                                                     CommandParameter="全局代理" />
+                                                     CommandParameter="system" />
                                 <RadioMenuFlyoutItem Text="不接管代理"
                                                      GroupName="ProxyModeGroup"
                                                      IsChecked="{x:Bind ViewModel.IsNoTakeoverChecked, Mode=OneWay}"
                                                      IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                      Command="{x:Bind ViewModel.SetProxyModeCommand}"
-                                                     CommandParameter="不接管代理" />
+                                                     CommandParameter="manual" />
                             </MenuFlyoutSubItem>
                             <MenuFlyoutSeparator/>
                             <MenuFlyoutItem Text="开机启动"
@@ -77,11 +77,11 @@
                                 <MenuFlyoutItem Text="全局路由"
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.SetRoutingModeCommand}"
-                                                CommandParameter="全局路由" />
+                                                CommandParameter="global" />
                                 <MenuFlyoutItem Text="智能分流"
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.SetRoutingModeCommand}"
-                                                CommandParameter="智能分流" />
+                                                CommandParameter="smart" />
                                 <MenuFlyoutSeparator/>
                                 <MenuFlyoutItem Text="自定义规则..."
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
@@ -179,7 +179,7 @@
                            FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center" />
-                <TextBlock Text="{x:Bind ViewModel.RoutingMode, Mode=OneWay}"
+                <TextBlock Text="{x:Bind ViewModel.RoutingModeText, Mode=OneWay}"
                            FontSize="14"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center" />

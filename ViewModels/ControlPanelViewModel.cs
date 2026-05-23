@@ -25,7 +25,7 @@ namespace XrayUI.ViewModels
         private bool _isRunning;
         private bool _isTunMode;
         private int _localPort = 16890;
-        private string _routingMode = "智能分流";
+        private string _routingMode = "smart";
         private bool _isSystemProxyEnabled = true;
         private bool _isStartupEnabled;
         private bool _isAutoConnect;
@@ -230,7 +230,7 @@ namespace XrayUI.ViewModels
 
             var appSettings = await _settings.LoadSettingsAsync();
             appSettings.LocalMixedPort = LocalPort;
-            appSettings.RoutingMode    = RoutingMode == "智能分流" ? "smart" : "global";
+            appSettings.RoutingMode    = RoutingMode;
             appSettings.IsTunMode      = IsTunMode;
             if (IsAutoConnect)
                 appSettings.LastAutoConnectServerId = server.Id;
@@ -318,7 +318,7 @@ namespace XrayUI.ViewModels
                 {
                     var settings = await _settings.LoadSettingsAsync();
                     settings.LocalMixedPort        = LocalPort;
-                    settings.RoutingMode           = RoutingMode == "智能分流" ? "smart" : "global";
+                    settings.RoutingMode           = RoutingMode;
                     settings.IsTunMode             = IsTunMode;
                     settings.IsSystemProxyEnabled  = _isSystemProxyEnabled;
 
@@ -706,11 +706,21 @@ namespace XrayUI.ViewModels
 
         // ── Routing mode ──────────────────────────────────────────────────────
 
+        /// <summary>Business code: "smart" | "global". This is what gets persisted to
+        /// settings.json and what XAML RadioButton.CommandParameter values match against.
+        /// For display, bind to <see cref="RoutingModeText"/>.</summary>
         public string RoutingMode
         {
             get => _routingMode;
-            set => SetProperty(ref _routingMode, value);
+            set
+            {
+                if (SetProperty(ref _routingMode, value))
+                    OnPropertyChanged(nameof(RoutingModeText));
+            }
         }
+
+        /// <summary>Localized display string for the status bar / mini view.</summary>
+        public string RoutingModeText => _routingMode == "global" ? "全局路由" : "智能分流";
 
         [RelayCommand]
         private async Task SetRoutingMode(string mode)
@@ -721,7 +731,7 @@ namespace XrayUI.ViewModels
 
             RoutingMode = mode;
             var s = await _settings.LoadSettingsAsync();
-            s.RoutingMode = mode == "智能分流" ? "smart" : "global";
+            s.RoutingMode = mode;
             await TrySaveSettingsAsync(s, "persist routing mode");
 
             // Apply live if xray is currently running (UI only allows this when !IsTunMode).
@@ -753,7 +763,9 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private async Task SetProxyMode(string mode)
         {
-            var want = mode == "全局代理";
+            // Business code: "system" = take over WinINet system proxy, "manual" = leave
+            // registry alone (user wires their apps to the local SOCKS port themselves).
+            var want = mode == "system";
 
             // No-op guard: clicking the already-selected radio must not re-hit
             // the registry or re-write settings.

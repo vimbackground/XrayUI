@@ -46,7 +46,7 @@ namespace XrayUI.ViewModels
         public string ActiveServerName =>
             (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? "未选择";
 
-        public string MiniRoutingMode => ControlPanel.RoutingMode;
+        public string MiniRoutingMode => ControlPanel.RoutingModeText;
         public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
         public bool MiniIsRunning => ControlPanel.IsRunning;
         public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : "未连接";
@@ -115,7 +115,7 @@ namespace XrayUI.ViewModels
             // Load settings and apply to ControlPanel
             var s = await _settings.LoadSettingsAsync();
             ControlPanel.LocalPort             = s.LocalMixedPort;
-            ControlPanel.RoutingMode           = s.RoutingMode == "global" ? "全局路由" : "智能分流";
+            ControlPanel.RoutingMode           = s.RoutingMode;
             ControlPanel.IsSystemProxyEnabled  = s.IsSystemProxyEnabled;
             ControlPanel.InitializePersonalize(s);
             Personalize.LoadDisplayOptions(s);
