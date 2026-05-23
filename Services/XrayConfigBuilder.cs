@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -27,7 +27,6 @@ namespace XrayUI.Services
         public static string Build(
             ServerEntry server,
             AppSettings settings,
-            string? tunOutboundInterfaceName = null,
             IEnumerable<ServerEntry>? availableServers = null)
         {
             var config = new JsonObject
@@ -35,7 +34,7 @@ namespace XrayUI.Services
                 ["log"] = BuildLog(settings),
                 ["dns"] = BuildDns(settings),
                 ["inbounds"] = BuildInbounds(settings),
-                ["outbounds"] = BuildOutbounds(server, settings, tunOutboundInterfaceName, availableServers),
+                ["outbounds"] = BuildOutbounds(server, settings, availableServers),
                 ["routing"] = BuildRouting(settings)
             };
 
@@ -124,11 +123,11 @@ namespace XrayUI.Services
                 ["protocol"] = "tun",
                 ["settings"] = new JsonObject
                 {
-                    ["name"] = "xray-tun",
-                    ["MTU"] = 9000,
+                    ["name"] = XrayConfigConstants.TunInterfaceName,
+                    ["MTU"] = XrayConfigConstants.NormalizeTunMtu(settings.TunMtu),
                     ["gateway"] = CreateStringArray("172.18.0.1/30"),
                     ["autoSystemRoutingTable"] = CreateStringArray("0.0.0.0/0"),
-                    ["autoOutboundsInterface"] = "auto"
+                    ["autoOutboundsInterface"] = XrayConfigConstants.TunOutboundInterfaceAuto
                 },
                 ["sniffing"] = sniffing,
             };
@@ -137,7 +136,6 @@ namespace XrayUI.Services
         private static JsonArray BuildOutbounds(
             ServerEntry server,
             AppSettings settings,
-            string? tunOutboundInterfaceName,
             IEnumerable<ServerEntry>? availableServers)
         {
             var list = new JsonArray();
@@ -194,21 +192,29 @@ namespace XrayUI.Services
                 });
             }
 
-            if (settings.IsTunMode && !string.IsNullOrWhiteSpace(tunOutboundInterfaceName))
+            var outboundInterface = NormalizeTunOutboundInterface(settings.TunOutboundInterface);
+            if (settings.IsTunMode && outboundInterface is not null)
             {
-                // sockopt.interface only matters for outbounds that actually open sockets
-                // to remote hosts. block (blackhole) drops traffic without a socket, and
-                // dns-out is xray-internal — applying the binding to them produces
-                // redundant fields in the generated config.
                 foreach (var outbound in list.OfType<JsonObject>())
                 {
                     var tag = outbound["tag"]?.GetValue<string>();
                     if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag)
-                        ApplyOutboundInterface(outbound, tunOutboundInterfaceName);
+                        ApplyOutboundInterface(outbound, outboundInterface);
                 }
             }
 
             return list;
+        }
+
+        private static string? NormalizeTunOutboundInterface(string? interfaceName)
+        {
+            if (string.IsNullOrWhiteSpace(interfaceName))
+                return null;
+
+            var value = interfaceName.Trim();
+            return string.Equals(value, XrayConfigConstants.TunOutboundInterfaceAuto, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : value;
         }
 
         private static (ServerEntry entryServer, ServerEntry exitServer) ResolveChainServers(

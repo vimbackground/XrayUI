@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading;
@@ -235,15 +235,13 @@ namespace XrayUI.ViewModels
             if (IsAutoConnect)
                 appSettings.LastAutoConnectServerId = server.Id;
 
-            string? tunOutboundInterfaceName = null;
             if (IsTunMode)
             {
-                tunOutboundInterfaceName = await RunTunPreflightAsync("TUN mode error");
-                if (tunOutboundInterfaceName is null) return false;
+                if (!await RunTunPreflightAsync("TUN mode error")) return false;
                 await CleanupPersistedTunRoutesAsync(appSettings);
             }
 
-            var configJson = XrayConfigBuilder.Build(server, appSettings, tunOutboundInterfaceName, GetAllServers());
+            var configJson = XrayConfigBuilder.Build(server, appSettings, GetAllServers());
             var ok = await _xray.StartAsync(configJson);
 
             if (!ok)
@@ -393,29 +391,21 @@ namespace XrayUI.ViewModels
 
 
         /// <summary>
-        /// Runs the shared TUN-mode preflight: wintun availability, outbound interface detection,
-        /// and system-proxy clearing. Returns the detected interface name, or null when a check
-        /// fails (the user has already seen an error dialog with <paramref name="errorTitle"/>).
+        /// Runs the shared TUN-mode preflight: wintun availability and system-proxy clearing.
+        /// Xray-core handles outbound interface selection through autoOutboundsInterface="auto".
         /// </summary>
-        private async Task<string?> RunTunPreflightAsync(string errorTitle)
+        private async Task<bool> RunTunPreflightAsync(string errorTitle)
         {
             if (!_tunService.IsWintunAvailable())
             {
                 await _dialogs.ShowErrorAsync(errorTitle,
                     $"Could not find wintun.dll\nPath: {_tunService.GetExpectedWintunPath()}");
-                return null;
+                return false;
             }
 
-            var iface = _tunService.DetectDefaultOutboundInterfaceName();
-            if (string.IsNullOrWhiteSpace(iface))
-            {
-                await _dialogs.ShowErrorAsync(errorTitle,
-                    "Could not determine the default outbound network interface. Please check that Wi-Fi/Ethernet is connected, then try again.");
-                return null;
-            }
-
+            _tunService.ResetTunDnsServers();
             SystemProxyService.ClearProxy();
-            return iface;
+            return true;
         }
 
         private void CleanupTunRoutesSafely()
@@ -571,13 +561,10 @@ namespace XrayUI.ViewModels
             IsTunMode = false;
             _isTunInternalUpdate = false;
 
-            var confirmed = await _dialogs.ShowConfirmationAsync(
-                "开启TUN模式",
-                "开启 TUN 模式需要管理员权限，程序将会重启，是否继续？",
-                "确认",
-                "取消");
+            var appSettings = await _settings.LoadSettingsAsync();
+            if (!await _dialogs.ShowTunConfirmationDialogAsync(appSettings)) return;
 
-            if (!confirmed) return;
+            await TrySaveSettingsAsync(appSettings, "TUN mode settings save");
 
             RestartAsAdmin("--tun");
         }

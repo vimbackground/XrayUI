@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
+using XrayUI.Services;
 
 namespace XrayUI.Models
 {
@@ -11,6 +12,8 @@ namespace XrayUI.Models
         /// <summary>Whether TUN mode is enabled.</summary>
         public bool IsTunMode { get; set; } = false;
         public string? LastTunServerHost { get; set; }
+        public int TunMtu { get; set; } = XrayConfigConstants.TunMtuDefault;
+        public string TunOutboundInterface { get; set; } = XrayConfigConstants.TunOutboundInterfaceAuto;
         public bool IsStartupEnabled { get; set; } = false;
         public bool IsAutoConnect    { get; set; } = false;
         /// <summary>true = global proxy (default); false = do not take over the system proxy.</summary>

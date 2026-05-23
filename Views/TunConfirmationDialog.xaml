@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="XrayUI.Views.TunConfirmationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="12" Width="280">
+        <!-- 核心警告提示 -->
+        <TextBlock Text="TUN 模式需要管理员权限，程序将会重启，是否继续？"
+                   TextWrapping="Wrap" />
+
+        <HyperlinkButton x:Name="MoreOptionsButton"
+                         Content="更多选项"
+                         HorizontalAlignment="Left"
+                         Padding="0"
+                         Click="MoreOptionsButton_Click" />
+
+        <Border x:Name="AdvancedSettingsPanel"
+                Visibility="Collapsed"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}"
+                Padding="16">
+            <StackPanel Spacing="16">
+                <!-- MTU 设置 -->
+                <StackPanel Spacing="6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE946;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="最大传输单元"
+                                   FontSize="15"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <NumberBox x:Name="MtuNumberBox"
+                               Value="1500"
+                               Minimum="68"
+                               Maximum="9000"
+                               SpinButtonPlacementMode="Inline"
+                               HorizontalAlignment="Stretch" />
+                </StackPanel>
+
+                <!-- 出口网卡设置 -->
+                <StackPanel Spacing="6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE839;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="出口网卡"
+                                   FontSize="15"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+
+                    <ComboBox x:Name="InterfaceComboBox"
+                              Grid.Column="0"
+                              HorizontalAlignment="Stretch"
+                              SelectedIndex="0"
+                              ToolTipService.ToolTip="默认使用 Xray 自动选择；只有自动模式不可用时才手动指定。" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>
