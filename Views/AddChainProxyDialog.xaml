@@ -11,18 +11,22 @@
     <StackPanel Spacing="16" MinWidth="340" MaxWidth="400">
 
         <StackPanel Spacing="6">
-            <TextBlock Text="名称"
+            <TextBlock x:Uid="ChainProxy_NameLabel"
+                       Text="名称"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <TextBox x:Name="NameTextBox"
+                     x:Uid="ChainProxy_NameBox"
                      PlaceholderText="链式代理名称" />
         </StackPanel>
 
         <StackPanel Spacing="6">
-            <TextBlock Text="入口代理"
+            <TextBlock x:Uid="ChainProxy_EntryLabel"
+                       Text="入口代理"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <ComboBox x:Name="EntryComboBox"
+                      x:Uid="ChainProxy_EntryBox"
                       HorizontalAlignment="Stretch"
                       PlaceholderText="选择前置节点">
                 <ComboBox.ItemTemplate>
@@ -49,10 +53,12 @@
         </StackPanel>
 
         <StackPanel Spacing="6">
-            <TextBlock Text="出口代理"
+            <TextBlock x:Uid="ChainProxy_ExitLabel"
+                       Text="出口代理"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <ComboBox x:Name="ExitComboBox"
+                      x:Uid="ChainProxy_ExitBox"
                       HorizontalAlignment="Stretch"
                       PlaceholderText="选择落地节点">
                 <ComboBox.ItemTemplate>
@@ -76,7 +82,8 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-            <TextBlock Text="流量经入口代理转发，再由出口代理出站"
+            <TextBlock x:Uid="ChainProxy_Hint"
+                       Text="流量经入口代理转发，再由出口代理出站"
                        FontSize="11"
                        Opacity="0.6"
                        TextWrapping="Wrap" />

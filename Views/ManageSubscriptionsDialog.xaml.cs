@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
+using XrayUI.Helpers;
 using XrayUI.Models;
 
 namespace XrayUI.Views
@@ -12,6 +13,21 @@ namespace XrayUI.Views
         {
             ViewModel = vm;
             InitializeComponent();
+
+            ToolTipService.SetToolTip(AddPageSegment,    L.Subscription_AddTooltip);
+            ToolTipService.SetToolTip(ManagePageSegment, L.Subscription_ManageTooltip);
+        }
+
+        private void RefreshButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+                ToolTipService.SetToolTip(element, L.Subscription_Refresh);
+        }
+
+        private void DeleteButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+                ToolTipService.SetToolTip(element, L.Subscription_DeleteTooltip);
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)

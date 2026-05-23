@@ -8,15 +8,30 @@ namespace XrayUI.Helpers
     /// One row in <see cref="LanguageHelper.SupportedLanguages"/>. <c>Tag = null</c>
     /// means "follow system" (no <c>PrimaryLanguageOverride</c> applied).
     /// Top-level (not nested) so XAML's <c>x:DataType</c> can reference it directly.
+    ///
+    /// Real language rows pass a fixed <paramref name="displayName"/> endonym
+    /// (the language's name in its own script — "简体中文", "English") so that
+    /// users always see their own language spelled the way they recognize it,
+    /// regardless of the currently-applied UI locale. The "follow system" row is
+    /// the exception: it isn't a language name, it's an action description, so it
+    /// passes a <c>resourceKey</c> and the display string is resolved against the
+    /// current UI locale instead.
     /// </summary>
     public sealed partial class LanguageInfo
     {
+        private readonly string _displayName;
+        private readonly string? _resourceKey;
+
         public string? Tag { get; }
-        public string DisplayName { get; }
-        public LanguageInfo(string? tag, string displayName)
+
+        public string DisplayName =>
+            _resourceKey is null ? _displayName : Loc.GetString(_resourceKey);
+
+        public LanguageInfo(string? tag, string displayName, string? resourceKey = null)
         {
             Tag = tag;
-            DisplayName = displayName;
+            _displayName = displayName;
+            _resourceKey = resourceKey;
         }
     }
 
@@ -33,7 +48,9 @@ namespace XrayUI.Helpers
     {
         public static readonly LanguageInfo[] SupportedLanguages =
         [
-            new(null,    "跟随系统"),   // index 0 — leaves PrimaryLanguageOverride alone
+            // Index 0 — "follow system" is an action label, not a language name, so
+            // it must follow the current UI locale (not stay in Chinese forever).
+            new(null,    "跟随系统", resourceKey: "Language_FollowSystem"),
             new("zh-CN", "简体中文"),
             new("en-US", "English"),
         ];

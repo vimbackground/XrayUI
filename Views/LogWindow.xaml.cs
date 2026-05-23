@@ -46,7 +46,14 @@ namespace XrayUI.Views
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             var scale = DpiHelper.GetWindowScale(hWnd);
             AppWindow.Resize(new SizeInt32((int)Math.Round(900 * scale), (int)Math.Round(600 * scale)));
-            AppWindow.Title = "代理日志";
+            AppWindow.Title = L.Log_Title;
+
+            ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
+            MaskAddressSubMenu.Text = L.Log_IpMask;
+            MaskOffMenuItem.Text    = L.Log_MaskOff;
+            AutoScrollToggle.Content = L.Log_AutoScroll;
+            CopyButton.Content       = L.Log_CopyAll;
+            ClearButton.Content      = L.Log_Clear;
 
             _xray.LogReceived     += OnLogReceived;
             _xray.RunningChanged  += OnRunningChanged;
@@ -123,7 +130,7 @@ namespace XrayUI.Views
             // XrayService owns the single source of truth; we just render a snapshot.
             var lines = _xray.GetLogBuffer();
             LogTextBlock.Text = string.Join('\n', lines);
-            LineCountText.Text = $"({lines.Count} 行)";
+            LineCountText.Text = Loc.Format("Log_Lines", lines.Count);
             _prevBufferCount = lines.Count;
         }
 
@@ -151,7 +158,7 @@ namespace XrayUI.Views
         private void UpdateStatus()
         {
             var running = _xray.IsRunning;
-            StatusText.Text = running ? "运行中" : "未运行";
+            StatusText.Text = running ? L.Log_Running : L.Log_NotRunning;
             StatusDot.Fill  = running ? RunningBrush : StoppedBrush;
         }
 
@@ -199,7 +206,7 @@ namespace XrayUI.Views
 
                 if (settings.IsTunMode)
                 {
-                    await ShowInfoAsync("日志隐私设置", "已保存，当前 TUN 会话下次启动时生效。");
+                    await ShowInfoAsync(L.Log_PrivacyTitle, L.Log_PrivacySaved);
                     return;
                 }
 
@@ -207,7 +214,7 @@ namespace XrayUI.Views
             }
             catch (Exception ex)
             {
-                await ShowInfoAsync("日志隐私设置", $"保存失败：{ex.Message}");
+                await ShowInfoAsync(L.Log_PrivacyTitle, Loc.Format("Log_PrivacyFailed", ex.Message));
             }
         }
 
@@ -219,7 +226,7 @@ namespace XrayUI.Views
                 RequestedTheme = ThemeHelper.ActualTheme,
                 Title = title,
                 Content = message,
-                CloseButtonText = "确定"
+                CloseButtonText = L.Dialog_OK
             };
 
             await dialog.ShowAsync();

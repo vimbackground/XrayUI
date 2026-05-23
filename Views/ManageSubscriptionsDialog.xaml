@@ -26,16 +26,14 @@
                     <SolidColorBrush x:Key="SegmentedItemBackgroundPointerOver" Color="Transparent" />
                     <SolidColorBrush x:Key="SegmentedItemBorderBrushPointerOver" Color="Transparent" />
                 </controls:Segmented.Resources>
-                <controls:SegmentedItem 
-                                        Padding="0"
-                                        ToolTipService.ToolTip="添加订阅">
+                <controls:SegmentedItem x:Name="AddPageSegment"
+                                        Padding="0">
                     <controls:SegmentedItem.Icon>
                         <FontIcon Glyph="&#xED0E;" FontSize="14" />
                     </controls:SegmentedItem.Icon>
                 </controls:SegmentedItem>
-                <controls:SegmentedItem 
-                                        Padding="0"
-                                        ToolTipService.ToolTip="管理订阅">
+                <controls:SegmentedItem x:Name="ManagePageSegment"
+                                        Padding="0">
                     <controls:SegmentedItem.Icon>
                         <FontIcon  Glyph="&#xEBC3;" FontSize="14" />
                     </controls:SegmentedItem.Icon>
@@ -45,20 +43,24 @@
 
         <StackPanel Spacing="14"
                     Visibility="{x:Bind ViewModel.AddPageVisibility, Mode=OneWay}">
-            <TextBox Header="订阅链接"
+            <TextBox x:Uid="Subscription_UrlBox"
+                     Header="订阅链接"
                      PlaceholderText="https://..."
                      TextWrapping="Wrap"
                      Text="{x:Bind ViewModel.SubscriptionUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBox Header="备注名称（可选）"
+            <TextBox x:Uid="Subscription_NameBox"
+                     Header="备注名称（可选）"
                      PlaceholderText="留空则使用链接域名"
                      Text="{x:Bind ViewModel.SubscriptionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock Text="将自动解析并导入该订阅中的全部节点"
+            <TextBlock x:Uid="Subscription_AutoImportHintText"
+                       Text="将自动解析并导入该订阅中的全部节点"
                        FontSize="12"
                        Opacity="0.65" />
         </StackPanel>
 
         <Grid Visibility="{x:Bind ViewModel.ManagePageVisibility, Mode=OneWay}">
-            <TextBlock Text="暂无订阅"
+            <TextBlock x:Uid="Subscription_EmptyText"
+                       Text="暂无订阅"
                        HorizontalAlignment="Center"
                        Margin="0,48,0,48"
                        FontSize="14"
@@ -106,8 +108,8 @@
                                             Padding="6"
                                             Background="Transparent"
                                             BorderThickness="0"
-                                            ToolTipService.ToolTip="刷新订阅"
                                             IsEnabled="{x:Bind IsNotBusy, Mode=OneWay}"
+                                            Loaded="RefreshButton_Loaded"
                                             Click="RefreshButton_Click">
                                         <Grid Width="16" Height="16">
                                             <FontIcon Glyph="&#xE895;"
@@ -124,19 +126,22 @@
                                             Padding="6"
                                             Background="Transparent"
                                             BorderThickness="0"
-                                            ToolTipService.ToolTip="删除订阅">
+                                            Loaded="DeleteButton_Loaded">
                                         <FontIcon Glyph="&#xE74D;" FontSize="14" />
                                         <Button.Flyout>
                                             <Flyout Placement="Bottom">
                                                 <StackPanel Spacing="12" MaxWidth="240">
-                                                    <TextBlock Text="删除订阅？"
+                                                    <TextBlock x:Uid="Subscription_DeleteConfirmText"
+                                                               Text="删除订阅？"
                                                                TextWrapping="Wrap"
                                                                FontWeight="SemiBold" />
-                                                    <TextBlock Text="将同时删除该订阅下的所有节点。"
+                                                    <TextBlock x:Uid="Subscription_DeleteDescText"
+                                                               Text="将同时删除该订阅下的所有节点。"
                                                                TextWrapping="Wrap"
                                                                FontSize="12"
                                                                Opacity="0.7" />
-                                                    <Button Click="ConfirmDelete_Click"
+                                                    <Button x:Uid="Subscription_DeleteConfirmBtn"
+                                                            Click="ConfirmDelete_Click"
                                                             Style="{StaticResource DangerAccentButtonStyle}"
                                                             HorizontalAlignment="Right"
                                                             Content="删除" />

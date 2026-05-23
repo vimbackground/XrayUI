@@ -1,5 +1,7 @@
 ﻿using System;
+using Microsoft.UI.Xaml.Automation;
 using Windows.System;
+using XrayUI.Helpers;
 
 namespace XrayUI.Views
 {
@@ -15,6 +17,22 @@ namespace XrayUI.Views
         public ServerDetailControl()
         {
             this.InitializeComponent();
+            ApplyLocalizedAttachedProperties();
+        }
+
+        private void ApplyLocalizedAttachedProperties()
+        {
+            void SetTooltipAndName(FrameworkElement element, string text)
+            {
+                ToolTipService.SetToolTip(element, text);
+                AutomationProperties.SetName(element, text);
+            }
+
+            SetTooltipAndName(OpenAiLinkButton,    Loc.Format("ServerDetail_OpenInBrowser", "OpenAI"));
+            SetTooltipAndName(ClaudeLinkButton,    Loc.Format("ServerDetail_OpenInBrowser", "Claude"));
+            SetTooltipAndName(GeminiLinkButton,    Loc.Format("ServerDetail_OpenInBrowser", "Gemini"));
+            ToolTipService.SetToolTip(RetestLatencyButton,  L.ServerDetail_RetestLatency);
+            SetTooltipAndName(CopyShareLinkButton, L.ServerDetail_CopyShareLink);
         }
 
         private void ShadowRect_Loaded(object sender, RoutedEventArgs e)

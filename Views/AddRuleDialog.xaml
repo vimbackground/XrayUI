@@ -14,20 +14,22 @@
     <StackPanel Spacing="16" MinWidth="320" MaxWidth="380">
 
         <StackPanel Spacing="6">
-            <TextBlock Text="类型"
+            <TextBlock x:Uid="AddRule_TypeLabelText"
+                       Text="类型"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <ComboBox x:Name="TypeComboBox"
                       SelectedIndex="0"
                       HorizontalAlignment="Stretch">
-                <ComboBoxItem Content="域名（Domain）"  Tag="domain" />
-                <ComboBoxItem Content="IP"              Tag="ip" />
-                <ComboBoxItem Content="进程（Process）" Tag="process" />
+                <ComboBoxItem x:Uid="AddRule_TypeDomainItem" Content="域名（Domain）"  Tag="domain" />
+                <ComboBoxItem Content="IP"                                            Tag="ip" />
+                <ComboBoxItem x:Uid="AddRule_TypeProcessItem" Content="进程（Process）" Tag="process" />
             </ComboBox>
         </StackPanel>
 
         <StackPanel Spacing="6">
-            <TextBlock Text="匹配内容"
+            <TextBlock x:Uid="AddRule_MatchLabelText"
+                       Text="匹配内容"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <TextBox x:Name="MatchTextBox"
@@ -47,9 +49,9 @@
                 <ComboBox x:Name="BrowseFormatComboBox"
                           SelectedIndex="0"
                           MinWidth="130">
-                    <ComboBoxItem Content="匹配同名进程" Tag="name" />
-                    <ComboBoxItem Content="匹配完整路径" Tag="path" />
-                    <ComboBoxItem Content="匹配整个目录" Tag="folder" />
+                    <ComboBoxItem x:Uid="AddRule_BrowseNameItem"   Content="匹配同名进程" Tag="name" />
+                    <ComboBoxItem x:Uid="AddRule_BrowsePathItem"   Content="匹配完整路径" Tag="path" />
+                    <ComboBoxItem x:Uid="AddRule_BrowseFolderItem" Content="匹配整个目录" Tag="folder" />
                 </ComboBox>
             </StackPanel>
 
@@ -61,19 +63,21 @@
         </StackPanel>
 
         <StackPanel Spacing="6">
-            <TextBlock Text="出站"
+            <TextBlock x:Uid="AddRule_OutboundLabelText"
+                       Text="出站"
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <ComboBox x:Name="OutboundComboBox"
                       SelectedIndex="0"
                       HorizontalAlignment="Stretch">
-                <ComboBoxItem Content="proxy（代理）"  Tag="proxy" />
-                <ComboBoxItem Content="direct（直连）" Tag="direct" />
-                <ComboBoxItem Content="block（阻断）"  Tag="block" />
+                <ComboBoxItem x:Uid="AddRule_OutboundProxyItem"  Content="proxy（代理）"  Tag="proxy" />
+                <ComboBoxItem x:Uid="AddRule_OutboundDirectItem" Content="direct（直连）" Tag="direct" />
+                <ComboBoxItem x:Uid="AddRule_OutboundBlockItem"  Content="block（阻断）"  Tag="block" />
             </ComboBox>
         </StackPanel>
 
         <TextBlock x:Name="ErrorText"
+                   x:Uid="AddRule_ErrorTextElem"
                    Text="请填写匹配内容"
                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                    FontSize="11"

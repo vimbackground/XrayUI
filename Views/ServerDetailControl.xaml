@@ -18,7 +18,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         
-            <TextBlock Grid.Row="0"
+            <TextBlock x:Uid="ServerDetail_HeaderText"
+                   Grid.Row="0"
                    Text="服务器详情"
                    FontSize="20"
                    FontWeight="SemiBold"
@@ -59,7 +60,8 @@
                             </Grid.RowDefinitions>
 
                             <!-- Row 0: name -->
-                            <TextBlock Text="名称"
+                            <TextBlock x:Uid="ServerDetail_NameLabel"
+                                       Text="名称"
                                        Grid.Row="0"
                                        Grid.Column="0"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -72,7 +74,8 @@
                                        TextWrapping="WrapWholeWords" />
 
                             <!-- Row 1: protocol (new) -->
-                            <TextBlock Text="协议"
+                            <TextBlock x:Uid="ServerDetail_ProtocolLabel"
+                                       Text="协议"
                                        Grid.Row="1"
                                        Grid.Column="0"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -116,7 +119,8 @@
                                        Grid.Column="1"
                                        Text="{x:Bind ViewModel.SelectedEncryption, Mode=OneWay}"
                                        FontSize="16" />
-                            <TextBlock Grid.Row="5"
+                            <TextBlock x:Uid="ServerDetail_TransportLabel"
+                                       Grid.Row="5"
                                        Grid.Column="0"
                                        Text="传输"
                                        Visibility="{x:Bind ViewModel.SelectedTransportVisibility, Mode=OneWay}"
@@ -136,8 +140,9 @@
                                     Margin="0,2,0,0"
                                     Visibility="{x:Bind ViewModel.AiUnlockVisibility, Mode=OneWay}">
                             <Grid x:Name="AIShadowCastGrid" />
-                            <TextBlock Text="AI 访问解锁"
-                                           FontSize="13"                                          
+                            <TextBlock x:Uid="ServerDetail_AiUnlockLabel"
+                                           Text="AI 访问解锁"
+                                           FontSize="13"
                                            CharacterSpacing="80"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                            VerticalAlignment="Center" />
@@ -188,11 +193,10 @@
                                                        FontSize="12"
                                                        FontWeight="SemiBold"
                                                        VerticalAlignment="Center" />
-                                            <Button Grid.Column="1"
+                                            <Button x:Name="OpenAiLinkButton"
+                                                    Grid.Column="1"
                                                     Click="AiLinkButton_Click"
                                                     Tag="https://chatgpt.com/"
-                                                    ToolTipService.ToolTip="在浏览器中打开 OpenAI"
-                                                    AutomationProperties.Name="在浏览器中打开 OpenAI"
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -255,11 +259,10 @@
                        FontSize="12"
                        FontWeight="SemiBold"
                        VerticalAlignment="Center" />
-                                            <Button Grid.Column="1"
+                                            <Button x:Name="ClaudeLinkButton"
+                    Grid.Column="1"
                     Click="AiLinkButton_Click"
                     Tag="https://claude.ai/"
-                    ToolTipService.ToolTip="在浏览器中打开 Claude"
-                    AutomationProperties.Name="在浏览器中打开 Claude"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -352,11 +355,10 @@
                                                        FontSize="12"
                                                        FontWeight="SemiBold"
                                                        VerticalAlignment="Center" />
-                                            <Button Grid.Column="1"
+                                            <Button x:Name="GeminiLinkButton"
+                                                    Grid.Column="1"
                                                     Click="AiLinkButton_Click"
                                                     Tag="https://gemini.google.com/"
-                                                    ToolTipService.ToolTip="在浏览器中打开 Gemini"
-                                                    AutomationProperties.Name="在浏览器中打开 Gemini"
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -385,7 +387,8 @@
                               ColumnSpacing="12"
                               VerticalAlignment="Center"
                               Visibility="{x:Bind ViewModel.LatencyVisibility, Mode=OneWay}">
-                            <TextBlock Text="网络延迟"
+                            <TextBlock x:Uid="ServerDetail_LatencyLabel"
+                                       Text="网络延迟"
                                        FontSize="13"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        VerticalAlignment="Center" />
@@ -397,13 +400,13 @@
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0" />
 
-                            <Button Grid.Column="2"
+                            <Button x:Name="RetestLatencyButton"
+                                    Grid.Column="2"
                                     Command="{x:Bind ViewModel.TestLatencyCommand}"
                                     IsEnabled="{x:Bind ViewModel.CanTestLatency, Mode=OneWay}"
                                     Background="Transparent"
                                     BorderBrush="Transparent"
                                     Padding="8"
-                                    ToolTipService.ToolTip="重新测试延迟"
                                     VerticalAlignment="Center">
                                 <FontIcon Glyph="&#xE895;"
                                           FontSize="16" />
@@ -411,14 +414,13 @@
                         </Grid>
 
                     </StackPanel>
-                    <controls:CopyButton HorizontalAlignment="Right"
+                    <controls:CopyButton x:Name="CopyShareLinkButton"
+                                         HorizontalAlignment="Right"
                                          VerticalAlignment="Top"
                                          Padding="7,6,7,6"
                                          MinWidth="32"
                                          MinHeight="32"
                                          Content="&#xE8C8;"
-                                         AutomationProperties.Name="复制分享链接"
-                                         ToolTipService.ToolTip="复制分享链接"
                                          IsEnabled="{x:Bind ViewModel.CanCopyShareLink, Mode=OneWay}"
                                          TextToCopy="{x:Bind ViewModel.SelectedShareLink, Mode=OneWay}" />
                 </Grid>

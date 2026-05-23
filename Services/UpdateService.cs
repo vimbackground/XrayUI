@@ -104,19 +104,19 @@ namespace XrayUI.Services
             using var client = CreateHttpClient(proxyUrl, TimeSpan.FromMinutes(10));
 
             // ── 1. .sha256 first (small, fail-fast on bad release) ─────────────────
-            progress.Report(new ProgressDialogUpdate("正在获取校验文件…"));
+            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_FetchingChecksum")));
             string expectedHash;
             try
             {
                 var shaText = await client.GetStringAsync(info.Sha256Url, ct);
                 expectedHash = ParseSha256SumLine(shaText)
-                    ?? throw new InvalidDataException("更新校验文件格式异常");
+                    ?? throw new InvalidDataException(Loc.GetString("Update_ChecksumFormatError"));
             }
             catch (OperationCanceledException) { throw; }
             catch (InvalidDataException) { throw; }
             catch (Exception ex)
             {
-                throw new InvalidDataException("无法下载更新校验文件：" + ex.Message);
+                throw new InvalidDataException(Loc.GetString("Update_ChecksumDownloadFailed") + ex.Message);
             }
 
             // ── 2. zip — hash is computed during the streaming write so we don't ──
@@ -126,27 +126,27 @@ namespace XrayUI.Services
                 client, info.ZipUrl, zipPath, info.ZipAssetName, progress, ct);
 
             if (!string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("更新包校验失败：SHA256 与服务器公布的不一致。");
+                throw new InvalidDataException(Loc.GetString("Update_ChecksumMismatch"));
 
             // ── 4. Extract ──────────────────────────────────────────────────────────
-            progress.Report(new ProgressDialogUpdate("正在解压更新包…"));
+            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_Extracting")));
             try
             {
                 await ZipFile.ExtractToDirectoryAsync(zipPath, extractDir, overwriteFiles: true, cancellationToken: ct);
             }
             catch (Exception ex)
             {
-                throw new InvalidDataException("更新包解压失败：" + ex.Message);
+                throw new InvalidDataException(Loc.GetString("Update_ExtractFailed") + ex.Message);
             }
 
             // ── 5. Sanity check extracted contents ──────────────────────────────────
-            progress.Report(new ProgressDialogUpdate("正在验证更新包…"));
+            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_Verifying")));
 
             var newAppExe     = Path.Combine(extractDir, AppExeName);
             var newUpdaterExe = Path.Combine(extractDir, UpdaterExeName);
 
             if (!File.Exists(newAppExe) || !File.Exists(newUpdaterExe))
-                throw new InvalidDataException("更新包内容异常：缺少必要文件。");
+                throw new InvalidDataException(Loc.GetString("Update_MissingFiles"));
 
             var actualFileVersion = FileVersionInfo.GetVersionInfo(newAppExe).FileVersion;
             if (string.IsNullOrEmpty(actualFileVersion) ||
@@ -154,7 +154,7 @@ namespace XrayUI.Services
                 NormalizeForCompare(parsedFv) != NormalizeForCompare(info.NewVersion))
             {
                 throw new InvalidDataException(
-                    $"更新包版本不匹配：期望 {info.NewVersion}，实际 {actualFileVersion}。");
+                    Loc.Format("Update_VersionMismatch", info.NewVersion, actualFileVersion));
             }
 
             // ── 6. Stage a runnable copy of the CURRENT updater ─────────────────────
@@ -167,14 +167,14 @@ namespace XrayUI.Services
             if (!File.Exists(currentUpdater))
             {
                 throw new FileNotFoundException(
-                    "缺少升级器组件，请重新下载完整安装包。",
+                    Loc.GetString("Update_MissingUpdater"),
                     currentUpdater);
             }
 
             var stagedRunner = Path.Combine(runnerDir, UpdaterExeName);
             File.Copy(currentUpdater, stagedRunner, overwrite: true);
 
-            progress.Report(new ProgressDialogUpdate("正在准备重启…"));
+            progress.Report(new ProgressDialogUpdate(Loc.GetString("Update_PrepRestart")));
 
             return new UpdateStaging(extractDir, stagedRunner, installDir, info.NewVersion);
         }
@@ -310,11 +310,11 @@ namespace XrayUI.Services
                 var mbTotal = total.Value / 1024.0 / 1024.0;
                 var percent = received * 100.0 / total.Value;
                 return new ProgressDialogUpdate(
-                    $"正在下载 {name} … {mbReceived:0.0} / {mbTotal:0.0} MB",
+                    Loc.Format("Update_Downloading", name, mbReceived, mbTotal),
                     percent);
             }
 
-            return new ProgressDialogUpdate($"正在下载 {name} … {mbReceived:0.0} MB");
+            return new ProgressDialogUpdate(Loc.Format("Update_DownloadingNoTotal", name, mbReceived));
         }
     }
 }

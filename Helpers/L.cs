@@ -1,4 +1,4 @@
-namespace XrayUI.Helpers;
+﻿namespace XrayUI.Helpers;
 
 /// <summary>
 /// Strongly-typed accessors for resource strings. Each property is the canonical
@@ -80,6 +80,7 @@ public static class L
     public static string Main_NotConnected => Loc.GetString("Main_NotConnected");
 
     // ── ControlPanel ───────────────────────────────────────────────────────
+    public static string ControlPanel_Personalize        => Loc.GetString("ControlPanel_Personalize");
     public static string ControlPanel_Start              => Loc.GetString("ControlPanel_Start");
     public static string ControlPanel_Stop               => Loc.GetString("ControlPanel_Stop");
     public static string ControlPanel_StatusApplying     => Loc.GetString("ControlPanel_StatusApplying");
@@ -101,7 +102,144 @@ public static class L
     // ── Startup / Update / TUN ─────────────────────────────────────────────
     public static string Startup_SetFailed => Loc.GetString("Startup_SetFailed");
     public static string Update_Updating   => Loc.GetString("Update_Updating");
-    public static string Tun_EnableMsg     => Loc.GetString("Tun_EnableMsg");
+    public static string Tun_EnableMsg     => Loc.GetString("Tun_EnableMsg.Text");
+
+    // ── ChainProxy ─────────────────────────────────────────────────────────
+    public static string ChainProxy_NameRequired   => Loc.GetString("ChainProxy_NameRequired");
+    public static string ChainProxy_EntryRequired  => Loc.GetString("ChainProxy_EntryRequired");
+    public static string ChainProxy_ExitRequired   => Loc.GetString("ChainProxy_ExitRequired");
+    public static string ChainProxy_EntryExitSame  => Loc.GetString("ChainProxy_EntryExitSame");
+
+    // ── TUN confirmation ───────────────────────────────────────────────────
+    public static string Tun_MoreOptions        => Loc.GetString("Tun_MoreOptionsBtn.Content");
+    public static string Tun_InterfaceTooltip   => Loc.GetString("Tun_InterfaceTooltip");
+    public static string Tun_AutoInterfaceLabel => Loc.GetString("Tun_AutoInterfaceLabel");
+
+    // ── Subscription dialog ────────────────────────────────────────────────
+    public static string Subscription_DialogTitle_Add    => Loc.GetString("Subscription_DialogTitle_Add");
+    public static string Subscription_DialogTitle_Manage => Loc.GetString("Subscription_DialogTitle_Manage");
+    public static string Subscription_AddTooltip         => Loc.GetString("Subscription_AddTooltip");
+    public static string Subscription_ManageTooltip      => Loc.GetString("Subscription_ManageTooltip");
+    public static string Subscription_Refresh            => Loc.GetString("Subscription_Refresh");
+    public static string Subscription_DeleteTooltip      => Loc.GetString("Subscription_DeleteTooltip");
+    public static string Subscription_NeverUpdated       => Loc.GetString("Subscription_NeverUpdated");
+    public static string Subscription_JustNow            => Loc.GetString("Subscription_JustNow");
+
+    // ── Personalize ────────────────────────────────────────────────────────
+    public static string Personalize_ExportSuccess         => Loc.GetString("Personalize_ExportSuccess");
+    public static string Personalize_ImportFailed          => Loc.GetString("Personalize_ImportFailed");
+    public static string Personalize_ImportSuccess         => Loc.GetString("Personalize_ImportSuccess");
+    public static string Personalize_ImportAdvancedSuffix  => Loc.GetString("Personalize_ImportAdvancedSuffix");
+    public static string Personalize_PresetMissingTitle    => Loc.GetString("Personalize_PresetMissingTitle");
+    public static string Personalize_PresetMissingMsg      => Loc.GetString("Personalize_PresetMissingMsg");
+    public static string Personalize_ExportTooltip         => Loc.GetString("Personalize_ExportTooltip");
+    public static string Personalize_ImportTooltip         => Loc.GetString("Personalize_ImportTooltip");
+    public static string Error_ExportFailed                => Loc.GetString("Error_ExportFailed");
+
+    // ── CustomRules / AddRule ──────────────────────────────────────────────
+    public static string CustomRules_Title                  => Loc.GetString("CustomRules_Title");
+    public static string CustomRules_UpdateGeoTooltip       => Loc.GetString("CustomRules_UpdateGeoTooltip");
+    public static string CustomRules_AdvancedEditorTooltip  => Loc.GetString("CustomRules_AdvancedEditorTooltip");
+    public static string CustomRules_EditRowTooltip         => Loc.GetString("CustomRules_EditRowTooltip");
+    public static string CustomRules_DeleteRowTooltip       => Loc.GetString("CustomRules_DeleteRowTooltip");
+    public static string CustomRules_PrepFailedTitle        => Loc.GetString("CustomRules_PrepFailedTitle");
+    public static string CustomRules_OpenEditorFailedTitle  => Loc.GetString("CustomRules_OpenEditorFailedTitle");
+
+    public static string AddRule_Title       => Loc.GetString("AddRule_Title");
+    public static string AddRule_EditTitle   => Loc.GetString("AddRule_EditTitle");
+    public static string AddRule_ErrorEmpty  => Loc.GetString("AddRule_ErrorEmpty");
+    public static string AddRule_BrowseExe   => Loc.GetString("AddRule_BrowseExe");
+    public static string AddRule_BrowseFolder => Loc.GetString("AddRule_BrowseFolder");
+    public static string AddRule_PlaceholderDomain  => Loc.GetString("AddRule_PlaceholderDomain");
+    public static string AddRule_PlaceholderIp      => Loc.GetString("AddRule_PlaceholderIp");
+    public static string AddRule_PlaceholderProcess => Loc.GetString("AddRule_PlaceholderProcess");
+    public static string AddRule_HintDomain  => Loc.GetString("AddRule_HintDomain");
+    public static string AddRule_HintIp      => Loc.GetString("AddRule_HintIp");
+    public static string AddRule_HintProcess => Loc.GetString("AddRule_HintProcess");
+
+    public static string GeoUpdate_Updating         => Loc.GetString("GeoUpdate_Updating");
+    public static string GeoUpdate_AlreadyLatest    => Loc.GetString("GeoUpdate_AlreadyLatest");
+    public static string GeoUpdate_AlreadyLatestMsg => Loc.GetString("GeoUpdate_AlreadyLatestMsg");
+    public static string GeoUpdate_TunRestart       => Loc.GetString("GeoUpdate_TunRestart");
+    public static string GeoUpdate_ReloadedOk       => Loc.GetString("GeoUpdate_ReloadedOk");
+    public static string GeoUpdate_RestartRequired  => Loc.GetString("GeoUpdate_RestartRequired");
+    public static string GeoUpdate_NextStart        => Loc.GetString("GeoUpdate_NextStart");
+    public static string GeoUpdate_Success          => Loc.GetString("GeoUpdate_Success");
+
+    // ── LogWindow ──────────────────────────────────────────────────────────
+    public static string Log_Title         => Loc.GetString("Log_Title");
+    public static string Log_Running       => Loc.GetString("Log_Running");
+    public static string Log_NotRunning    => Loc.GetString("Log_NotRunning");
+    public static string Log_PrivacyTitle  => Loc.GetString("Log_PrivacyTitle");
+    public static string Log_PrivacySaved  => Loc.GetString("Log_PrivacySaved");
+    public static string Log_IpMask        => Loc.GetString("Log_IpMask");
+    public static string Log_MaskOff       => Loc.GetString("Log_MaskOff");
+    public static string Log_AutoScroll    => Loc.GetString("Log_AutoScroll");
+    public static string Log_CopyAll       => Loc.GetString("Log_CopyAll");
+    public static string Log_Clear         => Loc.GetString("Log_Clear");
+    public static string Log_PrivacyTooltip => Loc.GetString("Log_PrivacyTooltip");
+
+    // ── MainWindow / Tray ──────────────────────────────────────────────────
+    public static string MainWindow_Title      => Loc.GetString("MainWindow_Title");
+    public static string MainWindow_ToggleMini => Loc.GetString("MainWindow_ToggleMini");
+    public static string MainWindow_ExpandFull => Loc.GetString("MainWindow_ExpandFull");
+    public static string MainWindow_Close      => Loc.GetString("MainWindow_Close");
+    public static string Tray_Open             => Loc.GetString("Tray_Open");
+    public static string Tray_Exit             => Loc.GetString("Tray_Exit");
+
+    // ── ServerList ─────────────────────────────────────────────────────────
+    public static string ServerList_AllServers       => Loc.GetString("ServerList_AllServers");
+    public static string ServerList_Ungrouped        => Loc.GetString("ServerList_Ungrouped");
+    public static string ServerList_Favorites        => Loc.GetString("ServerList_Favorites");
+    public static string ServerList_UnnamedSub       => Loc.GetString("ServerList_UnnamedSub");
+    public static string ServerList_OrphanSub        => Loc.GetString("ServerList_OrphanSub");
+    public static string ServerList_Edit             => Loc.GetString("ServerList_Edit");
+    public static string ServerList_Delete           => Loc.GetString("ServerList_Delete");
+    public static string ServerList_Share            => Loc.GetString("ServerList_Share");
+    public static string ServerList_AddFavorite      => Loc.GetString("ServerList_AddFavorite");
+    public static string ServerList_RemoveFavorite   => Loc.GetString("ServerList_RemoveFavorite");
+    public static string ServerList_FilterTooltip    => Loc.GetString("ServerList_FilterTooltip");
+    public static string ServerList_SortTooltip      => Loc.GetString("ServerList_SortTooltip");
+    public static string ServerList_SortActiveHint   => Loc.GetString("ServerList_SortActiveHint");
+
+    // ── ServerDetail ──────────────────────────────────────────────────────
+    public static string ServerDetail_NoServer       => Loc.GetString("ServerDetail_NoServer");
+    public static string ServerDetail_Address        => Loc.GetString("ServerDetail_Address");
+    public static string ServerDetail_Port           => Loc.GetString("ServerDetail_Port");
+    public static string ServerDetail_Encryption     => Loc.GetString("ServerDetail_Encryption");
+    public static string ServerDetail_Security       => Loc.GetString("ServerDetail_Security");
+    public static string ServerDetail_Entry          => Loc.GetString("ServerDetail_Entry");
+    public static string ServerDetail_Exit           => Loc.GetString("ServerDetail_Exit");
+    public static string ServerDetail_EntryMissing   => Loc.GetString("ServerDetail_EntryMissing");
+    public static string ServerDetail_ExitMissing    => Loc.GetString("ServerDetail_ExitMissing");
+    public static string ServerDetail_AuthLabel      => Loc.GetString("ServerDetail_AuthLabel");
+    public static string ServerDetail_ChainLabel     => Loc.GetString("ServerDetail_ChainLabel");
+    public static string ServerDetail_NoAuth         => Loc.GetString("ServerDetail_NoAuth");
+    public static string ServerDetail_UserPass       => Loc.GetString("ServerDetail_UserPass");
+    public static string ServerDetail_NotTested      => Loc.GetString("ServerDetail_NotTested");
+    public static string ServerDetail_Testing        => Loc.GetString("ServerDetail_Testing");
+    public static string ServerDetail_Timeout        => Loc.GetString("ServerDetail_Timeout");
+    public static string ServerDetail_Failed         => Loc.GetString("ServerDetail_Failed");
+    public static string ServerDetail_RetestLatency  => Loc.GetString("ServerDetail_RetestLatency");
+    public static string ServerDetail_CopyShareLink  => Loc.GetString("ServerDetail_CopyShareLink");
+
+    // ── Import link dialog ────────────────────────────────────────────────
+    public static string Import_ParseFailed    => Loc.GetString("Import_ParseFailed");
+    public static string Import_ParseFailedMsg => Loc.GetString("Import_ParseFailedMsg");
+
+    // ── Subscription ──────────────────────────────────────────────────────
+    public static string Subscription_FetchFailed       => Loc.GetString("Subscription_FetchFailed");
+    public static string Subscription_NoParsed          => Loc.GetString("Subscription_NoParsed");
+    public static string Subscription_StopFirst_Refresh => Loc.GetString("Subscription_StopFirst_Refresh");
+    public static string Subscription_StopFirst_Delete  => Loc.GetString("Subscription_StopFirst_Delete");
+    public static string Subscription_UnknownError      => Loc.GetString("Subscription_UnknownError");
+
+    // ── Share dialog ──────────────────────────────────────────────────────
+    public static string Share_NotSupported    => Loc.GetString("Share_NotSupported");
+    public static string Share_NotSupportedMsg => Loc.GetString("Share_NotSupportedMsg");
+
+    // ── Confirm delete ────────────────────────────────────────────────────
+    public static string Confirm_DeleteTitle => Loc.GetString("Confirm_DeleteTitle");
 
     // ── DNS settings dialog ────────────────────────────────────────────────
     public static string Dns_DialogTitle        => Loc.GetString("Dns_DialogTitle");

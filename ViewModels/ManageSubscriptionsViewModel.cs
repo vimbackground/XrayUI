@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
+using XrayUI.Helpers;
 using XrayUI.Models;
 
 namespace XrayUI.ViewModels
@@ -74,7 +75,7 @@ namespace XrayUI.ViewModels
         public bool IsAddPage => SelectedIndex == 0;
         public bool IsManagePage => SelectedIndex == 1;
         public bool CanAddSubscription => IsAddPage && !string.IsNullOrWhiteSpace(SubscriptionUrl);
-        public string DialogTitle => IsAddPage ? "添加订阅" : "管理订阅";
+        public string DialogTitle => IsAddPage ? L.Subscription_DialogTitle_Add : L.Subscription_DialogTitle_Manage;
 
         public Visibility AddPageVisibility => IsAddPage ? Visibility.Visible : Visibility.Collapsed;
         public Visibility ManagePageVisibility => IsManagePage ? Visibility.Visible : Visibility.Collapsed;

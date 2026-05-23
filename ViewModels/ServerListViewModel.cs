@@ -27,12 +27,14 @@ namespace XrayUI.ViewModels
         private const string AllChipKey            = "__all__";
         private const string UngroupedChipKey      = "__ungrouped__";
         private const string FavoritesChipKey      = "__favorites__";
-        private const string AllChipName           = "所有服务器";
-        private const string UngroupedName         = "未分组";
-        private const string FavoritesName         = "收藏列表";
-        private const string UnnamedSubLabel       = "(未命名订阅)";
-        private const string OrphanSubLabel        = "(已删除订阅)";
         private const string SubscriptionUserAgent = "v2rayN/7.0";
+
+        // Localized labels — looked up lazily so language changes apply at startup.
+        private static string AllChipName     => L.ServerList_AllServers;
+        private static string UngroupedName   => L.ServerList_Ungrouped;
+        private static string FavoritesName   => L.ServerList_Favorites;
+        private static string UnnamedSubLabel => L.ServerList_UnnamedSub;
+        private static string OrphanSubLabel  => L.ServerList_OrphanSub;
 
         private static readonly HttpClient Http = CreateSubscriptionHttpClient();
 
@@ -613,7 +615,7 @@ namespace XrayUI.ViewModels
 
             if (added == 0)
             {
-                await _dialogs.ShowErrorAsync("解析失败", "无法识别有效的节点链接，请检查后重试。");
+                await _dialogs.ShowErrorAsync(L.Import_ParseFailed, L.Import_ParseFailedMsg);
                 return;
             }
 
@@ -664,7 +666,7 @@ namespace XrayUI.ViewModels
 
             if (entries == null)
             {
-                await _dialogs.ShowErrorAsync("订阅拉取失败", error ?? "未知错误");
+                await _dialogs.ShowErrorAsync(L.Subscription_FetchFailed, error ?? L.Subscription_UnknownError);
             }
         }
 
@@ -699,7 +701,7 @@ namespace XrayUI.ViewModels
             }
 
             if (entries.Count == 0)
-                return (null, "未能从订阅中解析出任何有效节点。");
+                return (null, L.Subscription_NoParsed);
 
             return (entries, null);
         }
@@ -708,7 +710,7 @@ namespace XrayUI.ViewModels
         {
             if (IsSubscriptionLocked(sub.Id))
             {
-                sub.LastError = "请先停止代理后再刷新";
+                sub.LastError = L.Subscription_StopFirst_Refresh;
                 return;
             }
 
@@ -718,7 +720,7 @@ namespace XrayUI.ViewModels
                 var (newEntries, error) = await FetchSubscriptionNodesAsync(sub);
                 if (newEntries == null)
                 {
-                    sub.LastError = $"更新失败: {error}";
+                    sub.LastError = Loc.Format("Subscription_UpdateFailed", error);
                     return;
                 }
 
@@ -803,7 +805,7 @@ namespace XrayUI.ViewModels
         {
             if (IsSubscriptionLocked(sub.Id))
             {
-                sub.LastError = "请先停止代理后再删除";
+                sub.LastError = L.Subscription_StopFirst_Delete;
                 return false;
             }
 
@@ -937,7 +939,7 @@ namespace XrayUI.ViewModels
             var link = NodeLinkSerializer.ToLink(SelectedServer);
             if (string.IsNullOrEmpty(link))
             {
-                await _dialogs.ShowErrorAsync("不支持分享", "该节点协议暂不支持生成分享链接。");
+                await _dialogs.ShowErrorAsync(L.Share_NotSupported, L.Share_NotSupportedMsg);
                 return;
             }
 
@@ -1000,14 +1002,14 @@ namespace XrayUI.ViewModels
 
             var isBatchDelete = selectedServers.Count > 1;
             var message = isBatchDelete
-                ? $"确定要删除当前 {selectedServers.Count} 个项目?"
-                : $"确定要删除 {selectedServers[0].Name}?";
+                ? Loc.Format("Confirm_DeleteBatchMsg", selectedServers.Count)
+                : Loc.Format("Confirm_DeleteMsg", selectedServers[0].Name);
 
             var confirmed = await _dialogs.ShowConfirmationAsync(
-                "确认删除",
+                L.Confirm_DeleteTitle,
                 message,
-                "删除",
-                "取消",
+                L.Dialog_Delete,
+                L.Dialog_Cancel,
                 isDanger: true);
             if (!confirmed) return;
 

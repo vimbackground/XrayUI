@@ -4,17 +4,20 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using XrayUI.Helpers;
 using XrayUI.Services;
 
 namespace XrayUI.Views
 {
     public sealed partial class TunConfirmationDialog : UserControl
     {
-        private const string AutoInterfaceLabel = "auto（推荐）";
+        // Localized at construction so the resource loader is already initialized.
+        private static string AutoInterfaceLabel => L.Tun_AutoInterfaceLabel;
 
         public TunConfirmationDialog(int currentMtu, string currentInterface)
         {
             this.InitializeComponent();
+            ToolTipService.SetToolTip(InterfaceComboBox, L.Tun_InterfaceTooltip);
             MtuNumberBox.Value = currentMtu;
             PopulateInterfaceComboBox(currentInterface);
         }
@@ -31,7 +34,7 @@ namespace XrayUI.Views
             if (AdvancedSettingsPanel.Visibility == Visibility.Visible)
             {
                 AdvancedSettingsPanel.Visibility = Visibility.Collapsed;
-                MoreOptionsButton.Content = "更多选项";
+                MoreOptionsButton.Content = L.Tun_MoreOptions;
             }
             else
             {

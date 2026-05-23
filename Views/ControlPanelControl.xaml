@@ -23,12 +23,12 @@
                         VerticalAlignment="Center"
                         Spacing="2">
 
-                <Button Background="Transparent"
+                <Button x:Name="PersonalizeButton"
+                        Background="Transparent"
                         BorderBrush="Transparent"
                         VerticalAlignment="Center"
                         Padding="8"
-                        Command="{x:Bind ViewModel.ShowPersonalizeCommand}"
-                        ToolTipService.ToolTip="个性化">
+                        Command="{x:Bind ViewModel.ShowPersonalizeCommand}">
                     <FontIcon Glyph="&#xE771;" FontSize="16" />
                 </Button>
 

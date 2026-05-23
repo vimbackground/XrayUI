@@ -10,9 +10,11 @@
     <StackPanel Spacing="12" Width="280">
         <!-- 核心警告提示 -->
         <TextBlock Text="TUN 模式需要管理员权限，程序将会重启，是否继续？"
+                   x:Uid="Tun_EnableMsg"
                    TextWrapping="Wrap" />
 
         <HyperlinkButton x:Name="MoreOptionsButton"
+                         x:Uid="Tun_MoreOptionsBtn"
                          Content="更多选项"
                          HorizontalAlignment="Left"
                          Padding="0"
@@ -30,7 +32,8 @@
                 <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE946;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="最大传输单元"
+                        <TextBlock x:Uid="Tun_MtuLabel"
+                                   Text="最大传输单元"
                                    FontSize="15"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
@@ -46,7 +49,8 @@
                 <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE839;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="出口网卡"
+                        <TextBlock x:Uid="Tun_InterfaceLabel"
+                                   Text="出口网卡"
                                    FontSize="15"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
@@ -54,8 +58,7 @@
                     <ComboBox x:Name="InterfaceComboBox"
                               Grid.Column="0"
                               HorizontalAlignment="Stretch"
-                              SelectedIndex="0"
-                              ToolTipService.ToolTip="默认使用 Xray 自动选择；只有自动模式不可用时才手动指定。" />
+                              SelectedIndex="0" />
                 </StackPanel>
             </StackPanel>
         </Border>

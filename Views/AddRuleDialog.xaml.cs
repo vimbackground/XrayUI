@@ -19,6 +19,10 @@ namespace XrayUI.Views
             this.InitializeComponent();
             this.RequestedTheme = ThemeHelper.ActualTheme;
 
+            Title             = L.AddRule_Title;
+            PrimaryButtonText = L.Dialog_Add;
+            CloseButtonText   = L.Dialog_Cancel;
+
             // Wire up event handlers in code-behind (NOT via XAML markup).
             // The XAML-compiler-generated Connect path for SelectionChanged on a
             // ContentDialog can fail to fire under AOT in WinUI 3; explicit
@@ -29,8 +33,8 @@ namespace XrayUI.Views
 
             if (existing != null)
             {
-                Title             = "编辑规则";
-                PrimaryButtonText = "保存";
+                Title             = L.AddRule_EditTitle;
+                PrimaryButtonText = L.Dialog_Save;
 
                 TypeComboBox.SelectedIndex = existing.Type switch
                 {
@@ -71,9 +75,9 @@ namespace XrayUI.Views
             {
                 MatchTextBox.PlaceholderText = tag switch
                 {
-                    "ip"      => "192.168.0.0/16 或 geoip:cn",
-                    "process" => "可手填进程名 / 路径 / 文件夹，或点浏览选取",
-                    _         => "youtube.com 或 geosite:cn",
+                    "ip"      => L.AddRule_PlaceholderIp,
+                    "process" => L.AddRule_PlaceholderProcess,
+                    _         => L.AddRule_PlaceholderDomain,
                 };
             }
 
@@ -81,9 +85,9 @@ namespace XrayUI.Views
             {
                 HintTextBlock.Text = tag switch
                 {
-                    "ip"      => "支持 CIDR 与 geoip: 前缀",
-                    "process" => "同名进程：匹配任意路径下的同名 exe；完整路径：只匹配此 exe；整个目录：匹配该目录下所有 exe",
-                    _         => "支持精确匹配、regexp:、geosite: 前缀",
+                    "ip"      => L.AddRule_HintIp,
+                    "process" => L.AddRule_HintProcess,
+                    _         => L.AddRule_HintDomain,
                 };
             }
         }
@@ -97,7 +101,7 @@ namespace XrayUI.Views
         {
             if (BrowseButtonText is null) return;
             var isFolder = GetSelectedBrowseFormat() == "folder";
-            BrowseButtonText.Text = isFolder ? "浏览文件夹..." : "浏览 exe...";
+            BrowseButtonText.Text = isFolder ? L.AddRule_BrowseFolder : L.AddRule_BrowseExe;
             if (BrowseButtonIcon is not null)
             {
                 BrowseButtonIcon.Glyph = isFolder ? "\uE8DA" : "\uE8E5";
