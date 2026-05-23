@@ -202,10 +202,10 @@ namespace XrayUI.ViewModels
         public async Task<PresetImportResult?> ConfirmAndImportPresetAsync()
         {
             var confirmed = await _dialogs.ShowConfirmationAsync(
-                "替换当前配置?",
-                "此操作将覆盖您当前的全部节点和路由规则,强烈建议先导出备份。是否继续?",
-                "替换",
-                "取消",
+                L.Confirm_ReplaceTitle,
+                L.Confirm_ReplaceMsg,
+                L.Dialog_Replace,
+                L.Dialog_Cancel,
                 isDanger: true);
             if (!confirmed)
                 return null;

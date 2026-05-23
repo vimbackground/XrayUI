@@ -1,5 +1,64 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -58,8 +117,848 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="_LocaleProbe" xml:space="preserve">
-    <value>en-US</value>
-    <comment>Sentinel — confirms the en-US resw is selected. Real keys land in commit 3.</comment>
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>Proxy Console</value>
+  </data>
+  <data name="MainWindow_ToggleMini" xml:space="preserve">
+    <value>Toggle mini window</value>
+  </data>
+  <data name="MainWindow_ExpandFull" xml:space="preserve">
+    <value>Back to full window</value>
+  </data>
+  <data name="MainWindow_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open Window</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ServerList_Header" xml:space="preserve">
+    <value>Server List</value>
+  </data>
+  <data name="ServerList_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="ServerList_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ServerList_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ServerList_Share" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="ServerList_ImportNode" xml:space="preserve">
+    <value>Import Nodes</value>
+  </data>
+  <data name="ServerList_AddSubscription" xml:space="preserve">
+    <value>Add Subscription</value>
+  </data>
+  <data name="ServerList_AddManual" xml:space="preserve">
+    <value>Add Manually</value>
+  </data>
+  <data name="ServerList_SearchPlaceholder" xml:space="preserve">
+    <value>Search servers</value>
+  </data>
+  <data name="ServerList_FilterLabel" xml:space="preserve">
+    <value>Filter:</value>
+  </data>
+  <data name="ServerList_Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="ServerList_Sort" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="ServerList_SortDefault" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ServerList_SortActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ServerList_SortProtocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerList_SortActiveHint" xml:space="preserve">
+    <value>Only available when filter is "All Servers"</value>
+  </data>
+  <data name="ServerList_AllServers" xml:space="preserve">
+    <value>All Servers</value>
+  </data>
+  <data name="ServerList_Ungrouped" xml:space="preserve">
+    <value>Ungrouped</value>
+  </data>
+  <data name="ServerList_UnnamedSub" xml:space="preserve">
+    <value>(Unnamed Subscription)</value>
+  </data>
+  <data name="ServerList_OrphanSub" xml:space="preserve">
+    <value>(Deleted Subscription)</value>
+  </data>
+  <data name="ServerList_Activated" xml:space="preserve">
+    <value>● Active</value>
+  </data>
+  <data name="ControlPanel_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="ControlPanel_Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="ControlPanel_StatusNotRunning" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="ControlPanel_StatusApplying" xml:space="preserve">
+    <value>Applying...</value>
+  </data>
+  <data name="ControlPanel_Personalize" xml:space="preserve">
+    <value>Personalize</value>
+  </data>
+  <data name="ControlPanel_GitHub" xml:space="preserve">
+    <value>GitHub</value>
+  </data>
+  <data name="ControlPanel_EditLocalPort" xml:space="preserve">
+    <value>Edit Local Port</value>
+  </data>
+  <data name="ControlPanel_ViewLog" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="ControlPanel_ProxySettings" xml:space="preserve">
+    <value>Proxy Setting</value>
+  </data>
+  <data name="ControlPanel_GlobalProxy" xml:space="preserve">
+    <value>Global Proxy</value>
+  </data>
+  <data name="ControlPanel_NoProxy" xml:space="preserve">
+    <value>No Proxy Takeover</value>
+  </data>
+  <data name="ControlPanel_Startup" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="ControlPanel_RoutingSettings" xml:space="preserve">
+    <value>Routing Settings</value>
+  </data>
+  <data name="ControlPanel_RoutingGlobal" xml:space="preserve">
+    <value>Global </value>
+  </data>
+  <data name="ControlPanel_RoutingSmart" xml:space="preserve">
+    <value>Smart </value>
+  </data>
+  <data name="ControlPanel_CustomRules" xml:space="preserve">
+    <value>Custom Rules...</value>
+  </data>
+  <data name="ControlPanel_TunMode" xml:space="preserve">
+    <value>TUN Mode</value>
+  </data>
+  <data name="ControlPanel_RoutingLabel" xml:space="preserve">
+    <value>Routing:</value>
+  </data>
+  <data name="ControlPanel_UpdateFound" xml:space="preserve">
+    <value>New version {0}</value>
+  </data>
+  <data name="ServerDetail_Header" xml:space="preserve">
+    <value>Server Details</value>
+  </data>
+  <data name="ServerDetail_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ServerDetail_Protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerDetail_Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="ServerDetail_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="ServerDetail_Transport" xml:space="preserve">
+    <value>Transport</value>
+  </data>
+  <data name="ServerDetail_Encryption" xml:space="preserve">
+    <value>Encryption</value>
+  </data>
+  <data name="ServerDetail_Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="ServerDetail_AiUnlock" xml:space="preserve">
+    <value>AI Access Unlock</value>
+  </data>
+  <data name="ServerDetail_OpenInBrowser" xml:space="preserve">
+    <value>Open {0} in browser</value>
+  </data>
+  <data name="ServerDetail_Latency" xml:space="preserve">
+    <value>Latency</value>
+  </data>
+  <data name="ServerDetail_RetestLatency" xml:space="preserve">
+    <value>Retest latency</value>
+  </data>
+  <data name="ServerDetail_CopyShareLink" xml:space="preserve">
+    <value>Copy share link</value>
+  </data>
+  <data name="ServerDetail_NoServer" xml:space="preserve">
+    <value>No server selected</value>
+  </data>
+  <data name="ServerDetail_NotTested" xml:space="preserve">
+    <value>Not tested</value>
+  </data>
+  <data name="ServerDetail_Testing" xml:space="preserve">
+    <value>Testing...</value>
+  </data>
+  <data name="ServerDetail_Timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="ServerDetail_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Personalize_Header.Text" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
+  <data name="Personalize_Theme.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Personalize_ThemeDesc.Text" xml:space="preserve">
+    <value>Choose the app appearance mode</value>
+  </data>
+  <data name="Personalize_Light.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Personalize_Dark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Personalize_FollowSystem.Content" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Personalize_Backdrop.Text" xml:space="preserve">
+    <value>Background Effect</value>
+  </data>
+  <data name="Personalize_BackdropDesc.Text" xml:space="preserve">
+    <value>Choose window background material</value>
+  </data>
+  <data name="Personalize_Acrylic.Content" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Personalize_ProtocolColors.Text" xml:space="preserve">
+    <value>Protocol Colors</value>
+  </data>
+  <data name="Personalize_Reset.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Personalize_OtherProtocol.Text" xml:space="preserve">
+    <value>Other Protocols</value>
+  </data>
+  <data name="Personalize_OtherProtocolDesc.Text" xml:space="preserve">
+    <value>Unmatched protocols will use this color</value>
+  </data>
+  <data name="Personalize_DataManagement.Text" xml:space="preserve">
+    <value>Data Management</value>
+  </data>
+  <data name="Personalize_ExportConfig.Text" xml:space="preserve">
+    <value>Export Configuration</value>
+  </data>
+  <data name="Personalize_Export.Text" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Personalize_Done.Content" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Personalize_ExportSuccess" xml:space="preserve">
+    <value>Export Successful</value>
+  </data>
+  <data name="Personalize_ExportSuccessMsg" xml:space="preserve">
+    <value>Exported to the Import folder.</value>
+  </data>
+  <data name="Personalize_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Personalize_LanguageDesc" xml:space="preserve">
+    <value>Choose the app display language</value>
+  </data>
+  <data name="Personalize_RestartRequired" xml:space="preserve">
+    <value>Changing language requires a restart</value>
+  </data>
+  <data name="Personalize_RestartNow" xml:space="preserve">
+    <value>Restart Now</value>
+  </data>
+  <data name="Personalize_RestartLater" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="Subscription_AddTooltip" xml:space="preserve">
+    <value>Add Subscription</value>
+  </data>
+  <data name="Subscription_ManageTooltip" xml:space="preserve">
+    <value>Manage Subscriptions</value>
+  </data>
+  <data name="Subscription_LinkHeader" xml:space="preserve">
+    <value>Subscription URL</value>
+  </data>
+  <data name="Subscription_NameHeader" xml:space="preserve">
+    <value>Name (optional)</value>
+  </data>
+  <data name="Subscription_NamePlaceholder" xml:space="preserve">
+    <value>Leave empty to use link domain</value>
+  </data>
+  <data name="Subscription_AutoImportHint" xml:space="preserve">
+    <value>All nodes from the subscription will be imported automatically</value>
+  </data>
+  <data name="Subscription_Empty" xml:space="preserve">
+    <value>No subscriptions</value>
+  </data>
+  <data name="Subscription_Refresh" xml:space="preserve">
+    <value>Refresh Subscription</value>
+  </data>
+  <data name="Subscription_DeleteTooltip" xml:space="preserve">
+    <value>Delete Subscription</value>
+  </data>
+  <data name="Subscription_DeleteConfirm" xml:space="preserve">
+    <value>Delete subscription?</value>
+  </data>
+  <data name="Subscription_DeleteDesc" xml:space="preserve">
+    <value>All nodes under this subscription will also be deleted.</value>
+  </data>
+  <data name="Subscription_FetchFailed" xml:space="preserve">
+    <value>Subscription fetch failed</value>
+  </data>
+  <data name="Subscription_NoParsed" xml:space="preserve">
+    <value>No valid nodes could be parsed from the subscription.</value>
+  </data>
+  <data name="Subscription_StopFirst_Refresh" xml:space="preserve">
+    <value>Please stop the proxy before refreshing</value>
+  </data>
+  <data name="Subscription_UpdateFailed" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+  <data name="Subscription_StopFirst_Delete" xml:space="preserve">
+    <value>Please stop the proxy before deleting</value>
+  </data>
+  <data name="CustomRules_Title" xml:space="preserve">
+    <value>Custom Routing Rules</value>
+  </data>
+  <data name="CustomRules_RuleList" xml:space="preserve">
+    <value>Rules</value>
+  </data>
+  <data name="CustomRules_UpdateGeoTooltip" xml:space="preserve">
+    <value>Update GeoFile routing data</value>
+  </data>
+  <data name="CustomRules_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="CustomRules_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CustomRules_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CustomRules_EditTooltip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="CustomRules_DeleteTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="CustomRules_NotEffective" xml:space="preserve">
+    <value>Global routing is active — custom rules are not in effect. They will apply when switching back to Smart Routing.</value>
+  </data>
+  <data name="AddRule_Title" xml:space="preserve">
+    <value>Add Rule</value>
+  </data>
+  <data name="AddRule_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="AddRule_TypeLabel" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="AddRule_TypeDomain" xml:space="preserve">
+    <value>Domain</value>
+  </data>
+  <data name="AddRule_MatchLabel" xml:space="preserve">
+    <value>Match Content</value>
+  </data>
+  <data name="AddRule_MatchHint" xml:space="preserve">
+    <value>Supports exact match, regexp:, geosite:, geoip: prefixes</value>
+  </data>
+  <data name="AddRule_OutboundLabel" xml:space="preserve">
+    <value>Outbound</value>
+  </data>
+  <data name="AddRule_OutboundProxy" xml:space="preserve">
+    <value>proxy</value>
+  </data>
+  <data name="AddRule_OutboundDirect" xml:space="preserve">
+    <value>direct</value>
+  </data>
+  <data name="AddRule_OutboundBlock" xml:space="preserve">
+    <value>block</value>
+  </data>
+  <data name="AddRule_ErrorEmpty" xml:space="preserve">
+    <value>Please enter match content</value>
+  </data>
+  <data name="Log_Title" xml:space="preserve">
+    <value>Proxy Log</value>
+  </data>
+  <data name="Log_NotRunning" xml:space="preserve">
+    <value>Not running</value>
+  </data>
+  <data name="Log_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Log_Lines" xml:space="preserve">
+    <value>({0} lines)</value>
+  </data>
+  <data name="Log_PrivacyTooltip" xml:space="preserve">
+    <value>Log privacy settings</value>
+  </data>
+  <data name="Log_IpMask" xml:space="preserve">
+    <value>IP Address Mask</value>
+  </data>
+  <data name="Log_MaskOff" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Log_AutoScroll" xml:space="preserve">
+    <value>Auto Scroll</value>
+  </data>
+  <data name="Log_CopyAll" xml:space="preserve">
+    <value>Copy All</value>
+  </data>
+  <data name="Log_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Log_PrivacyTitle" xml:space="preserve">
+    <value>Log Privacy Settings</value>
+  </data>
+  <data name="Log_PrivacySaved" xml:space="preserve">
+    <value>Saved. Takes effect on next TUN session start.</value>
+  </data>
+  <data name="Log_PrivacyFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
+  <data name="Dialog_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Dialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Dialog_Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Dialog_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Dialog_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Dialog_Replace" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="Dialog_Preparing" xml:space="preserve">
+    <value>Preparing…</value>
+  </data>
+  <data name="Dialog_On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Dialog_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Import_Placeholder" xml:space="preserve">
+    <value>Paste node links (multi-protocol supported)</value>
+  </data>
+  <data name="Import_Title" xml:space="preserve">
+    <value>Import Node Links</value>
+  </data>
+  <data name="Import_SupportHint" xml:space="preserve">
+    <value>Supports common protocol links</value>
+  </data>
+  <data name="Import_ParseFailed" xml:space="preserve">
+    <value>Parse Failed</value>
+  </data>
+  <data name="Import_ParseFailedMsg" xml:space="preserve">
+    <value>Could not identify valid node links. Please check and try again.</value>
+  </data>
+  <data name="EditServer_AddTitle" xml:space="preserve">
+    <value>Add Server Manually</value>
+  </data>
+  <data name="EditServer_EditTitle" xml:space="preserve">
+    <value>Edit Server</value>
+  </data>
+  <data name="EditServer_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="EditServer_Address" xml:space="preserve">
+    <value>Address / Domain</value>
+  </data>
+  <data name="EditServer_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="EditServer_Protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="EditServer_Encryption" xml:space="preserve">
+    <value>Encryption (SS)</value>
+  </data>
+  <data name="EditServer_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="EditServer_UUID" xml:space="preserve">
+    <value>UUID (VMess / VLESS)</value>
+  </data>
+  <data name="EditServer_AlterId" xml:space="preserve">
+    <value>AlterId (VMess)</value>
+  </data>
+  <data name="EditServer_Transport" xml:space="preserve">
+    <value>Transport Protocol</value>
+  </data>
+  <data name="EditServer_Path" xml:space="preserve">
+    <value>Path (WS/gRPC/XHTTP)</value>
+  </data>
+  <data name="EditServer_WsHost" xml:space="preserve">
+    <value>Host Header (WS/XHTTP)</value>
+  </data>
+  <data name="EditServer_Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="EditServer_Fingerprint" xml:space="preserve">
+    <value>Fingerprint (uTLS)</value>
+  </data>
+  <data name="EditServer_AllowInsecure" xml:space="preserve">
+    <value>Allow insecure connection (skip certificate verification)</value>
+  </data>
+  <data name="EditServer_FlowPlaceholder" xml:space="preserve">
+    <value>xtls-rprx-vision or leave empty</value>
+  </data>
+  <data name="EditPort_Title" xml:space="preserve">
+    <value>Edit Local Port</value>
+  </data>
+  <data name="EditPort_Header" xml:space="preserve">
+    <value>Local Port</value>
+  </data>
+  <data name="EditPort_Range" xml:space="preserve">
+    <value>Valid range: {0} - {1}</value>
+  </data>
+  <data name="Share_Title" xml:space="preserve">
+    <value>Share Node</value>
+  </data>
+  <data name="Share_CopyLink" xml:space="preserve">
+    <value>Copy Link</value>
+  </data>
+  <data name="Share_NotSupported" xml:space="preserve">
+    <value>Sharing Not Supported</value>
+  </data>
+  <data name="Share_NotSupportedMsg" xml:space="preserve">
+    <value>This node protocol does not support generating share links.</value>
+  </data>
+  <data name="Startup_Title" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="Startup_AutoStart" xml:space="preserve">
+    <value>Launch at startup</value>
+  </data>
+  <data name="Startup_AutoConnect" xml:space="preserve">
+    <value>Auto-connect to last node</value>
+  </data>
+  <data name="Startup_SetFailed" xml:space="preserve">
+    <value>Startup settings failed</value>
+  </data>
+  <data name="Confirm_DeleteTitle" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="Confirm_DeleteMsg" xml:space="preserve">
+    <value>Are you sure you want to delete {0}?</value>
+  </data>
+  <data name="Confirm_ReplaceTitle" xml:space="preserve">
+    <value>Replace current configuration?</value>
+  </data>
+  <data name="Confirm_ReplaceMsg" xml:space="preserve">
+    <value>This will overwrite all current servers and routing rules. We strongly recommend exporting a backup first. Continue?</value>
+  </data>
+  <data name="EditServer_SocksUsername" xml:space="preserve">
+    <value>Username (SOCKS)</value>
+  </data>
+  <data name="EditServer_EchPlaceholder" xml:space="preserve">
+    <value>e.g. udp://1.1.1.1 or server-generated ECHConfig</value>
+  </data>
+  <data name="EditServer_FinalmaskPlaceholder" xml:space="preserve">
+    <value>Empty = none; or mlkem768x25519plus.native.0rtt...</value>
+  </data>
+  <data name="ChainProxy_AddTitle" xml:space="preserve">
+    <value>Chain proxy</value>
+  </data>
+  <data name="ChainProxy_EditTitle" xml:space="preserve">
+    <value>Edit chain proxy</value>
+  </data>
+  <data name="Dns_DialogTitle" xml:space="preserve">
+    <value>DNS Settings</value>
+  </data>
+  <data name="ControlPanel_DnsItem.Text" xml:space="preserve">
+    <value>DNS Settings</value>
+  </data>
+  <data name="Dns_ResetDefaults" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="Dns_ServerPlaceholder" xml:space="preserve">
+    <value>Enter IP or DoH address (empty = auto)</value>
+  </data>
+  <data name="Dns_QueryStrategyLabel" xml:space="preserve">
+    <value>Query strategy</value>
+  </data>
+  <data name="Dns_EnableCacheLabel" xml:space="preserve">
+    <value>Enable DNS cache</value>
+  </data>
+  <data name="Dns_DirectTitle" xml:space="preserve">
+    <value>Direct DNS</value>
+  </data>
+  <data name="Dns_DirectDesc" xml:space="preserve">
+    <value>For domestic domains (geosite:cn), resolved via direct outbound</value>
+  </data>
+  <data name="Dns_ProxyTitle" xml:space="preserve">
+    <value>Proxy DNS</value>
+  </data>
+  <data name="Dns_ProxyDesc" xml:space="preserve">
+    <value>For foreign domains, resolved via proxy outbound to prevent DNS pollution</value>
+  </data>
+  <data name="Dns_TunOnlyHint" xml:space="preserve">
+    <value>TUN mode only</value>
+  </data>
+  <data name="Dns_Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="Dns_Provider_Ali" xml:space="preserve">
+    <value>Alibaba</value>
+  </data>
+  <data name="Dns_Provider_Tencent" xml:space="preserve">
+    <value>Tencent</value>
+  </data>
+  <data name="Dns_Provider_Google" xml:space="preserve">
+    <value>Google</value>
+  </data>
+  <data name="Dns_Strategy_V4Only" xml:space="preserve">
+    <value>IPv4 only</value>
+  </data>
+  <data name="Dns_Strategy_V6Only" xml:space="preserve">
+    <value>IPv6 only</value>
+  </data>
+  <data name="Dns_Strategy_Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="Error_NoServer" xml:space="preserve">
+    <value>No Server Selected</value>
+  </data>
+  <data name="Error_NoServerMsg" xml:space="preserve">
+    <value>Please select a server from the list first</value>
+  </data>
+  <data name="Error_StartFailed" xml:space="preserve">
+    <value>Start Failed</value>
+  </data>
+  <data name="Error_XrayStartFailed" xml:space="preserve">
+    <value>xray failed to start. Please check server configuration.</value>
+  </data>
+  <data name="Error_ReapplyFailed" xml:space="preserve">
+    <value>Apply Configuration Failed</value>
+  </data>
+  <data name="Error_XrayReapplyFailed" xml:space="preserve">
+    <value>xray failed to apply new configuration and has stopped.</value>
+  </data>
+  <data name="Error_UpdateFailed" xml:space="preserve">
+    <value>Update Failed</value>
+  </data>
+  <data name="Error_UpdaterLaunchFailed" xml:space="preserve">
+    <value>Could not launch updater: {0}</value>
+  </data>
+  <data name="Update_Updating" xml:space="preserve">
+    <value>Updating XrayUI</value>
+  </data>
+  <data name="Tun_EnableTitle" xml:space="preserve">
+    <value>Enable TUN Mode</value>
+  </data>
+  <data name="Tun_EnableMsg" xml:space="preserve">
+    <value>Enabling TUN mode requires administrator privileges. The app will restart. Continue?</value>
+  </data>
+  <data name="Main_NoSelection" xml:space="preserve">
+    <value>Not selected</value>
+  </data>
+  <data name="Main_NotConnected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="CopyButton_Tooltip" xml:space="preserve">
+    <value>Copy to clipboard</value>
+  </data>
+  <data name="CopyButton_Copied" xml:space="preserve">
+    <value>Copied to clipboard</value>
+  </data>
+  <data name="GeoUpdate_Updating" xml:space="preserve">
+    <value>Updating routing data</value>
+  </data>
+  <data name="GeoUpdate_AlreadyLatest" xml:space="preserve">
+    <value>Already Up to Date</value>
+  </data>
+  <data name="GeoUpdate_AlreadyLatestMsg" xml:space="preserve">
+    <value>geoip.dat and geosite.dat are already the latest version. No download needed.</value>
+  </data>
+  <data name="GeoUpdate_Success" xml:space="preserve">
+    <value>Update Successful</value>
+  </data>
+  <data name="GeoUpdate_TunRestart" xml:space="preserve">
+    <value>Updated. Please restart manually in TUN mode for changes to take effect.</value>
+  </data>
+  <data name="GeoUpdate_ReloadedOk" xml:space="preserve">
+    <value>Updated and xray reloaded.</value>
+  </data>
+  <data name="GeoUpdate_ReloadFailed" xml:space="preserve">
+    <value>Data files updated, but xray restart failed: {0}</value>
+  </data>
+  <data name="GeoUpdate_RestartRequired" xml:space="preserve">
+    <value>Updated. Please restart xray for changes to take effect.</value>
+  </data>
+  <data name="GeoUpdate_NextStart" xml:space="preserve">
+    <value>Updated. Changes will take effect on next xray start.</value>
+  </data>
+  <data name="Xray_NotFound" xml:space="preserve">
+    <value>xray.exe not found
+Path: {0}</value>
+  </data>
+  <data name="Xray_LogError" xml:space="preserve">
+    <value>[Error]</value>
+  </data>
+  <data name="Xray_ProcessExited" xml:space="preserve">
+    <value>[xray process exited]</value>
+  </data>
+  <data name="Xray_LogStart" xml:space="preserve">
+    <value>[Start]</value>
+  </data>
+  <data name="Xray_LogConfig" xml:space="preserve">
+    <value>[Config]</value>
+  </data>
+  <data name="Xray_ImmediateExit" xml:space="preserve">
+    <value>xray exited immediately (exit code {0})</value>
+  </data>
+  <data name="Xray_LogStartFailed" xml:space="preserve">
+    <value>[Error] Start failed:</value>
+  </data>
+  <data name="Xray_LogException" xml:space="preserve">
+    <value>[Exception]</value>
+  </data>
+  <data name="Xray_LogStopped" xml:space="preserve">
+    <value>[Stopped]</value>
+  </data>
+  <data name="Update_FetchingChecksum" xml:space="preserve">
+    <value>Fetching checksum file…</value>
+  </data>
+  <data name="Update_ChecksumFormatError" xml:space="preserve">
+    <value>Update checksum file format error</value>
+  </data>
+  <data name="Update_ChecksumDownloadFailed" xml:space="preserve">
+    <value>Could not download update checksum file: </value>
+  </data>
+  <data name="Update_ChecksumMismatch" xml:space="preserve">
+    <value>Update verification failed: SHA256 does not match the server checksum.</value>
+  </data>
+  <data name="Update_Extracting" xml:space="preserve">
+    <value>Extracting update…</value>
+  </data>
+  <data name="Update_ExtractFailed" xml:space="preserve">
+    <value>Update extraction failed: </value>
+  </data>
+  <data name="Update_Verifying" xml:space="preserve">
+    <value>Verifying update…</value>
+  </data>
+  <data name="Update_MissingFiles" xml:space="preserve">
+    <value>Update package is invalid: required files are missing.</value>
+  </data>
+  <data name="Update_VersionMismatch" xml:space="preserve">
+    <value>Update version mismatch: expected {0}, got {1}.</value>
+  </data>
+  <data name="Update_MissingUpdater" xml:space="preserve">
+    <value>Updater component missing. Please re-download the full installer.</value>
+  </data>
+  <data name="Update_PrepRestart" xml:space="preserve">
+    <value>Preparing to restart…</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>Downloading {0} … {1:0.0} / {2:0.0} MB</value>
+  </data>
+  <data name="Update_DownloadingNoTotal" xml:space="preserve">
+    <value>Downloading {0} … {1:0.0} MB</value>
+  </data>
+  <data name="AddRule_EditTitle" xml:space="preserve">
+    <value>Edit Rule</value>
+  </data>
+  <data name="Error_ExportFailed" xml:space="preserve">
+    <value>Export Failed</value>
+  </data>
+  <data name="GeoUpdate_ViaProxy" xml:space="preserve">
+    <value>Downloading via local proxy ({0})…</value>
+  </data>
+  <data name="GeoUpdate_Checking" xml:space="preserve">
+    <value>Checking {0}.dat …</value>
+  </data>
+  <data name="GeoUpdate_UpToDate" xml:space="preserve">
+    <value>{0}.dat is already up to date</value>
+  </data>
+  <data name="GeoUpdate_ChecksumFailed" xml:space="preserve">
+    <value>{0}.dat verification failed: downloaded file SHA256 does not match server.</value>
+  </data>
+  <data name="Subscription_NeverUpdated" xml:space="preserve">
+    <value>Last updated: never</value>
+  </data>
+  <data name="Subscription_JustNow" xml:space="preserve">
+    <value>just now</value>
+  </data>
+  <data name="Subscription_MinutesAgo" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="Subscription_HoursAgo" xml:space="preserve">
+    <value>{0} hr ago</value>
+  </data>
+  <data name="Subscription_DaysAgo" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="Subscription_LastUpdated" xml:space="preserve">
+    <value>Last updated: {0}</value>
+  </data>
+  <data name="SystemProxy_RegError" xml:space="preserve">
+    <value>Cannot open registry key: </value>
+  </data>
+  <data name="ControlPanel_EditPortItem.Text" xml:space="preserve">
+    <value>Local Port</value>
+  </data>
+  <data name="ControlPanel_ViewLogItem.Text" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="ControlPanel_ProxySettingsItem.Text" xml:space="preserve">
+    <value>Proxy Setting</value>
+  </data>
+  <data name="ControlPanel_GlobalProxyItem.Text" xml:space="preserve">
+    <value>Global Proxy</value>
+  </data>
+  <data name="ControlPanel_NoProxyItem.Text" xml:space="preserve">
+    <value>No Proxy Takeover</value>
+  </data>
+  <data name="ControlPanel_StartupItem.Text" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="ControlPanel_RoutingSettingsItem.Text" xml:space="preserve">
+    <value>Routing</value>
+  </data>
+  <data name="ControlPanel_RoutingGlobalItem.Text" xml:space="preserve">
+    <value>Global </value>
+  </data>
+  <data name="ControlPanel_RoutingSmartItem.Text" xml:space="preserve">
+    <value>Smart</value>
+  </data>
+  <data name="ControlPanel_CustomRulesItem.Text" xml:space="preserve">
+    <value>Custom Rules...</value>
+  </data>
+  <data name="ControlPanel_TunModeLabel.Text" xml:space="preserve">
+    <value>TUN Mode</value>
+  </data>
+  <data name="ControlPanel_RoutingLbl.Text" xml:space="preserve">
+    <value>Routing:</value>
+  </data>
+  <data name="Personalize_LanguageLbl.Text" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Personalize_LanguageDescLbl.Text" xml:space="preserve">
+    <value>Choose the app display language</value>
   </data>
 </root>

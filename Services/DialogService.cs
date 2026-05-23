@@ -31,7 +31,7 @@ namespace XrayUI.Services
         {
             var textBox = new TextBox
             {
-                PlaceholderText = "粘贴节点链接（支持多协议）",
+                PlaceholderText = L.Import_Placeholder,
                 AcceptsReturn = true,
                 Width = 360,
                 Height = 148,
@@ -41,9 +41,9 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog();
-            dialog.Title = "导入节点链接";
-            dialog.PrimaryButtonText = "确定";
-            dialog.CloseButtonText = "取消";
+            dialog.Title = L.Import_Title;
+            dialog.PrimaryButtonText = L.Dialog_OK;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = new StackPanel
             {
@@ -53,7 +53,7 @@ namespace XrayUI.Services
                 {
                     new TextBlock
                     {
-                        Text = "支持常见协议链接",
+                        Text = L.Import_SupportHint,
                         Opacity = 0.65,
                     },
                     textBox
@@ -78,15 +78,15 @@ namespace XrayUI.Services
             {
                 if (vm.IsAddPage)
                 {
-                    dialog.PrimaryButtonText = "添加";
-                    dialog.CloseButtonText = "取消";
+                    dialog.PrimaryButtonText = L.Dialog_Add;
+                    dialog.CloseButtonText = L.Dialog_Cancel;
                     dialog.DefaultButton = ContentDialogButton.Primary;
                     dialog.IsPrimaryButtonEnabled = vm.CanAddSubscription;
                     return;
                 }
 
                 dialog.PrimaryButtonText = string.Empty;
-                dialog.CloseButtonText = "完成";
+                dialog.CloseButtonText = L.Dialog_Done;
                 dialog.DefaultButton = ContentDialogButton.Close;
                 dialog.IsPrimaryButtonEnabled = false;
             }
@@ -111,19 +111,19 @@ namespace XrayUI.Services
         public async Task<ServerEntry?> ShowEditServerDialogAsync(ServerEntry? existing)
         {
             // ── Controls ──────────────────────────────────────────────────────
-            var txtName = new TextBox { Header = "名称", Text = existing?.Name ?? string.Empty, MinWidth = 420 };
-            var txtHost = new TextBox { Header = "地址 / 域名", Text = existing?.Host ?? string.Empty };
+            var txtName = new TextBox { Header = L.EditServer_Name, Text = existing?.Name ?? string.Empty, MinWidth = 420 };
+            var txtHost = new TextBox { Header = L.EditServer_Address, Text = existing?.Host ?? string.Empty };
             var numPort = new NumberBox
             {
-                Header = "端口", Value = existing?.Port ?? 443, Minimum = 1, Maximum = 65535,
+                Header = L.EditServer_Port, Value = existing?.Port ?? 443, Minimum = 1, Maximum = 65535,
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
             };
-            var cmbProtocol = new ComboBox { Header = "协议", MinWidth = 200 };
+            var cmbProtocol = new ComboBox { Header = L.EditServer_Protocol, MinWidth = 200 };
             foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks" })
                 cmbProtocol.Items.Add(p);
             cmbProtocol.SelectedItem = existing?.Protocol?.ToLower() ?? "ss";
 
-            var cmbEncryption = new ComboBox { Header = "加密方式 (SS)", MinWidth = 200 };
+            var cmbEncryption = new ComboBox { Header = L.EditServer_Encryption, MinWidth = 200 };
             foreach (var m in new[]
                      {
                          "aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305", "2022-blake3-aes-128-gcm",
@@ -133,31 +133,31 @@ namespace XrayUI.Services
             if (existing?.Encryption is { Length: > 0 } existingEnc && !cmbEncryption.Items.Contains(existingEnc))
                 cmbEncryption.Items.Add(existingEnc);
             cmbEncryption.SelectedItem = existing?.Encryption ?? "aes-128-gcm";
-            var txtUsername = new TextBox { Header = "用户名 (SOCKS)", Text = existing?.Username ?? string.Empty };
-            var txtPassword = new PasswordBox { Header = "密码", Password = existing?.Password ?? string.Empty };
+            var txtUsername = new TextBox { Header = L.EditServer_SocksUsername, Text = existing?.Username ?? string.Empty };
+            var txtPassword = new PasswordBox { Header = L.EditServer_Password, Password = existing?.Password ?? string.Empty };
             var txtUuid = new TextBox { Header = "UUID (VMess / VLESS)", Text = existing?.Uuid ?? string.Empty };
             var numAlterId = new NumberBox
                 { Header = "AlterId (VMess)", Value = existing?.AlterId ?? 0, Minimum = 0, Maximum = 65535 };
-            var cmbNetwork = new ComboBox { Header = "传输协议", MinWidth = 200 };
+            var cmbNetwork = new ComboBox { Header = L.EditServer_Transport, MinWidth = 200 };
             foreach (var n in new[] { "tcp", "ws", "grpc", "xhttp" })
                 cmbNetwork.Items.Add(n);
             cmbNetwork.SelectedItem = existing?.Network ?? "tcp";
 
-            var txtPath = new TextBox { Header = "路径 (WS/gRPC/XHTTP)", Text = existing?.Path ?? string.Empty };
-            var txtWsHost = new TextBox { Header = "Host 头 (WS/XHTTP)", Text = existing?.WsHost ?? string.Empty };
-            var cmbSecurity = new ComboBox { Header = "安全", MinWidth = 200 };
+            var txtPath = new TextBox { Header = L.EditServer_Path, Text = existing?.Path ?? string.Empty };
+            var txtWsHost = new TextBox { Header = L.EditServer_WsHost, Text = existing?.WsHost ?? string.Empty };
+            var cmbSecurity = new ComboBox { Header = L.EditServer_Security, MinWidth = 200 };
             foreach (var s in new[] { "none", "tls", "reality" })
                 cmbSecurity.Items.Add(s);
             cmbSecurity.SelectedItem = existing?.Security ?? "none";
 
             var txtSni = new TextBox { Header = "SNI", Text = existing?.Sni ?? string.Empty };
-            var txtFp = new TextBox { Header = "指纹 (uTLS)", Text = existing?.Fingerprint ?? string.Empty };
+            var txtFp = new TextBox { Header = L.EditServer_Fingerprint, Text = existing?.Fingerprint ?? string.Empty };
             var chkAllowInsecure = new CheckBox
-                { Content = "允许不安全连接（跳过证书校验）", IsChecked = existing?.AllowInsecure ?? false };
+                { Content = L.EditServer_AllowInsecure, IsChecked = existing?.AllowInsecure ?? false };
             var txtEchConfigList = new TextBox
             {
                 Header = "ECH ConfigList",
-                PlaceholderText = "例如 udp://1.1.1.1 或服务端生成的 ECHConfig",
+                PlaceholderText = L.EditServer_EchPlaceholder,
                 Text = existing?.EchConfigList ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
             };
@@ -173,12 +173,12 @@ namespace XrayUI.Services
             var txtSpx = new TextBox { Header = "SpiderX (Reality)", Text = existing?.SpiderX ?? string.Empty };
             var txtFlow = new TextBox
             {
-                Header = "Flow (VLESS)", PlaceholderText = "xtls-rprx-vision 或留空", Text = existing?.Flow ?? string.Empty
+                Header = "Flow (VLESS)", PlaceholderText = L.EditServer_FlowPlaceholder, Text = existing?.Flow ?? string.Empty
             };
             var txtVlessEncryption = new TextBox
             {
                 Header = "VLESS encryption (PQ)",
-                PlaceholderText = "留空 = none;或 mlkem768x25519plus.native.0rtt....",
+                PlaceholderText = L.EditServer_FinalmaskPlaceholder,
                 Text = existing?.VlessEncryption ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
             };
@@ -294,9 +294,9 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog();
-            dialog.Title = existing == null ? "手动添加服务器" : "编辑服务器";
-            dialog.PrimaryButtonText = "保存";
-            dialog.CloseButtonText = "取消";
+            dialog.Title = existing == null ? L.EditServer_AddTitle : L.EditServer_EditTitle;
+            dialog.PrimaryButtonText = L.Dialog_Save;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = scrollViewer;
 
@@ -385,9 +385,9 @@ namespace XrayUI.Services
             ServerEntry? saved = null;
 
             var dialog = CreateDialog();
-            dialog.Title = existing is null ? "链式代理" : "编辑链式代理";
-            dialog.PrimaryButtonText = "保存";
-            dialog.CloseButtonText = "取消";
+            dialog.Title = existing is null ? L.ChainProxy_AddTitle : L.ChainProxy_EditTitle;
+            dialog.PrimaryButtonText = L.Dialog_Save;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = content;
 
@@ -409,7 +409,7 @@ namespace XrayUI.Services
         {
             var numBox = new NumberBox
             {
-                Header = "本地端口",
+                Header = L.EditPort_Header,
                 Value = currentPort,
                 Minimum = 1024,
                 Maximum = 65535,
@@ -417,9 +417,9 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog();
-            dialog.Title = "编辑本地端口";
-            dialog.PrimaryButtonText = "确定";
-            dialog.CloseButtonText = "取消";
+            dialog.Title = L.EditPort_Title;
+            dialog.PrimaryButtonText = L.Dialog_OK;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = new StackPanel
             {
@@ -430,7 +430,7 @@ namespace XrayUI.Services
                     numBox,
                     new TextBlock
                     {
-                        Text = $"有效范围：{numBox.Minimum} - {numBox.Maximum}",
+                        Text = Loc.Format("EditPort_Range", numBox.Minimum, numBox.Maximum),
                         Opacity = 0.65,
                     }
                 }
@@ -444,9 +444,11 @@ namespace XrayUI.Services
 
         // ── Error ─────────────────────────────────────────────────────────────
 
-        public async Task<bool> ShowConfirmationAsync(string title, string message, string confirmText = "确定",
-            string cancelText = "取消", bool isDanger = false)
+        public async Task<bool> ShowConfirmationAsync(string title, string message, string? confirmText = null,
+            string? cancelText = null, bool isDanger = false)
         {
+            confirmText ??= L.Dialog_OK;
+            cancelText  ??= L.Dialog_Cancel;
             var content = new TextBlock
             {
                 Text = message,
@@ -474,10 +476,10 @@ namespace XrayUI.Services
             var content = new TunConfirmationDialog(settings.TunMtu, settings.TunOutboundInterface);
 
             var dialog = CreateDialog();
-            dialog.Title = "开启TUN模式";
+            dialog.Title = L.Tun_EnableTitle;
             dialog.Content = content;
-            dialog.PrimaryButtonText = "确认";
-            dialog.CloseButtonText = "取消";
+            dialog.PrimaryButtonText = L.Dialog_Confirm;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
 
             if (await dialog.ShowAsync() != ContentDialogResult.Primary)
@@ -493,7 +495,7 @@ namespace XrayUI.Services
             var dialog = CreateDialog(xamlRoot);
             dialog.Title = title;
             dialog.Content = message;
-            dialog.CloseButtonText = "确定";
+            dialog.CloseButtonText = L.Dialog_OK;
             await dialog.ShowAsync();
         }
 
@@ -506,7 +508,7 @@ namespace XrayUI.Services
 
             var statusText = new TextBlock
             {
-                Text = "正在准备…",
+                Text = L.Dialog_Preparing,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 320,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -521,7 +523,7 @@ namespace XrayUI.Services
 
             var dialog = CreateDialog(xamlRoot);
             dialog.Title = title;
-            dialog.CloseButtonText = "取消";
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.Content = new StackPanel
             {
                 Spacing = 16,
@@ -602,7 +604,7 @@ namespace XrayUI.Services
 
             var statusText = new TextBlock
             {
-                Text = "正在准备…",
+                Text = L.Dialog_Preparing,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 320,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -618,7 +620,7 @@ namespace XrayUI.Services
 
             var dialog = CreateDialog(xamlRoot);
             dialog.Title = title;
-            dialog.CloseButtonText = "取消";
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.Content = new StackPanel
             {
                 Spacing = 12,
@@ -729,7 +731,7 @@ namespace XrayUI.Services
             header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var titleText = new TextBlock
             {
-                Text = "分享节点",
+                Text = L.Share_Title,
                 FontSize = 20,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -762,7 +764,7 @@ namespace XrayUI.Services
             };
             if (Application.Current.Resources.TryGetValue("SubtleButtonStyle", out var subtleStyle2))
                 nameCopyBtn.Style = (Style)subtleStyle2;
-            ToolTipService.SetToolTip(nameCopyBtn, "复制链接");
+            ToolTipService.SetToolTip(nameCopyBtn, L.Share_CopyLink);
 
             nameCopyBtn.Click += async (_, _) =>
             {
@@ -815,15 +817,15 @@ namespace XrayUI.Services
             var toggle = new ToggleSwitch
             {
                 IsOn = currentEnabled,
-                OnContent = "开",
-                OffContent = "关",
+                OnContent = L.Dialog_On,
+                OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
             };
 
             var toggleLabel = new TextBlock
             {
-                Text = "开机自动启动",
+                Text = L.Startup_AutoStart,
                 VerticalAlignment = VerticalAlignment.Center,
             };
 
@@ -837,7 +839,7 @@ namespace XrayUI.Services
 
             var checkBox = new CheckBox
             {
-                Content = "自动连接上次节点",
+                Content = L.Startup_AutoConnect,
                 IsChecked = currentAutoConnect,
                 IsEnabled = currentEnabled,
                 Margin = new Thickness(16, 0, 0, 0),
@@ -846,9 +848,9 @@ namespace XrayUI.Services
             toggle.Toggled += (_, _) => checkBox.IsEnabled = toggle.IsOn;
 
             var dialog = CreateDialog();
-            dialog.Title = "开机启动";
-            dialog.PrimaryButtonText = "确认";
-            dialog.CloseButtonText = "取消";
+            dialog.Title = L.Startup_Title;
+            dialog.PrimaryButtonText = L.Dialog_Confirm;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = new StackPanel
             {
@@ -870,30 +872,30 @@ namespace XrayUI.Services
             var directBox = new TextBox
             {
                 Text = settings.DirectDnsServer ?? string.Empty,
-                PlaceholderText = "输入 IP 或 DoH 地址 (留空为自动)",
+                PlaceholderText = L.Dns_ServerPlaceholder,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
             };
             var proxyBox = new TextBox
             {
                 Text = settings.ProxyDnsServer ?? string.Empty,
-                PlaceholderText = "输入 IP 或 DoH 地址 (留空为自动)",
+                PlaceholderText = L.Dns_ServerPlaceholder,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
             };
 
             var directPresets = CreatePresetButtons(directBox,
-                ("阿里", "223.5.5.5"),
-                ("腾讯", "119.29.29.29"),
+                (L.Dns_Provider_Ali, "223.5.5.5"),
+                (L.Dns_Provider_Tencent, "119.29.29.29"),
                 ("114",  "114.114.114.114"),
                 ("DoH",  "https://dns.alidns.com/dns-query"));
 
             var proxyPresets = CreatePresetButtons(proxyBox,
-                ("谷歌", "8.8.8.8"),
+                (L.Dns_Provider_Google, "8.8.8.8"),
                 ("CF", "1.1.1.1"),
                 ("Quad9", "9.9.9.9"),
                 ("DoH", "https://cloudflare-dns.com/dns-query"));
 
             var strategyCmb = new ComboBox { MinWidth = 100 };
-            foreach (var item in new[] { "仅 IPv4", "仅 IPv6", "自动" })
+            foreach (var item in new[] { L.Dns_Strategy_V4Only, L.Dns_Strategy_V6Only, L.Dns_Strategy_Auto })
                 strategyCmb.Items.Add(item);
             strategyCmb.SelectedIndex = settings.DnsQueryStrategy switch
             {
@@ -905,8 +907,8 @@ namespace XrayUI.Services
             var cacheSwitch = new ToggleSwitch
             {
                 IsOn = settings.DnsCacheEnabled,
-                OnContent = "开",
-                OffContent = "关",
+                OnContent = L.Dialog_On,
+                OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
             };
@@ -915,8 +917,8 @@ namespace XrayUI.Services
             {
                 IsOn = settings.FakeDnsEnabled && isTunMode,
                 IsEnabled = isTunMode,
-                OnContent = "开",
-                OffContent = "关",
+                OnContent = L.Dialog_On,
+                OffContent = L.Dialog_Off,
                 MinWidth = 0,
                 Margin = new Thickness(0),
             };
@@ -926,7 +928,7 @@ namespace XrayUI.Services
                 Text = "FakeDNS",
                 VerticalAlignment = VerticalAlignment.Center,
             };
-            ToolTipService.SetToolTip(fakeDnsTitleText, "仅TUN模式有效");
+            ToolTipService.SetToolTip(fakeDnsTitleText, L.Dns_TunOnlyHint);
 
             var fakeDnsLabel = new StackPanel
             {
@@ -938,7 +940,7 @@ namespace XrayUI.Services
                     fakeDnsTitleText,
                     new TextBlock
                     {
-                        Text = "实验性",
+                        Text = L.Dns_Experimental,
                         FontSize = 10,
                         VerticalAlignment = VerticalAlignment.Center,
                         Foreground =
@@ -956,8 +958,8 @@ namespace XrayUI.Services
             fakeDnsRow.Children.Add(fakeDnsLabel);
             fakeDnsRow.Children.Add(fakeDnsSwitch);
 
-            var strategyRow = CreateLabelRow("查询策略", strategyCmb);
-            var cacheRow = CreateLabelRow("启用 DNS 缓存", cacheSwitch);
+            var strategyRow = CreateLabelRow(L.Dns_QueryStrategyLabel, strategyCmb);
+            var cacheRow = CreateLabelRow(L.Dns_EnableCacheLabel, cacheSwitch);
 
             var content = new StackPanel
             {
@@ -970,10 +972,10 @@ namespace XrayUI.Services
                         Spacing = 6,
                         Children =
                         {
-                            new TextBlock { Text = "直连 DNS", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                            new TextBlock { Text = L.Dns_DirectTitle, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
                             new TextBlock
                             {
-                                Text = "用于国内域名 (geosite:cn)，走直连出站解析",
+                                Text = L.Dns_DirectDesc,
                                 FontSize = 11,
                                 Opacity = 0.6,
                                 TextWrapping = TextWrapping.Wrap,
@@ -988,10 +990,10 @@ namespace XrayUI.Services
                         Spacing = 6,
                         Children =
                         {
-                            new TextBlock { Text = "代理 DNS", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
+                            new TextBlock { Text = L.Dns_ProxyTitle, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold },
                             new TextBlock
                             {
-                                Text = "用于境外域名，经代理出站解析，防止 DNS 污染",
+                                Text = L.Dns_ProxyDesc,
                                 FontSize = 11,
                                 Opacity = 0.6,
                                 TextWrapping = TextWrapping.Wrap,
@@ -1006,10 +1008,10 @@ namespace XrayUI.Services
             };
 
             var dialog = CreateDialog();
-            dialog.Title = "DNS 设置";
-            dialog.PrimaryButtonText = "保存";
-            dialog.SecondaryButtonText = "重置默认";
-            dialog.CloseButtonText = "取消";
+            dialog.Title = L.Dns_DialogTitle;
+            dialog.PrimaryButtonText = L.Dialog_Save;
+            dialog.SecondaryButtonText = L.Dns_ResetDefaults;
+            dialog.CloseButtonText = L.Dialog_Cancel;
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = content;
 

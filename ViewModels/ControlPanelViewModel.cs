@@ -20,7 +20,7 @@ namespace XrayUI.ViewModels
         private readonly IUpdateService _update;
         private UpdateInfo? _availableUpdate;
         private bool _isUpdateAvailable;
-        private string _startStopButtonContent = "启动";
+        private string _startStopButtonContent = L.ControlPanel_Start;
         private bool _startStopButtonChecked;
         private bool _isRunning;
         private bool _isTunMode;
@@ -131,13 +131,13 @@ namespace XrayUI.ViewModels
         }
 
         public string StatusText =>
-            IsReapplying ? "正在应用..." :
+            IsReapplying ? L.ControlPanel_StatusApplying :
             IsRunning    ? _activeServerName :
-                           "未运行";
+                           L.ControlPanel_StatusNotRunning;
 
         private void OnIsRunningChanged(bool value)
         {
-            StartStopButtonContent = value ? "停止" : "启动";
+            StartStopButtonContent = value ? L.ControlPanel_Stop : L.ControlPanel_Start;
             StartStopButtonChecked = value;
             OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(IsModeToggleEnabled));
@@ -224,7 +224,7 @@ namespace XrayUI.ViewModels
             var server = GetSelectedServer();
             if (server is null)
             {
-                await _dialogs.ShowErrorAsync("未选择服务器", "请先从列表中选择服务器");
+                await _dialogs.ShowErrorAsync(L.Error_NoServer, L.Error_NoServerMsg);
                 return false;
             }
 
@@ -247,9 +247,9 @@ namespace XrayUI.ViewModels
             if (!ok)
             {
                 var detail = string.IsNullOrEmpty(_xray.LastError)
-                    ? "xray 启动失败. 请检查服务器配置."
+                    ? L.Error_XrayStartFailed
                     : _xray.LastError;
-                await _dialogs.ShowErrorAsync("启动失败", detail);
+                await _dialogs.ShowErrorAsync(L.Error_StartFailed, detail);
                 return false;
             }
 
@@ -292,7 +292,7 @@ namespace XrayUI.ViewModels
             _activeServer     = null;
             _activeServerName = string.Empty;
             IsRunning = false;
-            await _dialogs.ShowErrorAsync("启动失败", ex.Message);
+            await _dialogs.ShowErrorAsync(L.Error_StartFailed, ex.Message);
         }
 
         /// <summary>
@@ -328,7 +328,7 @@ namespace XrayUI.ViewModels
                     if (!ok)
                     {
                         var detail = string.IsNullOrEmpty(_xray.LastError)
-                            ? "xray 应用新配置失败，已停止。"
+                            ? L.Error_XrayReapplyFailed
                             : _xray.LastError;
                         await HandleReapplyFailureAsync(detail);
                         return;
@@ -385,7 +385,7 @@ namespace XrayUI.ViewModels
             _activeServerName = string.Empty;
             IsRunning = false;
 
-            await _dialogs.ShowErrorAsync("应用新配置失败", detail);
+            await _dialogs.ShowErrorAsync(L.Error_ReapplyFailed, detail);
         }
 
 
@@ -720,7 +720,7 @@ namespace XrayUI.ViewModels
         }
 
         /// <summary>Localized display string for the status bar / mini view.</summary>
-        public string RoutingModeText => _routingMode == "global" ? "全局路由" : "智能分流";
+        public string RoutingModeText => _routingMode == "global" ? L.ControlPanel_RoutingGlobal : L.ControlPanel_RoutingSmart;
 
         [RelayCommand]
         private async Task SetRoutingMode(string mode)
@@ -830,7 +830,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync("开机启动设置失败", ex.Message);
+                await _dialogs.ShowErrorAsync(L.Startup_SetFailed, ex.Message);
                 return;
             }
 
@@ -893,7 +893,7 @@ namespace XrayUI.ViewModels
         }
 
         public Visibility UpdateBadgeVisibility => _isUpdateAvailable ? Visibility.Visible : Visibility.Collapsed;
-        public string     UpdateMenuText        => $"发现新版本 {_availableUpdate?.NewVersion}";
+        public string     UpdateMenuText        => Loc.Format("ControlPanel_UpdateFound", _availableUpdate?.NewVersion);
 
         /// <summary>Called from MainViewModel after the background check completes.
         /// Pass null to clear (e.g. after a failed update attempt).</summary>
@@ -916,7 +916,7 @@ namespace XrayUI.ViewModels
             UpdateStaging? staging = null;
             try
             {
-                await _dialogs.ShowProgressBarDialogAsync("正在更新 XrayUI",
+                await _dialogs.ShowProgressBarDialogAsync(L.Update_Updating,
                     async (progress, ct) =>
                     {
                         staging = await _update.DownloadVerifyAndExtractAsync(info, proxy, progress, ct);
@@ -929,7 +929,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync("更新失败", ex.Message);
+                await _dialogs.ShowErrorAsync(L.Error_UpdateFailed, ex.Message);
                 return;
             }
 
@@ -944,7 +944,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync("更新失败", "无法启动升级器：" + ex.Message);
+                await _dialogs.ShowErrorAsync(L.Error_UpdateFailed, Loc.Format("Error_UpdaterLaunchFailed", ex.Message));
                 return;
             }
 

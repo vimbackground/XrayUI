@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Services;
 
@@ -44,12 +45,12 @@ namespace XrayUI.ViewModels
         }
 
         public string ActiveServerName =>
-            (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? "未选择";
+            (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? L.Main_NoSelection;
 
         public string MiniRoutingMode => ControlPanel.RoutingModeText;
         public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
         public bool MiniIsRunning => ControlPanel.IsRunning;
-        public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : "未连接";
+        public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : L.Main_NotConnected;
         public Visibility MiniDotVisibility => ControlPanel.IsRunning ? Visibility.Visible : Visibility.Collapsed;
 
         public MainViewModel(
