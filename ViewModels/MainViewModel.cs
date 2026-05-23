@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Services;
 
@@ -44,12 +45,12 @@ namespace XrayUI.ViewModels
         }
 
         public string ActiveServerName =>
-            (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? "未选择";
+            (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? L.Main_NoSelection;
 
-        public string MiniRoutingMode => ControlPanel.RoutingMode;
+        public string MiniRoutingMode => ControlPanel.RoutingModeText;
         public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
         public bool MiniIsRunning => ControlPanel.IsRunning;
-        public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : "未连接";
+        public string MiniStatusText => ControlPanel.IsRunning ? _activeLatencyText : L.Main_NotConnected;
         public Visibility MiniDotVisibility => ControlPanel.IsRunning ? Visibility.Visible : Visibility.Collapsed;
 
         public MainViewModel(
@@ -115,10 +116,11 @@ namespace XrayUI.ViewModels
             // Load settings and apply to ControlPanel
             var s = await _settings.LoadSettingsAsync();
             ControlPanel.LocalPort             = s.LocalMixedPort;
-            ControlPanel.RoutingMode           = s.RoutingMode == "global" ? "全局路由" : "智能分流";
+            ControlPanel.RoutingMode           = s.RoutingMode;
             ControlPanel.IsSystemProxyEnabled  = s.IsSystemProxyEnabled;
             ControlPanel.InitializePersonalize(s);
             Personalize.LoadDisplayOptions(s);
+            Personalize.LoadLanguage(s);
             ServerDetail.ShowLatencyInDetails = s.ShowLatencyInDetails;
             ServerDetail.ShowAiUnlockInDetails = s.ShowAiUnlockInDetails;
 

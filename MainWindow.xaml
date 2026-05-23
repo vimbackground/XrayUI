@@ -25,7 +25,8 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0"
+            <Button x:Name="DockButton"
+                    Grid.Column="0"
                     Click="DockButton_Click"
                     Background="Transparent"
                     BorderThickness="0"
@@ -33,8 +34,7 @@
                     Width="30" Height="28"
                     Padding="0"
                     Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    ToolTipService.ToolTip="切换mini窗口">
+                    VerticalAlignment="Center">
                 <FontIcon Glyph="&#xE90C;"  FontSize="13"  />
             </Button>
 
@@ -51,7 +51,8 @@
                 <FontIcon Glyph="&#xE72B;"  FontSize="12" />
             </Button>
 
-            <TextBlock Grid.Column="2"
+            <TextBlock x:Uid="MainWindow_TitleText"
+                       Grid.Column="2"
                        Text="代理控制台"
                        FontSize="13"
                        VerticalAlignment="Center"
@@ -141,8 +142,7 @@
                         Width="28" Height="22"
                         Padding="0"
                         BorderThickness="0"
-                        Background="Transparent"
-                        ToolTipService.ToolTip="返回完整窗口">
+                        Background="Transparent">
                     <FontIcon Glyph="&#xE740;" FontSize="12" />
                 </Button>
 
@@ -151,8 +151,7 @@
                         Width="28" Height="22"
                         Padding="0"
                         BorderThickness="0"
-                        Background="Transparent"
-                        ToolTipService.ToolTip="关闭">
+                        Background="Transparent">
                     <FontIcon Glyph="&#xE711;" FontSize="12" />
                 </Button>
             </Grid>

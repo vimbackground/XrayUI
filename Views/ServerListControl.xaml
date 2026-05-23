@@ -20,7 +20,8 @@
 
         <StackPanel Grid.Row="0"
                     Orientation="Vertical">
-            <TextBlock Text="服务器列表"
+            <TextBlock x:Uid="ServerList_HeaderText"
+                       Text="服务器列表"
                        FontSize="20"
                        FontWeight="SemiBold" />
             <StackPanel Orientation="Horizontal"
@@ -31,33 +32,37 @@
                                 Padding="12,6">
                     <DropDownButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="添加" VerticalAlignment="Center" />
+                            <TextBlock x:Uid="ServerList_AddBtnText" Text="添加" VerticalAlignment="Center" />
                         </StackPanel>
                     </DropDownButton.Content>
                     <DropDownButton.Flyout>
                         <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                            <MenuFlyoutItem Text="导入节点"
+                            <MenuFlyoutItem x:Uid="ServerList_ImportNodeItem"
+                                            Text="导入节点"
                                             Command="{x:Bind ViewModel.ImportFromLinkCommand}"
                                             FontWeight="Normal">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE77F;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="添加订阅"
+                            <MenuFlyoutItem x:Uid="ServerList_AddSubscriptionItem"
+                                            Text="添加订阅"
                                             Command="{x:Bind ViewModel.OpenSubscriptionsCommand}"
                                             FontWeight="Normal">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xED11;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="手动添加"
+                            <MenuFlyoutItem x:Uid="ServerList_AddManualItem"
+                                            Text="手动添加"
                                             Command="{x:Bind ViewModel.AddManualCommand}"
                                             FontWeight="Normal">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE710;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutItem Text="链式代理"
+                            <MenuFlyoutItem x:Uid="ServerList_AddChainProxyItem"
+                                            Text="链式代理"
                                             Command="{x:Bind ViewModel.AddChainProxyCommand}"
                                             FontWeight="Normal">
                                 <MenuFlyoutItem.Icon>
@@ -74,7 +79,7 @@
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE70F;"
                                   Margin="0,0,5,0" />
-                        <TextBlock Text="编辑" />
+                        <TextBlock x:Uid="ServerList_EditText" Text="编辑" />
                     </StackPanel>
                 </Button>
                 <Button x:Name="BtnRemove"
@@ -84,7 +89,7 @@
                     <StackPanel Orientation="Horizontal">
                         <FontIcon Glyph="&#xE74D;"
                                   Margin="0,0,5,0" />
-                        <TextBlock Text="删除" />
+                        <TextBlock x:Uid="ServerList_DeleteText" Text="删除" />
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -99,6 +104,7 @@
             </Grid.ColumnDefinitions>
 
             <AutoSuggestBox x:Name="ServerSearchBox"
+                            x:Uid="ServerList_SearchBox"
                             Grid.Column="0"
                             Width="350"
                             PlaceholderText="搜索服务器"
@@ -116,14 +122,14 @@
                 </AutoSuggestBox.ItemTemplate>
             </AutoSuggestBox>
 
-            <ToggleButton Grid.Column="1"
+            <ToggleButton x:Name="FilterToggle"
+                          Grid.Column="1"
                           Background="Transparent"
                           BorderBrush="Transparent"
                           Padding="6"
                           IsChecked="{x:Bind ViewModel.IsFilterPanelOpen, Mode=TwoWay}"
                           Visibility="{x:Bind ViewModel.IsChipBarVisible, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                          VerticalAlignment="Center"
-                          AutomationProperties.Name="筛选">
+                          VerticalAlignment="Center">
                 <FontIcon Glyph="&#xE8A9;"
                           FontSize="16" />
             </ToggleButton>
@@ -146,7 +152,8 @@
                 <FontIcon Glyph="&#xEA37;"
                           FontSize="12"
                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Text="筛选条件:"
+                <TextBlock x:Uid="ServerList_FilterLabelText"
+                           Text="筛选条件:"
                            FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center" />
@@ -163,24 +170,27 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <DropDownButton Grid.Column="2"
+            <DropDownButton x:Name="SortButton"
+                            Grid.Column="2"
                             Background="Transparent"
-                            BorderBrush="Transparent"
-                            AutomationProperties.Name="排序">
+                            BorderBrush="Transparent">
                 <DropDownButton.Content>
                     <FontIcon Glyph="&#xE8CB;" FontSize="16" />
                 </DropDownButton.Content>
                 <DropDownButton.Flyout>
                     <MenuFlyout Placement="Bottom">
-                        <RadioMenuFlyoutItem Text="默认"
+                        <RadioMenuFlyoutItem x:Uid="ServerList_SortDefaultItem"
+                                             Text="默认"
                                              GroupName="ServerSortMode"
                                              IsChecked="{x:Bind ViewModel.IsSortDefault, Mode=TwoWay}" />
-                        <RadioMenuFlyoutItem Text="当前连接"
+                        <RadioMenuFlyoutItem x:Name="SortActiveItem"
+                                             x:Uid="ServerList_SortActiveItem"
+                                             Text="当前连接"
                                              GroupName="ServerSortMode"
                                              IsChecked="{x:Bind ViewModel.IsSortActive, Mode=TwoWay}"
-                                             IsEnabled="{x:Bind ViewModel.CanSortByActive, Mode=OneWay}"
-                                             ToolTipService.ToolTip="只在筛选为「所有服务器」时可用" />
-                        <RadioMenuFlyoutItem Text="协议"
+                                             IsEnabled="{x:Bind ViewModel.CanSortByActive, Mode=OneWay}" />
+                        <RadioMenuFlyoutItem x:Uid="ServerList_SortProtocolItem"
+                                             Text="协议"
                                              GroupName="ServerSortMode"
                                              IsChecked="{x:Bind ViewModel.IsSortProtocol, Mode=TwoWay}" />
                     </MenuFlyout>
@@ -227,7 +237,8 @@
                                         Visibility="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Grid.Column="1"
                                         Margin="8,0,0,0">
-                                    <TextBlock Text="● Activated"
+                                    <TextBlock x:Uid="ServerList_ActivatedBadge"
+                                               Text="● Activated"
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="White" />
@@ -248,7 +259,8 @@
                                            FontWeight="SemiBold"
                                            Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
                             </StackPanel>
-                            <TextBlock Text="ProxyChain"
+                            <TextBlock x:Uid="ServerList_ChainBadgeText"
+                                       Text="ProxyChain"
                                        Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                        FontSize="13"
                                        FontWeight="SemiBold"

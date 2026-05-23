@@ -14,7 +14,7 @@ namespace XrayUI.Services
     {
         private static readonly string DataDir = AppPaths.LocalAppDataDir;
 
-        private static readonly string SettingsFile = Path.Combine(DataDir, "settings.json");
+        private static readonly string SettingsFile = AppPaths.SettingsJsonPath;
         private static readonly string ServersFile  = Path.Combine(DataDir, "servers.json");
 
         private AppSettings? _cachedSettings;

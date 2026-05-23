@@ -20,6 +20,9 @@ namespace XrayUI.ViewModels
 
         private int _selectedThemeIndex;
         private int _selectedBackdropIndex;
+        private int _selectedLanguageIndex;
+        private int _initialLanguageIndex = -1;
+        private bool _showLanguageRestartHint;
         private bool _showLatencyInDetails = true;
         private bool _showAiUnlockInDetails = true;
 
@@ -131,6 +134,42 @@ namespace XrayUI.ViewModels
             }
         }
 
+        // ── Language ──────────────────────────────────────────────────────────
+
+        /// <summary>Bound to the language ComboBox's ItemsSource — single source of truth
+        /// for the dropdown contents. Adding a language is a one-line edit in LanguageHelper.</summary>
+        public LanguageInfo[] SupportedLanguages => LanguageHelper.SupportedLanguages;
+
+        public int SelectedLanguageIndex
+        {
+            get => _selectedLanguageIndex;
+            set
+            {
+                if (!SetProperty(ref _selectedLanguageIndex, value)) return;
+                // Hint visibility tracks divergence from the loaded value, not "has the
+                // user touched the dropdown" — flipping back to the initial choice means
+                // no restart is needed, so the hint should disappear too. The -1 guard
+                // suppresses the side effect during the initial LoadLanguage call.
+                if (_initialLanguageIndex >= 0)
+                    ShowLanguageRestartHint = value != _initialLanguageIndex;
+            }
+        }
+
+        public bool ShowLanguageRestartHint
+        {
+            get => _showLanguageRestartHint;
+            set => SetProperty(ref _showLanguageRestartHint, value);
+        }
+
+        /// <summary>Persist the currently-selected language. Call right before <see cref="App.Restart"/>.</summary>
+        public async Task ApplyLanguageAsync()
+        {
+            var tag = LanguageHelper.TagAt(_selectedLanguageIndex);
+            var s = await _settings.LoadSettingsAsync();
+            s.Language = tag;
+            await _settings.SaveSettingsAsync(s);
+        }
+
         public bool ShowLatencyInDetails
         {
             get => _showLatencyInDetails;
@@ -163,10 +202,10 @@ namespace XrayUI.ViewModels
         public async Task<PresetImportResult?> ConfirmAndImportPresetAsync()
         {
             var confirmed = await _dialogs.ShowConfirmationAsync(
-                "替换当前配置?",
-                "此操作将覆盖您当前的全部节点和路由规则,强烈建议先导出备份。是否继续?",
-                "替换",
-                "取消",
+                L.Confirm_ReplaceTitle,
+                L.Confirm_ReplaceMsg,
+                L.Dialog_Replace,
+                L.Dialog_Cancel,
                 isDanger: true);
             if (!confirmed)
                 return null;
@@ -190,6 +229,10 @@ namespace XrayUI.ViewModels
             s.BackdropSetting = ThemeHelper.CurrentBackdrop;
             s.ShowLatencyInDetails = ShowLatencyInDetails;
             s.ShowAiUnlockInDetails = ShowAiUnlockInDetails;
+            // Language doesn't take effect until the next process start, but Done still
+            // persists it — otherwise the user would have to click the restart hint to
+            // save at all, which is surprising compared to how Theme / Backdrop behave.
+            s.Language = LanguageHelper.TagAt(_selectedLanguageIndex);
             await _settings.SaveSettingsAsync(s);
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -226,6 +269,16 @@ namespace XrayUI.ViewModels
         {
             ShowLatencyInDetails = settings.ShowLatencyInDetails;
             ShowAiUnlockInDetails = settings.ShowAiUnlockInDetails;
+        }
+
+        public void LoadLanguage(AppSettings settings)
+        {
+            // Assign through the field to bypass the setter's InfoBar side effect, then
+            // record this as the baseline so divergence-from-baseline drives the hint.
+            var index = LanguageHelper.IndexOf(settings.Language);
+            _selectedLanguageIndex = index;
+            _initialLanguageIndex = index;
+            OnPropertyChanged(nameof(SelectedLanguageIndex));
         }
     }
 }

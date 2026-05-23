@@ -14,7 +14,7 @@ namespace XrayUI.Services
         Task<ServerEntry?> ShowChainProxyDialogAsync(IEnumerable<ServerEntry> servers, ServerEntry? existing = null);
         Task<int?> ShowEditPortDialogAsync(int currentPort);
         Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null);
-        Task<bool> ShowConfirmationAsync(string title, string message, string confirmText = "确定", string cancelText = "取消", bool isDanger = false);
+        Task<bool> ShowConfirmationAsync(string title, string message, string? confirmText = null, string? cancelText = null, bool isDanger = false);
         /// <summary>
         /// Shows the TUN confirmation dialog. Mutates <paramref name="settings"/>.TunMtu and
         /// <paramref name="settings"/>.TunOutboundInterface in-place on confirm. Returns true if

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+using XrayUI.Helpers;
 
 namespace XrayUI.Models
 {
@@ -60,15 +61,15 @@ namespace XrayUI.Models
         {
             get
             {
-                if (!_lastUpdated.HasValue) return "上次更新: 从未更新";
+                if (!_lastUpdated.HasValue) return L.Subscription_NeverUpdated;
                 var delta = DateTimeOffset.Now - _lastUpdated.Value;
                 string rel;
-                if (delta.TotalSeconds < 60)      rel = "刚刚";
-                else if (delta.TotalMinutes < 60) rel = $"{(int)delta.TotalMinutes} 分钟前";
-                else if (delta.TotalHours   < 24) rel = $"{(int)delta.TotalHours} 小时前";
-                else if (delta.TotalDays    < 30) rel = $"{(int)delta.TotalDays} 天前";
+                if (delta.TotalSeconds < 60)      rel = L.Subscription_JustNow;
+                else if (delta.TotalMinutes < 60) rel = Loc.Format("Subscription_MinutesAgo", (int)delta.TotalMinutes);
+                else if (delta.TotalHours   < 24) rel = Loc.Format("Subscription_HoursAgo",   (int)delta.TotalHours);
+                else if (delta.TotalDays    < 30) rel = Loc.Format("Subscription_DaysAgo",    (int)delta.TotalDays);
                 else                              rel = _lastUpdated.Value.LocalDateTime.ToString("yyyy-MM-dd");
-                return $"上次更新: {rel}";
+                return Loc.Format("Subscription_LastUpdated", rel);
             }
         }
 

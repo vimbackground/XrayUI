@@ -23,12 +23,12 @@
                         VerticalAlignment="Center"
                         Spacing="2">
 
-                <Button Background="Transparent"
+                <Button x:Name="PersonalizeButton"
+                        Background="Transparent"
                         BorderBrush="Transparent"
                         VerticalAlignment="Center"
                         Padding="8"
-                        Command="{x:Bind ViewModel.ShowPersonalizeCommand}"
-                        ToolTipService.ToolTip="个性化">
+                        Command="{x:Bind ViewModel.ShowPersonalizeCommand}">
                     <FontIcon Glyph="&#xE771;" FontSize="16" />
                 </Button>
 
@@ -51,42 +51,53 @@
                                             Command="{x:Bind ViewModel.UpdateAppCommand}"
                                             Visibility="{x:Bind ViewModel.UpdateBadgeVisibility, Mode=OneWay}" />
                             <MenuFlyoutSeparator Visibility="{x:Bind ViewModel.UpdateBadgeVisibility, Mode=OneWay}" />
-                            <MenuFlyoutItem Text="编辑本地端口"
+                            <MenuFlyoutItem x:Uid="ControlPanel_EditPortItem"
+                                            Text="编辑本地端口"
                                             Command="{x:Bind ViewModel.EditLocalPortCommand}" />
-                            <MenuFlyoutItem Text="查看日志" 
+                            <MenuFlyoutItem x:Uid="ControlPanel_ViewLogItem"
+                                            Text="查看日志"
                                             Command="{x:Bind ViewModel.ShowLogsCommand}" />
-                            <MenuFlyoutSubItem Text="代理设置">
-                                <RadioMenuFlyoutItem Text="全局代理"
+                            <MenuFlyoutSubItem x:Uid="ControlPanel_ProxySettingsItem"
+                                               Text="代理设置">
+                                <RadioMenuFlyoutItem x:Uid="ControlPanel_GlobalProxyItem"
+                                                     Text="全局代理"
                                                      GroupName="ProxyModeGroup"
                                                      IsChecked="{x:Bind ViewModel.IsGlobalProxyChecked, Mode=OneWay}"
                                                      IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                      Command="{x:Bind ViewModel.SetProxyModeCommand}"
-                                                     CommandParameter="全局代理" />
-                                <RadioMenuFlyoutItem Text="不接管代理"
+                                                     CommandParameter="system" />
+                                <RadioMenuFlyoutItem x:Uid="ControlPanel_NoProxyItem"
+                                                     Text="不接管代理"
                                                      GroupName="ProxyModeGroup"
                                                      IsChecked="{x:Bind ViewModel.IsNoTakeoverChecked, Mode=OneWay}"
                                                      IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                      Command="{x:Bind ViewModel.SetProxyModeCommand}"
-                                                     CommandParameter="不接管代理" />
+                                                     CommandParameter="manual" />
                             </MenuFlyoutSubItem>
                             <MenuFlyoutSeparator/>
-                            <MenuFlyoutItem Text="开机启动"
+                            <MenuFlyoutItem x:Uid="ControlPanel_StartupItem"
+                                            Text="开机启动"
                                             Command="{x:Bind ViewModel.OpenStartupSettingsCommand}"
                                             Icon="{x:Bind ViewModel.StartupMenuIcon, Mode=OneWay}" />
-                            <MenuFlyoutSubItem Text="路由设置" >
-                                <MenuFlyoutItem Text="全局路由"
+                            <MenuFlyoutSubItem x:Uid="ControlPanel_RoutingSettingsItem"
+                                               Text="路由设置" >
+                                <MenuFlyoutItem x:Uid="ControlPanel_RoutingGlobalItem"
+                                                Text="全局路由"
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.SetRoutingModeCommand}"
-                                                CommandParameter="全局路由" />
-                                <MenuFlyoutItem Text="智能分流"
+                                                CommandParameter="global" />
+                                <MenuFlyoutItem x:Uid="ControlPanel_RoutingSmartItem"
+                                                Text="智能分流"
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.SetRoutingModeCommand}"
-                                                CommandParameter="智能分流" />
+                                                CommandParameter="smart" />
                                 <MenuFlyoutSeparator/>
-                                <MenuFlyoutItem Text="自定义规则..."
+                                <MenuFlyoutItem x:Uid="ControlPanel_CustomRulesItem"
+                                                Text="自定义规则..."
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.ShowCustomRulesCommand}" />
-                                <MenuFlyoutItem Text="DNS设置"
+                                <MenuFlyoutItem x:Uid="ControlPanel_DnsItem"
+                                                Text="DNS设置"
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.ShowDnsSettingsCommand}" />
                             </MenuFlyoutSubItem>
@@ -157,7 +168,8 @@
                         Spacing="8"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center">
-                <TextBlock Text="TUN 模式"
+                <TextBlock x:Uid="ControlPanel_TunModeLabel"
+                           Text="TUN 模式"
                            FontSize="14"
                            FontWeight="SemiBold"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -175,11 +187,12 @@
                         Spacing="4"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center">
-                <TextBlock Text="路由:"
+                <TextBlock x:Uid="ControlPanel_RoutingLbl"
+                           Text="路由:"
                            FontSize="14"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center" />
-                <TextBlock Text="{x:Bind ViewModel.RoutingMode, Mode=OneWay}"
+                <TextBlock Text="{x:Bind ViewModel.RoutingModeText, Mode=OneWay}"
                            FontSize="14"
                            FontWeight="SemiBold"
                            VerticalAlignment="Center" />

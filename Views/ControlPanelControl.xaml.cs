@@ -1,5 +1,6 @@
 ﻿using System;
 using Windows.System;
+using XrayUI.Helpers;
 
 namespace XrayUI.Views
 {
@@ -13,6 +14,7 @@ namespace XrayUI.Views
         public ControlPanelControl()
         {
             this.InitializeComponent();
+            ToolTipService.SetToolTip(PersonalizeButton, L.ControlPanel_Personalize);
         }
 
         // Called by MainWindow after ViewModel is assigned (via x:Bind the property is set before Loaded)

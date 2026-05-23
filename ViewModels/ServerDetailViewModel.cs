@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
+using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Services;
 
@@ -26,7 +27,7 @@ namespace XrayUI.ViewModels
         private AiUnlockStatus? _claudeStatus;
         private AiUnlockStatus? _geminiStatus;
         private ServerEntry? _selectedServer;
-        private string _latencyText = "Not tested";
+        private string _latencyText = string.Empty;
         private bool _isTestingLatency;
         private SolidColorBrush _openAiStatusBrush = null!;
         private SolidColorBrush _claudeStatusBrush = null!;
@@ -38,6 +39,7 @@ namespace XrayUI.ViewModels
         {
             _latencyProbe = latencyProbe;
             _aiUnlockCheck = aiUnlockCheck;
+            _latencyText = L.ServerDetail_NotTested;
             ResetAiUnlockDisplay();
         }
 
@@ -89,22 +91,22 @@ namespace XrayUI.ViewModels
             }
         }
 
-        public string SelectedName => SelectedServer?.Name ?? "未选择服务器";
+        public string SelectedName => SelectedServer?.Name ?? L.ServerDetail_NoServer;
 
         public string SelectedHostLabel
-            => SelectedServer?.IsChain == true ? "入口" : "地址";
+            => SelectedServer?.IsChain == true ? L.ServerDetail_Entry : L.ServerDetail_Address;
 
         public string SelectedHost
             => SelectedServer?.IsChain == true
-                ? ResolveChainServer(SelectedServer.ChainEntryServerId)?.Name ?? "(入口节点缺失)"
+                ? ResolveChainServer(SelectedServer.ChainEntryServerId)?.Name ?? L.ServerDetail_EntryMissing
                 : SelectedServer?.Host ?? "-";
 
         public string SelectedPortLabel
-            => SelectedServer?.IsChain == true ? "出口" : "端口";
+            => SelectedServer?.IsChain == true ? L.ServerDetail_Exit : L.ServerDetail_Port;
 
         public string SelectedPort
             => SelectedServer?.IsChain == true
-                ? ResolveChainServer(SelectedServer.ChainExitServerId)?.Name ?? "(出口节点缺失)"
+                ? ResolveChainServer(SelectedServer.ChainExitServerId)?.Name ?? L.ServerDetail_ExitMissing
                 : SelectedServer?.Port.ToString() ?? "-";
 
         public string SelectedProtocol => SelectedServer?.DisplayProtocol ?? "-";
@@ -112,10 +114,10 @@ namespace XrayUI.ViewModels
         public string SelectedSecurityLabel
             => (SelectedServer?.Protocol?.ToLowerInvariant()) switch
             {
-                "ss" => "加密",
-                "socks" => "认证",
-                "chain" => "链路",
-                _ => "安全"
+                "ss"    => L.ServerDetail_Encryption,
+                "socks" => L.ServerDetail_AuthLabel,
+                "chain" => L.ServerDetail_ChainLabel,
+                _       => L.ServerDetail_Security
             };
 
         public string SelectedEncryption
@@ -128,8 +130,8 @@ namespace XrayUI.ViewModels
                     case "socks":
                         return string.IsNullOrWhiteSpace(SelectedServer.Username)
                                && string.IsNullOrWhiteSpace(SelectedServer.Password)
-                            ? "无认证"
-                            : "用户名/密码";
+                            ? L.ServerDetail_NoAuth
+                            : L.ServerDetail_UserPass;
                     case "chain":
                         var entry = ResolveChainServer(SelectedServer.ChainEntryServerId)?.DisplayProtocol ?? "?";
                         var exit = ResolveChainServer(SelectedServer.ChainExitServerId)?.DisplayProtocol ?? "?";
@@ -356,8 +358,7 @@ namespace XrayUI.ViewModels
 
         private void ResetLatencyDisplay()
         {
-            LatencyText = "未测试";
-            
+            LatencyText = L.ServerDetail_NotTested;
         }
 
         private void ResetAiUnlockDisplay()
@@ -498,7 +499,7 @@ namespace XrayUI.ViewModels
             _latencyTestCts = cts;
 
             IsTestingLatency = true;
-            LatencyText = "测试中...";
+            LatencyText = L.ServerDetail_Testing;
 
             try
             {
@@ -514,9 +515,9 @@ namespace XrayUI.ViewModels
 
                 LatencyText = result.Status switch
                 {
-                    LatencyProbeStatus.Success => $"{result.Milliseconds ?? 0} ms",
-                    LatencyProbeStatus.Timeout => "超时",
-                    _ => "失败"
+                    LatencyProbeStatus.Success => Loc.Format("ServerDetail_LatencyMs", result.Milliseconds ?? 0),
+                    LatencyProbeStatus.Timeout => L.ServerDetail_Timeout,
+                    _                          => L.ServerDetail_Failed
                 };
             }
             catch (OperationCanceledException) when (cts.IsCancellationRequested)

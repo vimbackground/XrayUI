@@ -1,0 +1,1081 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>Proxy Panel</value>
+  </data>
+  <data name="MainWindow_ToggleMini" xml:space="preserve">
+    <value>Toggle mini window</value>
+  </data>
+  <data name="MainWindow_ExpandFull" xml:space="preserve">
+    <value>Back to full window</value>
+  </data>
+  <data name="MainWindow_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ServerList_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ServerList_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ServerList_Share" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="ServerList_SortActiveHint" xml:space="preserve">
+    <value>Only available when filter is "All Servers"</value>
+  </data>
+  <data name="ServerList_AllServers" xml:space="preserve">
+    <value>All Servers</value>
+  </data>
+  <data name="ServerList_Ungrouped" xml:space="preserve">
+    <value>Ungrouped</value>
+  </data>
+  <data name="ServerList_UnnamedSub" xml:space="preserve">
+    <value>(Unnamed Subscription)</value>
+  </data>
+  <data name="ServerList_OrphanSub" xml:space="preserve">
+    <value>(Deleted Subscription)</value>
+  </data>
+  <data name="ControlPanel_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="ControlPanel_Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="ControlPanel_StatusNotRunning" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="ControlPanel_StatusApplying" xml:space="preserve">
+    <value>Applying...</value>
+  </data>
+  <data name="ControlPanel_Personalize" xml:space="preserve">
+    <value>Personalize</value>
+  </data>
+  <data name="ControlPanel_RoutingGlobal" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="ControlPanel_RoutingSmart" xml:space="preserve">
+    <value>Smart</value>
+  </data>
+  <data name="ControlPanel_UpdateFound" xml:space="preserve">
+    <value>New version {0}</value>
+  </data>
+  <data name="ServerDetail_Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="ServerDetail_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="ServerDetail_Encryption" xml:space="preserve">
+    <value>Encryption</value>
+  </data>
+  <data name="ServerDetail_Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="ServerDetail_OpenInBrowser" xml:space="preserve">
+    <value>Open {0} in browser</value>
+  </data>
+  <data name="ServerDetail_RetestLatency" xml:space="preserve">
+    <value>Retest latency</value>
+  </data>
+  <data name="ServerDetail_CopyShareLink" xml:space="preserve">
+    <value>Copy share link</value>
+  </data>
+  <data name="ServerDetail_NoServer" xml:space="preserve">
+    <value>No server selected</value>
+  </data>
+  <data name="ServerDetail_NotTested" xml:space="preserve">
+    <value>Not tested</value>
+  </data>
+  <data name="ServerDetail_Testing" xml:space="preserve">
+    <value>Testing...</value>
+  </data>
+  <data name="ServerDetail_Timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="ServerDetail_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Personalize_Header.Text" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
+  <data name="Personalize_Theme.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Personalize_Light.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Personalize_Dark.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Personalize_FollowSystem.Content" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Personalize_Backdrop.Text" xml:space="preserve">
+    <value>Background Effect</value>
+  </data>
+  <data name="Personalize_Acrylic.Content" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="Personalize_ProtocolColors.Text" xml:space="preserve">
+    <value>Protocol Colors</value>
+  </data>
+  <data name="Personalize_Reset.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Personalize_OtherProtocol.Text" xml:space="preserve">
+    <value>Other Protocols</value>
+  </data>
+  <data name="Personalize_OtherProtocolDesc.Text" xml:space="preserve">
+    <value>Unmatched protocols will use this color</value>
+  </data>
+  <data name="Personalize_DataManagement.Text" xml:space="preserve">
+    <value>Data Management</value>
+  </data>
+  <data name="Personalize_Done.Content" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Personalize_ExportSuccess" xml:space="preserve">
+    <value>Export Successful</value>
+  </data>
+  <data name="Language_FollowSystem" xml:space="preserve">
+    <value>Follow System</value>
+    <comment>Display name of the "follow system" language row — referenced by LanguageInfo.DisplayName when Tag is null.</comment>
+  </data>
+  <data name="Subscription_AddTooltip" xml:space="preserve">
+    <value>Add Subscription</value>
+  </data>
+  <data name="Subscription_ManageTooltip" xml:space="preserve">
+    <value>Manage Subscriptions</value>
+  </data>
+  <data name="Subscription_Refresh" xml:space="preserve">
+    <value>Refresh Subscription</value>
+  </data>
+  <data name="Subscription_DeleteTooltip" xml:space="preserve">
+    <value>Delete Subscription</value>
+  </data>
+  <data name="Subscription_FetchFailed" xml:space="preserve">
+    <value>Subscription fetch failed</value>
+  </data>
+  <data name="Subscription_NoParsed" xml:space="preserve">
+    <value>No valid nodes could be parsed from the subscription.</value>
+  </data>
+  <data name="Subscription_StopFirst_Refresh" xml:space="preserve">
+    <value>Please stop the proxy before refreshing</value>
+  </data>
+  <data name="Subscription_UpdateFailed" xml:space="preserve">
+    <value>Update failed: {0}</value>
+  </data>
+  <data name="Subscription_StopFirst_Delete" xml:space="preserve">
+    <value>Please stop the proxy before deleting</value>
+  </data>
+  <data name="CustomRules_Title" xml:space="preserve">
+    <value>Custom Routing Rules</value>
+  </data>
+  <data name="CustomRules_UpdateGeoTooltip" xml:space="preserve">
+    <value>Update GeoFile routing data</value>
+  </data>
+  <data name="AddRule_Title" xml:space="preserve">
+    <value>Add Rule</value>
+  </data>
+  <data name="AddRule_ErrorEmpty" xml:space="preserve">
+    <value>Please enter match content</value>
+  </data>
+  <data name="Log_Title" xml:space="preserve">
+    <value>Proxy Log</value>
+  </data>
+  <data name="Log_NotRunning" xml:space="preserve">
+    <value>Not running</value>
+  </data>
+  <data name="Log_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Log_Lines" xml:space="preserve">
+    <value>({0} lines)</value>
+  </data>
+  <data name="Log_PrivacyTooltip" xml:space="preserve">
+    <value>Log privacy settings</value>
+  </data>
+  <data name="Log_IpMask" xml:space="preserve">
+    <value>IP Address Mask</value>
+  </data>
+  <data name="Log_MaskOff" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Log_AutoScroll" xml:space="preserve">
+    <value>Auto Scroll</value>
+  </data>
+  <data name="Log_CopyAll" xml:space="preserve">
+    <value>Copy All</value>
+  </data>
+  <data name="Log_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Log_PrivacyTitle" xml:space="preserve">
+    <value>Log Privacy Settings</value>
+  </data>
+  <data name="Log_PrivacySaved" xml:space="preserve">
+    <value>Saved. Takes effect on next TUN session start.</value>
+  </data>
+  <data name="Log_PrivacyFailed" xml:space="preserve">
+    <value>Save failed: {0}</value>
+  </data>
+  <data name="Dialog_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Dialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Dialog_Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Dialog_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Dialog_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Dialog_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Dialog_Replace" xml:space="preserve">
+    <value>Replace</value>
+  </data>
+  <data name="Dialog_Preparing" xml:space="preserve">
+    <value>Preparing…</value>
+  </data>
+  <data name="Dialog_On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Dialog_Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Import_Placeholder" xml:space="preserve">
+    <value>Paste node links (multi-protocol supported)</value>
+  </data>
+  <data name="Import_Title" xml:space="preserve">
+    <value>Import Node Links</value>
+  </data>
+  <data name="Import_SupportHint" xml:space="preserve">
+    <value>Supports common protocol links</value>
+  </data>
+  <data name="Import_ParseFailed" xml:space="preserve">
+    <value>Parse Failed</value>
+  </data>
+  <data name="Import_ParseFailedMsg" xml:space="preserve">
+    <value>No valid node links found. Please verify your input and try again.</value>
+  </data>
+  <data name="EditServer_AddTitle" xml:space="preserve">
+    <value>Add Server Manually</value>
+  </data>
+  <data name="EditServer_EditTitle" xml:space="preserve">
+    <value>Edit Server</value>
+  </data>
+  <data name="EditServer_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="EditServer_Address" xml:space="preserve">
+    <value>Address / Domain</value>
+  </data>
+  <data name="EditServer_Port" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="EditServer_Protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="EditServer_Encryption" xml:space="preserve">
+    <value>Encryption (SS)</value>
+  </data>
+  <data name="EditServer_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="EditServer_Transport" xml:space="preserve">
+    <value>Transport Protocol</value>
+  </data>
+  <data name="EditServer_Path" xml:space="preserve">
+    <value>Path (WS/gRPC/XHTTP)</value>
+  </data>
+  <data name="EditServer_WsHost" xml:space="preserve">
+    <value>Host Header (WS/XHTTP)</value>
+  </data>
+  <data name="EditServer_Security" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="EditServer_Fingerprint" xml:space="preserve">
+    <value>Fingerprint (uTLS)</value>
+  </data>
+  <data name="EditServer_AllowInsecure" xml:space="preserve">
+    <value>Allow insecure connection (skip certificate verification)</value>
+  </data>
+  <data name="EditServer_FlowPlaceholder" xml:space="preserve">
+    <value>xtls-rprx-vision or leave empty</value>
+  </data>
+  <data name="EditPort_Title" xml:space="preserve">
+    <value>Edit Local Port</value>
+  </data>
+  <data name="EditPort_Header" xml:space="preserve">
+    <value>Local Port</value>
+  </data>
+  <data name="EditPort_Range" xml:space="preserve">
+    <value>Range: {0} - {1}</value>
+  </data>
+  <data name="Share_Title" xml:space="preserve">
+    <value>Share Node</value>
+  </data>
+  <data name="Share_CopyLink" xml:space="preserve">
+    <value>Copy Link</value>
+  </data>
+  <data name="Share_NotSupported" xml:space="preserve">
+    <value>Sharing Not Supported</value>
+  </data>
+  <data name="Share_NotSupportedMsg" xml:space="preserve">
+    <value>This node protocol does not support generating share links.</value>
+  </data>
+  <data name="Startup_Title" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="Startup_AutoStart" xml:space="preserve">
+    <value>Launch at startup</value>
+  </data>
+  <data name="Startup_AutoConnect" xml:space="preserve">
+    <value>Auto-connect to last node</value>
+  </data>
+  <data name="Startup_SetFailed" xml:space="preserve">
+    <value>Startup settings failed</value>
+  </data>
+  <data name="Confirm_DeleteTitle" xml:space="preserve">
+    <value>Confirm Delete</value>
+  </data>
+  <data name="Confirm_DeleteMsg" xml:space="preserve">
+    <value>Are you sure you want to delete {0}?</value>
+  </data>
+  <data name="Confirm_ReplaceTitle" xml:space="preserve">
+    <value>Replace current configuration?</value>
+  </data>
+  <data name="Confirm_ReplaceMsg" xml:space="preserve">
+    <value>This will overwrite all current servers and routing rules. We strongly recommend exporting a backup first. Continue?</value>
+  </data>
+  <data name="EditServer_SocksUsername" xml:space="preserve">
+    <value>Username (SOCKS)</value>
+  </data>
+  <data name="EditServer_EchPlaceholder" xml:space="preserve">
+    <value>e.g. udp://1.1.1.1 or server-generated ECHConfig</value>
+  </data>
+  <data name="EditServer_FinalmaskPlaceholder" xml:space="preserve">
+    <value>Empty = none; or mlkem768x25519plus.native.0rtt...</value>
+  </data>
+  <data name="ChainProxy_AddTitle" xml:space="preserve">
+    <value>Add Chain Proxy</value>
+  </data>
+  <data name="ChainProxy_EditTitle" xml:space="preserve">
+    <value>Edit Chain Proxy</value>
+  </data>
+  <data name="Dns_DialogTitle" xml:space="preserve">
+    <value>DNS Settings</value>
+  </data>
+  <data name="ControlPanel_DnsItem.Text" xml:space="preserve">
+    <value>DNS Settings</value>
+  </data>
+  <data name="Dns_ResetDefaults" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="Dns_ServerPlaceholder" xml:space="preserve">
+    <value>Enter IP or DoH address (empty = auto)</value>
+  </data>
+  <data name="Dns_QueryStrategyLabel" xml:space="preserve">
+    <value>Query strategy</value>
+  </data>
+  <data name="Dns_EnableCacheLabel" xml:space="preserve">
+    <value>Enable DNS cache</value>
+  </data>
+  <data name="Dns_DirectTitle" xml:space="preserve">
+    <value>Direct DNS</value>
+  </data>
+  <data name="Dns_DirectDesc" xml:space="preserve">
+    <value>For domestic domains (geosite:cn), resolved directly without proxy</value>
+  </data>
+  <data name="Dns_ProxyTitle" xml:space="preserve">
+    <value>Proxy DNS</value>
+  </data>
+  <data name="Dns_ProxyDesc" xml:space="preserve">
+    <value>For foreign domains, resolved via proxy outbound to prevent DNS hijacking</value>
+  </data>
+  <data name="Dns_TunOnlyHint" xml:space="preserve">
+    <value>TUN mode only</value>
+  </data>
+  <data name="Dns_Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="Dns_Provider_Ali" xml:space="preserve">
+    <value>Alibaba</value>
+  </data>
+  <data name="Dns_Provider_Tencent" xml:space="preserve">
+    <value>Tencent</value>
+  </data>
+  <data name="Dns_Provider_Google" xml:space="preserve">
+    <value>Google</value>
+  </data>
+  <data name="Dns_Strategy_V4Only" xml:space="preserve">
+    <value>IPv4 only</value>
+  </data>
+  <data name="Dns_Strategy_V6Only" xml:space="preserve">
+    <value>IPv6 only</value>
+  </data>
+  <data name="Dns_Strategy_Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="Error_NoServer" xml:space="preserve">
+    <value>No Server Selected</value>
+  </data>
+  <data name="Error_NoServerMsg" xml:space="preserve">
+    <value>Please select a server from the list first</value>
+  </data>
+  <data name="Error_StartFailed" xml:space="preserve">
+    <value>Start Failed</value>
+  </data>
+  <data name="Error_XrayStartFailed" xml:space="preserve">
+    <value>xray failed to start. Please check server configuration.</value>
+  </data>
+  <data name="Error_ReapplyFailed" xml:space="preserve">
+    <value>Apply Configuration Failed</value>
+  </data>
+  <data name="Error_XrayReapplyFailed" xml:space="preserve">
+    <value>xray failed to apply new configuration and has stopped.</value>
+  </data>
+  <data name="Error_UpdateFailed" xml:space="preserve">
+    <value>Update Failed</value>
+  </data>
+  <data name="Error_UpdaterLaunchFailed" xml:space="preserve">
+    <value>Could not launch updater: {0}</value>
+  </data>
+  <data name="Update_Updating" xml:space="preserve">
+    <value>Updating XrayUI</value>
+  </data>
+  <data name="Tun_EnableTitle" xml:space="preserve">
+    <value>Enable TUN Mode</value>
+  </data>
+  <data name="Tun_EnableMsg.Text" xml:space="preserve">
+    <value>Enabling TUN mode requires administrator privileges. The app will restart. Continue?</value>
+  </data>
+  <data name="Main_NoSelection" xml:space="preserve">
+    <value>Not selected</value>
+  </data>
+  <data name="Main_NotConnected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="GeoUpdate_Updating" xml:space="preserve">
+    <value>Updating routing data</value>
+  </data>
+  <data name="GeoUpdate_AlreadyLatest" xml:space="preserve">
+    <value>Already Up to Date</value>
+  </data>
+  <data name="GeoUpdate_AlreadyLatestMsg" xml:space="preserve">
+    <value>geoip.dat and geosite.dat are already the latest version. No download needed.</value>
+  </data>
+  <data name="GeoUpdate_Success" xml:space="preserve">
+    <value>Update Successful</value>
+  </data>
+  <data name="GeoUpdate_TunRestart" xml:space="preserve">
+    <value>Updated. Please restart manually in TUN mode for changes to take effect.</value>
+  </data>
+  <data name="GeoUpdate_ReloadedOk" xml:space="preserve">
+    <value>Updated and xray reloaded.</value>
+  </data>
+  <data name="GeoUpdate_ReloadFailed" xml:space="preserve">
+    <value>Data files updated, but xray restart failed: {0}</value>
+  </data>
+  <data name="GeoUpdate_RestartRequired" xml:space="preserve">
+    <value>Updated. Please restart xray for changes to take effect.</value>
+  </data>
+  <data name="GeoUpdate_NextStart" xml:space="preserve">
+    <value>Updated. Changes will take effect on next xray start.</value>
+  </data>
+  <data name="Update_FetchingChecksum" xml:space="preserve">
+    <value>Fetching checksum file…</value>
+  </data>
+  <data name="Update_ChecksumFormatError" xml:space="preserve">
+    <value>Update checksum file format error</value>
+  </data>
+  <data name="Update_ChecksumDownloadFailed" xml:space="preserve">
+    <value>Could not download update checksum file: </value>
+  </data>
+  <data name="Update_ChecksumMismatch" xml:space="preserve">
+    <value>Update verification failed: SHA256 does not match the server checksum.</value>
+  </data>
+  <data name="Update_Extracting" xml:space="preserve">
+    <value>Extracting update…</value>
+  </data>
+  <data name="Update_ExtractFailed" xml:space="preserve">
+    <value>Update extraction failed: </value>
+  </data>
+  <data name="Update_Verifying" xml:space="preserve">
+    <value>Verifying update…</value>
+  </data>
+  <data name="Update_MissingFiles" xml:space="preserve">
+    <value>Update package is invalid: required files are missing.</value>
+  </data>
+  <data name="Update_VersionMismatch" xml:space="preserve">
+    <value>Update version mismatch: expected {0}, got {1}.</value>
+  </data>
+  <data name="Update_MissingUpdater" xml:space="preserve">
+    <value>Updater component missing. Please re-download the full installer.</value>
+  </data>
+  <data name="Update_PrepRestart" xml:space="preserve">
+    <value>Preparing to restart…</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>Downloading {0} … {1:0.0} / {2:0.0} MB</value>
+  </data>
+  <data name="Update_DownloadingNoTotal" xml:space="preserve">
+    <value>Downloading {0} … {1:0.0} MB</value>
+  </data>
+  <data name="AddRule_EditTitle" xml:space="preserve">
+    <value>Edit Rule</value>
+  </data>
+  <data name="Error_ExportFailed" xml:space="preserve">
+    <value>Export Failed</value>
+  </data>
+  <data name="Subscription_NeverUpdated" xml:space="preserve">
+    <value>Last updated: never</value>
+  </data>
+  <data name="Subscription_JustNow" xml:space="preserve">
+    <value>just now</value>
+  </data>
+  <data name="Subscription_MinutesAgo" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="Subscription_HoursAgo" xml:space="preserve">
+    <value>{0} hr ago</value>
+  </data>
+  <data name="Subscription_DaysAgo" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="Subscription_LastUpdated" xml:space="preserve">
+    <value>Last updated: {0}</value>
+  </data>
+  <data name="ControlPanel_EditPortItem.Text" xml:space="preserve">
+    <value>Edit Port</value>
+  </data>
+  <data name="ControlPanel_ViewLogItem.Text" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="ControlPanel_ProxySettingsItem.Text" xml:space="preserve">
+    <value>Proxy Setting</value>
+  </data>
+  <data name="ControlPanel_GlobalProxyItem.Text" xml:space="preserve">
+    <value>System Proxy</value>
+  </data>
+  <data name="ControlPanel_NoProxyItem.Text" xml:space="preserve">
+    <value>Bypass System Proxy</value>
+  </data>
+  <data name="ControlPanel_StartupItem.Text" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="ControlPanel_RoutingSettingsItem.Text" xml:space="preserve">
+    <value>Routing</value>
+  </data>
+  <data name="ControlPanel_RoutingGlobalItem.Text" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="ControlPanel_RoutingSmartItem.Text" xml:space="preserve">
+    <value>Smart</value>
+  </data>
+  <data name="ControlPanel_CustomRulesItem.Text" xml:space="preserve">
+    <value>Custom Rules...</value>
+  </data>
+  <data name="ControlPanel_TunModeLabel.Text" xml:space="preserve">
+    <value>TUN Mode</value>
+  </data>
+  <data name="ControlPanel_RoutingLbl.Text" xml:space="preserve">
+    <value>Routing:</value>
+  </data>
+  <data name="Personalize_LanguageLbl.Text" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="ServerList_HeaderText.Text" xml:space="preserve">
+    <value>Server List</value>
+  </data>
+  <data name="ServerList_AddBtnText.Text" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="ServerList_ImportNodeItem.Text" xml:space="preserve">
+    <value>Import Nodes</value>
+  </data>
+  <data name="ServerList_AddSubscriptionItem.Text" xml:space="preserve">
+    <value>Add Subscription</value>
+  </data>
+  <data name="ServerList_AddManualItem.Text" xml:space="preserve">
+    <value>Add Manually</value>
+  </data>
+  <data name="ServerList_AddChainProxyItem.Text" xml:space="preserve">
+    <value>Chain Proxy</value>
+  </data>
+  <data name="ServerList_EditText.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="ServerList_DeleteText.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ServerList_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search servers</value>
+  </data>
+  <data name="ServerList_FilterLabelText.Text" xml:space="preserve">
+    <value>Filter:</value>
+  </data>
+  <data name="ServerList_SortDefaultItem.Text" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ServerList_SortActiveItem.Text" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ServerList_SortProtocolItem.Text" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerList_ActivatedBadge.Text" xml:space="preserve">
+    <value>● Activated</value>
+  </data>
+  <data name="ServerList_ChainBadgeText.Text" xml:space="preserve">
+    <value>Chain Proxy</value>
+  </data>
+  <data name="ServerList_Favorites" xml:space="preserve">
+    <value>Favorites</value>
+  </data>
+  <data name="ServerList_AddFavorite" xml:space="preserve">
+    <value>Add to Favorites</value>
+  </data>
+  <data name="ServerList_RemoveFavorite" xml:space="preserve">
+    <value>Remove from Favorites</value>
+  </data>
+  <data name="ServerList_FilterTooltip" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="ServerList_SortTooltip" xml:space="preserve">
+    <value>Sort</value>
+  </data>
+  <data name="Confirm_DeleteBatchMsg" xml:space="preserve">
+    <value>Are you sure you want to delete the selected {0} items?</value>
+  </data>
+  <data name="Subscription_UnknownError" xml:space="preserve">
+    <value>Unknown error</value>
+  </data>
+  <data name="ServerDetail_HeaderText.Text" xml:space="preserve">
+    <value>Server Details</value>
+  </data>
+  <data name="ServerDetail_NameLabel.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ServerDetail_ProtocolLabel.Text" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerDetail_TransportLabel.Text" xml:space="preserve">
+    <value>Transport</value>
+  </data>
+  <data name="ServerDetail_AiUnlockLabel.Text" xml:space="preserve">
+    <value>AI Unlock Status</value>
+  </data>
+  <data name="ServerDetail_LatencyLabel.Text" xml:space="preserve">
+    <value>Latency</value>
+  </data>
+  <data name="ServerDetail_Entry" xml:space="preserve">
+    <value>Entry</value>
+  </data>
+  <data name="ServerDetail_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ServerDetail_EntryMissing" xml:space="preserve">
+    <value>(entry node missing)</value>
+  </data>
+  <data name="ServerDetail_ExitMissing" xml:space="preserve">
+    <value>(exit node missing)</value>
+  </data>
+  <data name="ServerDetail_AuthLabel" xml:space="preserve">
+    <value>Auth</value>
+  </data>
+  <data name="ServerDetail_ChainLabel" xml:space="preserve">
+    <value>Chain</value>
+  </data>
+  <data name="ServerDetail_NoAuth" xml:space="preserve">
+    <value>No auth</value>
+  </data>
+  <data name="ServerDetail_UserPass" xml:space="preserve">
+    <value>Username/Password</value>
+  </data>
+  <data name="ServerDetail_LatencyMs" xml:space="preserve">
+    <value>{0} ms</value>
+  </data>
+  <data name="MainWindow_TitleText.Text" xml:space="preserve">
+    <value>Proxy Panel</value>
+  </data>
+  <data name="CustomRules_RuleListText.Text" xml:space="preserve">
+    <value>Rules</value>
+  </data>
+  <data name="CustomRules_AddBtnText.Text" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="CustomRules_NotEffectiveText.Text" xml:space="preserve">
+    <value>Global routing is active — custom rules are not in effect. They will apply when switching back to Smart Routing.</value>
+  </data>
+  <data name="CustomRules_SaveBtn.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CustomRules_CancelBtn.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CustomRules_AdvancedEditorTooltip" xml:space="preserve">
+    <value>Advanced edit (open settings.json externally)</value>
+  </data>
+  <data name="CustomRules_EditRowTooltip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="CustomRules_DeleteRowTooltip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="CustomRules_PrepFailedTitle" xml:space="preserve">
+    <value>Could not prepare settings.json</value>
+  </data>
+  <data name="CustomRules_OpenEditorFailedTitle" xml:space="preserve">
+    <value>Could not open editor</value>
+  </data>
+  <data name="CustomRules_OpenEditorFailedMsg" xml:space="preserve">
+    <value>No .json file association or launch failed: {0}</value>
+  </data>
+  <data name="AddRule_TypeLabelText.Text" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="AddRule_TypeDomainItem.Content" xml:space="preserve">
+    <value>Domain</value>
+  </data>
+  <data name="AddRule_TypeProcessItem.Content" xml:space="preserve">
+    <value>Process</value>
+  </data>
+  <data name="AddRule_MatchLabelText.Text" xml:space="preserve">
+    <value>Match Content</value>
+  </data>
+  <data name="AddRule_BrowseNameItem.Content" xml:space="preserve">
+    <value>Match by name</value>
+  </data>
+  <data name="AddRule_BrowsePathItem.Content" xml:space="preserve">
+    <value>Match by full path</value>
+  </data>
+  <data name="AddRule_BrowseFolderItem.Content" xml:space="preserve">
+    <value>Match entire folder</value>
+  </data>
+  <data name="AddRule_OutboundLabelText.Text" xml:space="preserve">
+    <value>Outbound</value>
+  </data>
+  <data name="AddRule_OutboundProxyItem.Content" xml:space="preserve">
+    <value>proxy</value>
+  </data>
+  <data name="AddRule_OutboundDirectItem.Content" xml:space="preserve">
+    <value>direct</value>
+  </data>
+  <data name="AddRule_OutboundBlockItem.Content" xml:space="preserve">
+    <value>block</value>
+  </data>
+  <data name="AddRule_ErrorTextElem.Text" xml:space="preserve">
+    <value>Please enter match content</value>
+  </data>
+  <data name="AddRule_BrowseExe" xml:space="preserve">
+    <value>Browse exe...</value>
+  </data>
+  <data name="AddRule_BrowseFolder" xml:space="preserve">
+    <value>Browse folder...</value>
+  </data>
+  <data name="AddRule_PlaceholderDomain" xml:space="preserve">
+    <value>youtube.com or geosite:cn</value>
+  </data>
+  <data name="AddRule_PlaceholderIp" xml:space="preserve">
+    <value>192.168.0.0/16 or geoip:cn</value>
+  </data>
+  <data name="AddRule_PlaceholderProcess" xml:space="preserve">
+    <value>Type a process name / path / folder, or click Browse</value>
+  </data>
+  <data name="AddRule_HintDomain" xml:space="preserve">
+    <value>Supports exact match, regexp:, geosite: prefixes</value>
+  </data>
+  <data name="AddRule_HintIp" xml:space="preserve">
+    <value>Supports CIDR and geoip: prefixes</value>
+  </data>
+  <data name="AddRule_HintProcess" xml:space="preserve">
+    <value>By name: matches any exe with this name. By full path: matches only this exe. By folder: matches all exes under the folder.</value>
+  </data>
+  <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
+    <value>Application language</value>
+  </data>
+  <data name="Personalize_AppLanguageDesc.Text" xml:space="preserve">
+    <value>Choose interface language</value>
+  </data>
+  <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
+    <value>Restart XrayUI to apply  language changes</value>
+  </data>
+  <data name="Personalize_LangRestartBtn.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Personalize_ProtocolColorsDesc.Text" xml:space="preserve">
+    <value>Customize the color indicator for each protocol</value>
+  </data>
+  <data name="Personalize_DetailSettings.Text" xml:space="preserve">
+    <value>Detail Settings</value>
+  </data>
+  <data name="Personalize_DetailsHeader.Text" xml:space="preserve">
+    <value>Server info display</value>
+  </data>
+  <data name="Personalize_DetailsDesc.Text" xml:space="preserve">
+    <value>Choose what to show on the detail card</value>
+  </data>
+  <data name="Personalize_DetailLatency.Text" xml:space="preserve">
+    <value>Latency</value>
+  </data>
+  <data name="Personalize_DetailLatencyDesc.Text" xml:space="preserve">
+    <value>Show latency on the node card</value>
+  </data>
+  <data name="Personalize_DetailAiUnlock.Text" xml:space="preserve">
+    <value>AI Unlock</value>
+  </data>
+  <data name="Personalize_DetailAiUnlockDesc.Text" xml:space="preserve">
+    <value>Show AI unlock status on the node card</value>
+  </data>
+  <data name="Personalize_ImportExportTitle.Text" xml:space="preserve">
+    <value>Import &amp; Export Configuration</value>
+  </data>
+  <data name="Personalize_ImportExportDesc.Text" xml:space="preserve">
+    <value>Back up the current nodes and routing rules, or restore from a file</value>
+  </data>
+  <data name="Personalize_ExportBtn.Content" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Personalize_ImportBtn.Content" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Personalize_ExportTooltip" xml:space="preserve">
+    <value>Export preset configuration</value>
+  </data>
+  <data name="Personalize_ImportTooltip" xml:space="preserve">
+    <value>Import preset configuration</value>
+  </data>
+  <data name="Personalize_ExportSuccessMsgFmt" xml:space="preserve">
+    <value>Exported to {0}</value>
+  </data>
+  <data name="Personalize_ImportFailed" xml:space="preserve">
+    <value>Import failed</value>
+  </data>
+  <data name="Personalize_ImportSuccess" xml:space="preserve">
+    <value>Import successful</value>
+  </data>
+  <data name="Personalize_ImportSuccessMsg" xml:space="preserve">
+    <value>Imported {0} nodes, {1} subscriptions, {2} rules{3}.</value>
+  </data>
+  <data name="Personalize_ImportAdvancedSuffix" xml:space="preserve">
+    <value>, including advanced routing</value>
+  </data>
+  <data name="Personalize_PresetMissingTitle" xml:space="preserve">
+    <value>Preset files not found</value>
+  </data>
+  <data name="Personalize_PresetMissingMsg" xml:space="preserve">
+    <value>Please prepare servers.json / settings.json under the Import folder first.</value>
+  </data>
+  <data name="ChainProxy_NameLabel.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ChainProxy_NameBox.PlaceholderText" xml:space="preserve">
+    <value>Chain proxy name</value>
+  </data>
+  <data name="ChainProxy_EntryLabel.Text" xml:space="preserve">
+    <value>Entry proxy</value>
+  </data>
+  <data name="ChainProxy_EntryBox.PlaceholderText" xml:space="preserve">
+    <value>Select front node</value>
+  </data>
+  <data name="ChainProxy_ExitLabel.Text" xml:space="preserve">
+    <value>Exit proxy</value>
+  </data>
+  <data name="ChainProxy_ExitBox.PlaceholderText" xml:space="preserve">
+    <value>Select exit node</value>
+  </data>
+  <data name="ChainProxy_Hint.Text" xml:space="preserve">
+    <value>Traffic is forwarded through the entry proxy and routed out via the exit proxy</value>
+  </data>
+  <data name="ChainProxy_NameRequired" xml:space="preserve">
+    <value>Please enter a chain proxy name.</value>
+  </data>
+  <data name="ChainProxy_EntryRequired" xml:space="preserve">
+    <value>Please select an entry proxy.</value>
+  </data>
+  <data name="ChainProxy_ExitRequired" xml:space="preserve">
+    <value>Please select an exit proxy.</value>
+  </data>
+  <data name="ChainProxy_EntryExitSame" xml:space="preserve">
+    <value>Entry proxy and exit proxy cannot be the same node.</value>
+  </data>
+  <data name="Tun_MoreOptionsBtn.Content" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="Tun_MtuLabel.Text" xml:space="preserve">
+    <value>Maximum transmission unit</value>
+  </data>
+  <data name="Tun_InterfaceLabel.Text" xml:space="preserve">
+    <value>Outbound interface</value>
+  </data>
+  <data name="Tun_InterfaceTooltip" xml:space="preserve">
+    <value>Xray picks automatically by default; only set this manually if auto mode is unavailable.</value>
+  </data>
+  <data name="Tun_AutoInterfaceLabel" xml:space="preserve">
+    <value>auto (recommended)</value>
+  </data>
+  <data name="Subscription_DialogTitle_Add" xml:space="preserve">
+    <value>Add Subscription</value>
+  </data>
+  <data name="Subscription_DialogTitle_Manage" xml:space="preserve">
+    <value>Manage Subscriptions</value>
+  </data>
+  <data name="Subscription_UrlBox.Header" xml:space="preserve">
+    <value>Subscription URL</value>
+  </data>
+  <data name="Subscription_NameBox.Header" xml:space="preserve">
+    <value>Name (optional)</value>
+  </data>
+  <data name="Subscription_NameBox.PlaceholderText" xml:space="preserve">
+    <value>Leave empty to use link domain</value>
+  </data>
+  <data name="Subscription_AutoImportHintText.Text" xml:space="preserve">
+    <value>All nodes from the subscription will be parsed and imported automatically</value>
+  </data>
+  <data name="Subscription_EmptyText.Text" xml:space="preserve">
+    <value>No subscriptions</value>
+  </data>
+  <data name="Subscription_DeleteConfirmText.Text" xml:space="preserve">
+    <value>Delete subscription?</value>
+  </data>
+  <data name="Subscription_DeleteDescText.Text" xml:space="preserve">
+    <value>All nodes under this subscription will also be deleted.</value>
+  </data>
+  <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+</root>

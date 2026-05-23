@@ -34,8 +34,11 @@ namespace XrayUI.Views
             AppWindow.Resize(new SizeInt32(
                 (int)Math.Round(620 * scale),
                 (int)Math.Round(460 * scale)));
-            AppWindow.Title = "自定义路由规则";
+            AppWindow.Title = L.CustomRules_Title;
 			AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+
+            ToolTipService.SetToolTip(OpenAdvancedEditorButton, L.CustomRules_AdvancedEditorTooltip);
+            ToolTipService.SetToolTip(UpdateGeoButton,          L.CustomRules_UpdateGeoTooltip);
 
 			var presenter = OverlappedPresenter.CreateForDialog();
 
@@ -118,6 +121,18 @@ namespace XrayUI.Views
                 ViewModel.AddNewRule(dialog.Result);
             else
                 ViewModel.ReplaceRule(existing, dialog.Result);
+        }
+
+        private void EditRuleButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+                ToolTipService.SetToolTip(element, L.CustomRules_EditRowTooltip);
+        }
+
+        private void DeleteRuleButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element)
+                ToolTipService.SetToolTip(element, L.CustomRules_DeleteRowTooltip);
         }
 
         private void EditRuleButton_Click(object sender, RoutedEventArgs e)

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Services;
 
@@ -187,7 +188,7 @@ namespace XrayUI.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowErrorAsync(
-                    "无法准备 settings.json",
+                    L.CustomRules_PrepFailedTitle,
                     ex.Message,
                     xamlRoot);
                 return;
@@ -201,8 +202,8 @@ namespace XrayUI.ViewModels
             catch (Exception ex)
             {
                 await _dialogs.ShowErrorAsync(
-                    "无法打开编辑器",
-                    $"未找到 .json 关联程序或启动失败：{ex.Message}",
+                    L.CustomRules_OpenEditorFailedTitle,
+                    Loc.Format("CustomRules_OpenEditorFailedMsg", ex.Message),
                     xamlRoot);
             }
         }
@@ -230,7 +231,7 @@ namespace XrayUI.ViewModels
             try
             {
                 await _dialogs.ShowProgressDialogAsync(
-                    "正在更新路由数据",
+                    L.GeoUpdate_Updating,
                     async (progress, ct) => result = await _geoUpdate.UpdateAsync(progress, proxyUrl, ct),
                     xamlRoot);
             }
@@ -243,7 +244,7 @@ namespace XrayUI.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogs.ShowErrorAsync("更新失败", ex.Message, xamlRoot);
+                await _dialogs.ShowErrorAsync(L.Error_UpdateFailed, ex.Message, xamlRoot);
                 return;
             }
 
@@ -251,8 +252,8 @@ namespace XrayUI.ViewModels
             if (!result.AnyUpdated)
             {
                 await _dialogs.ShowErrorAsync(
-                    "已是最新",
-                    "geoip.dat 和 geosite.dat 都已是最新版本，无需下载。",
+                    L.GeoUpdate_AlreadyLatest,
+                    L.GeoUpdate_AlreadyLatestMsg,
                     xamlRoot);
                 return;
             }
@@ -263,31 +264,31 @@ namespace XrayUI.ViewModels
             {
                 if (_isTunMode?.Invoke() == true)
                 {
-                    message = "已更新。TUN 模式下请手动重启以生效。";
+                    message = L.GeoUpdate_TunRestart;
                 }
                 else if (_reapplyRouting != null)
                 {
                     try
                     {
                         await _reapplyRouting();
-                        message = "已更新并重新加载 xray。";
+                        message = L.GeoUpdate_ReloadedOk;
                     }
                     catch (Exception ex)
                     {
-                        message = $"已更新数据文件，但重启 xray 失败：{ex.Message}";
+                        message = Loc.Format("GeoUpdate_ReloadFailed", ex.Message);
                     }
                 }
                 else
                 {
-                    message = "已更新。请重启 xray 以生效。";
+                    message = L.GeoUpdate_RestartRequired;
                 }
             }
             else
             {
-                message = "已更新。下次启动 xray 时生效。";
+                message = L.GeoUpdate_NextStart;
             }
 
-            await _dialogs.ShowErrorAsync("更新成功", message, xamlRoot);
+            await _dialogs.ShowErrorAsync(L.GeoUpdate_Success, message, xamlRoot);
         }
     }
 }

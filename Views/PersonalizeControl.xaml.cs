@@ -1,4 +1,6 @@
 using System;
+using Microsoft.UI.Xaml.Automation;
+using XrayUI.Helpers;
 using XrayUI.Services;
 
 namespace XrayUI.Views
@@ -10,6 +12,9 @@ namespace XrayUI.Views
         public PersonalizeControl()
         {
             this.InitializeComponent();
+
+            AutomationProperties.SetName(ExportPresetButton, L.Personalize_ExportTooltip);
+            AutomationProperties.SetName(ImportPresetButton, L.Personalize_ImportTooltip);
         }
 
         private async void ExportPresetButton_Click(object sender, RoutedEventArgs e)
@@ -17,11 +22,13 @@ namespace XrayUI.Views
             try
             {
                 var exportDir = await ViewModel.ExportPresetAsync();
-                ShowInfo(InfoBarSeverity.Success, "导出成功", $"已导出至 {exportDir}");
+                ShowInfo(InfoBarSeverity.Success,
+                    L.Personalize_ExportSuccess,
+                    Loc.Format("Personalize_ExportSuccessMsgFmt", exportDir));
             }
             catch (Exception ex)
             {
-                ShowInfo(InfoBarSeverity.Error, "导出失败", ex.Message);
+                ShowInfo(InfoBarSeverity.Error, L.Error_ExportFailed, ex.Message);
             }
         }
 
@@ -31,21 +38,27 @@ namespace XrayUI.Views
             {
                 if (!PersonalizeViewModel.PresetExists())
                 {
-                    ShowInfo(InfoBarSeverity.Warning, "未找到预置文件",
-                        "请先准备 Import 文件夹下的 servers.json / settings.json。");
+                    ShowInfo(InfoBarSeverity.Warning,
+                        L.Personalize_PresetMissingTitle,
+                        L.Personalize_PresetMissingMsg);
                     return;
                 }
 
                 var result = await ViewModel.ConfirmAndImportPresetAsync();
                 if (result is null) return;
 
-                var advanced = result.ImportedAdvancedRouting ? "、含高级路由" : "";
-                ShowInfo(InfoBarSeverity.Success, "导入成功",
-                    $"已导入 {result.ImportedServers} 个节点、{result.ImportedSubscriptions} 条订阅、{result.ImportedCustomRules} 条规则{advanced}。");
+                var advanced = result.ImportedAdvancedRouting ? L.Personalize_ImportAdvancedSuffix : "";
+                ShowInfo(InfoBarSeverity.Success,
+                    L.Personalize_ImportSuccess,
+                    Loc.Format("Personalize_ImportSuccessMsg",
+                        result.ImportedServers,
+                        result.ImportedSubscriptions,
+                        result.ImportedCustomRules,
+                        advanced));
             }
             catch (Exception ex)
             {
-                ShowInfo(InfoBarSeverity.Error, "导入失败", ex.Message);
+                ShowInfo(InfoBarSeverity.Error, L.Personalize_ImportFailed, ex.Message);
             }
         }
 
@@ -55,6 +68,12 @@ namespace XrayUI.Views
             OperationInfoBar.Title = title;
             OperationInfoBar.Message = message;
             OperationInfoBar.IsOpen = true;
+        }
+
+        private async void LanguageRestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.ApplyLanguageAsync();
+            App.Restart();
         }
     }
 }

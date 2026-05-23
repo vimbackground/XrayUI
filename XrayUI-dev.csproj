@@ -11,6 +11,10 @@
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- PRI fallback target when the system locale has no matching Strings/{lang}/Resources.resw.
+         Keeps non-zh/en users (ko/ja/ru/...) on English rather than relying on PRI's
+         alphabetical default. -->
+    <DefaultLanguage>en-US</DefaultLanguage>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WindowsPackageType>None</WindowsPackageType>
@@ -72,11 +76,14 @@
          strip their runtime assets (DirectML.dll / onnxruntime.dll / Microsoft.Windows.AI.MachineLearning.dll).
          IncludeAssets=compile keeps the reference assemblies for compile-time use; PrivateAssets=all
          prevents them from flowing to consumers. -->
-    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="2.0.*">
+    <!-- Pinned exact: floating "2.0.*" caused intermittent restore-time mismatches with
+         Microsoft.WindowsAppSDK 2.0.1's transitive Foundation/InteractiveExperiences
+         expectations. Bump deliberately when WindowsAppSDK itself is upgraded. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="2.0.185">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.0.*">
+    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" Version="2.0.300">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>

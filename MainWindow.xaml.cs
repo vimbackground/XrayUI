@@ -61,6 +61,11 @@ namespace XrayUI
 
             InitializeComponent();
 
+            Title = L.MainWindow_Title;
+            ToolTipService.SetToolTip(DockButton,        L.MainWindow_ToggleMini);
+            ToolTipService.SetToolTip(MiniExpandButton,  L.MainWindow_ExpandFull);
+            ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
+
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             var scale = DpiHelper.GetWindowScale(hWnd);
             AppWindow.Resize(new SizeInt32((int)Math.Round(950 * scale), (int)Math.Round(600 * scale)));
@@ -146,13 +151,13 @@ namespace XrayUI
             {
                 var flyout = new MenuFlyout();
 
-                var openItem = new MenuFlyoutItem { Text = "\u6253\u5f00\u7a97\u53e3" };
+                var openItem = new MenuFlyoutItem { Text = L.Tray_Open };
                 openItem.Click += (_, _) => RestoreFromTray();
                 flyout.Items.Add(openItem);
 
                 flyout.Items.Add(new MenuFlyoutSeparator());
 
-                var exitItem = new MenuFlyoutItem { Text = "\u9000\u51fa" };
+                var exitItem = new MenuFlyoutItem { Text = L.Tray_Exit };
                 exitItem.Click += (_, _) => ExitApplication();
                 flyout.Items.Add(exitItem);
 

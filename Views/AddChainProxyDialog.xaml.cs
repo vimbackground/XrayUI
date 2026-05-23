@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using XrayUI.Helpers;
 using XrayUI.Models;
 
 namespace XrayUI.Views
@@ -39,25 +40,25 @@ namespace XrayUI.Views
             var name = NameTextBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(name))
             {
-                ShowError("请输入链式代理名称。");
+                ShowError(L.ChainProxy_NameRequired);
                 return false;
             }
 
             if (EntryComboBox.SelectedItem is not ServerEntry entryServer)
             {
-                ShowError("请选择入口代理。");
+                ShowError(L.ChainProxy_EntryRequired);
                 return false;
             }
 
             if (ExitComboBox.SelectedItem is not ServerEntry exitServer)
             {
-                ShowError("请选择出口代理。");
+                ShowError(L.ChainProxy_ExitRequired);
                 return false;
             }
 
             if (entryServer.Id == exitServer.Id)
             {
-                ShowError("入口代理和出口代理不能是同一个节点。");
+                ShowError(L.ChainProxy_EntryExitSame);
                 return false;
             }
 
