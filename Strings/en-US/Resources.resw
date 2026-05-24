@@ -130,10 +130,10 @@
     <value>Close</value>
   </data>
   <data name="Tray_Open" xml:space="preserve">
-    <value>Open</value>
+    <value>Show App</value>
   </data>
   <data name="Tray_Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>Quit</value>
   </data>
   <data name="ServerList_Edit" xml:space="preserve">
     <value>Edit</value>
