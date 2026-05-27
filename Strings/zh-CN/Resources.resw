@@ -581,7 +581,7 @@
     <value>开启TUN模式</value>
   </data>
   <data name="Tun_EnableMsg.Text" xml:space="preserve">
-    <value>开启 TUN 模式需要管理员权限，程序将会重启，是否继续？</value>
+    <value>开启虚拟网卡模式需要管理员权限，程序将会重启，是否继续？</value>
   </data>
   <data name="Main_NoSelection" xml:space="preserve">
     <value>未选择</value>

@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using XrayUI.Helpers;
 using XrayUI.Services;
-
 namespace XrayUI
 {
     public partial class App
@@ -32,8 +31,7 @@ namespace XrayUI
             ApplyPersistedLanguageOverride();
 
             this.InitializeComponent();
-
-            ConfigureProcessShutdownBehavior();
+			ConfigureProcessShutdownBehavior();
             this.UnhandledException += (_, _) => CleanupOnExit();
             AppDomain.CurrentDomain.ProcessExit += (_, _) => CleanupOnExit();
         }

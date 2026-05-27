@@ -151,7 +151,7 @@ namespace XrayUI
             {
                 var flyout = new MenuFlyout();
 
-                var openItem = new MenuFlyoutItem { Text = L.Tray_Open };
+				var openItem = new MenuFlyoutItem { Text = L.Tray_Open };
                 openItem.Click += (_, _) => RestoreFromTray();
                 flyout.Items.Add(openItem);
 
