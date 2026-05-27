@@ -25,6 +25,8 @@
     <!-- Keep engine + rules out of MSIX packaging but copy them to the output directory -->
     <Content Remove="Assets\engine\wintun.dll" />
     <Content Remove="Assets\engine\xray.exe" />
+    <Content Remove="Assets\engine\arm64\wintun.dll" />
+    <Content Remove="Assets\engine\arm64\xray.exe" />
     <Content Remove="Assets\rules\geoip.dat" />
     <Content Remove="Assets\rules\geosite.dat" />
   </ItemGroup>
@@ -40,10 +42,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Assets\engine\xray.exe">
+    <!-- Default engine binaries (x64). Used for empty RID (`dotnet build` / BuildAndRun.ps1)
+         and explicit -r win-x64 publishes. Explicit form avoids silently matching
+         any future RID we haven't accounted for. -->
+    <None Include="Assets\engine\xray.exe" Condition="'$(RuntimeIdentifier)' == 'win-x64' or '$(RuntimeIdentifier)' == ''">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Assets\engine\wintun.dll">
+    <None Include="Assets\engine\wintun.dll" Condition="'$(RuntimeIdentifier)' == 'win-x64' or '$(RuntimeIdentifier)' == ''">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- ARM64 override: Link= flattens them to Assets/engine/ in the output so
+         XrayService/TunService's hard-coded paths stay unchanged. -->
+    <None Include="Assets\engine\arm64\xray.exe" Link="Assets\engine\xray.exe" Condition="'$(RuntimeIdentifier)' == 'win-arm64'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\engine\arm64\wintun.dll" Link="Assets\engine\wintun.dll" Condition="'$(RuntimeIdentifier)' == 'win-arm64'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Assets\rules\geoip.dat">

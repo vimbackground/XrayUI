@@ -130,10 +130,10 @@
     <value>Close</value>
   </data>
   <data name="Tray_Open" xml:space="preserve">
-    <value>Open</value>
+    <value>Show App</value>
   </data>
   <data name="Tray_Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>Quit</value>
   </data>
   <data name="ServerList_Edit" xml:space="preserve">
     <value>Edit</value>
@@ -253,7 +253,7 @@
     <value>Unmatched protocols will use this color</value>
   </data>
   <data name="Personalize_DataManagement.Text" xml:space="preserve">
-    <value>Data Management</value>
+    <value>Import &amp; Export</value>
   </data>
   <data name="Personalize_Done.Content" xml:space="preserve">
     <value>Done</value>
@@ -962,7 +962,7 @@
     <value>Show AI unlock status on the node card</value>
   </data>
   <data name="Personalize_ImportExportTitle.Text" xml:space="preserve">
-    <value>Import &amp; Export Configuration</value>
+    <value>Import and Export your data</value>
   </data>
   <data name="Personalize_ImportExportDesc.Text" xml:space="preserve">
     <value>Back up the current nodes and routing rules, or restore from a file</value>

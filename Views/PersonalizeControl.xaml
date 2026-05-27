@@ -536,7 +536,7 @@
             <!-- Data management -->
             <StackPanel Spacing="10">
                 <TextBlock x:Uid="Personalize_DataManagement"
-                               Text="数据管理"
+                               Text="备份和还原"
                                FontSize="15"
                                FontWeight="SemiBold" />
 

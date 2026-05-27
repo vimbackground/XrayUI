@@ -111,7 +111,6 @@ public static class L
     public static string ChainProxy_EntryExitSame  => Loc.GetString("ChainProxy_EntryExitSame");
 
     // ── TUN confirmation ───────────────────────────────────────────────────
-    public static string Tun_MoreOptions        => Loc.GetString("Tun_MoreOptionsBtn.Content");
     public static string Tun_InterfaceTooltip   => Loc.GetString("Tun_InterfaceTooltip");
     public static string Tun_AutoInterfaceLabel => Loc.GetString("Tun_AutoInterfaceLabel");
 

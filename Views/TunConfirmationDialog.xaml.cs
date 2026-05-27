@@ -34,7 +34,6 @@ namespace XrayUI.Views
             if (AdvancedSettingsPanel.Visibility == Visibility.Visible)
             {
                 AdvancedSettingsPanel.Visibility = Visibility.Collapsed;
-                MoreOptionsButton.Content = L.Tun_MoreOptions;
             }
             else
             {

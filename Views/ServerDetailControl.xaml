@@ -420,7 +420,7 @@
                                          Padding="7,6,7,6"
                                          MinWidth="32"
                                          MinHeight="32"
-                                         Content="&#xE8C8;"
+                                         Content="&#xE71B;"
                                          IsEnabled="{x:Bind ViewModel.CanCopyShareLink, Mode=OneWay}"
                                          TextToCopy="{x:Bind ViewModel.SelectedShareLink, Mode=OneWay}" />
                 </Grid>
