@@ -6,9 +6,10 @@ A native Windows GUI client for the Xray core, built with WinUI 3.
 
 ## Features
 
-- Shadowsocks, VMess, VLESS, Trojan, Hysteria2
+- Support Shadowsocks, VMess, VLESS, Trojan, Hysteria2 and Chain Proxy
 - TUN mode
 - Subscription import and update
+- AI Unlock Status Detection
 - Custom routing rules with geoip / geosite
 - Auto-start on boot, auto-connect
 - Theme and protocol color customization
