@@ -199,6 +199,7 @@ public static class L
     public static string ServerList_RemoveFavorite   => Loc.GetString("ServerList_RemoveFavorite");
     public static string ServerList_FilterTooltip    => Loc.GetString("ServerList_FilterTooltip");
     public static string ServerList_SortTooltip      => Loc.GetString("ServerList_SortTooltip");
+    public static string ServerList_TestLatencyTooltip => Loc.GetString("ServerList_TestLatencyTooltip");
     public static string ServerList_SortActiveHint   => Loc.GetString("ServerList_SortActiveHint");
 
     // ── ServerDetail ──────────────────────────────────────────────────────

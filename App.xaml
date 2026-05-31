@@ -25,6 +25,11 @@
             <SolidColorBrush x:Key="StateSuccessBrush" Color="#48C78E" />
             <SolidColorBrush x:Key="StateErrorBrush"   Color="{ThemeResource SystemFillColorCritical}" />
 
+            <!-- Latency indicator brush palette (server-list ms numbers) -->
+            <SolidColorBrush x:Key="LatencyGoodBrush" Color="{ThemeResource SystemFillColorSuccess}" />
+            <SolidColorBrush x:Key="LatencyHighBrush" Color="{ThemeResource SystemFillColorCaution}" />
+            <SolidColorBrush x:Key="LatencyFailBrush" Color="{ThemeResource SystemFillColorCritical}" />
+
 
             <!-- Danger button brush palette -->
             <SolidColorBrush x:Key="DangerAccentButtonForeground" Color="White" />

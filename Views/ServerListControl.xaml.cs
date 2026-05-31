@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using XrayUI.Helpers;
 using XrayUI.Models;
@@ -177,6 +178,19 @@ namespace XrayUI.Views
                 Text = text,
                 Icon = new FontIcon { Glyph = glyph }
             };
+        }
+
+        // Foreground for the per-row latency number, keyed off the measured value:
+        // failed probe (negative, e.g. -1) → critical, ≥200 ms → caution, else success.
+        public static Brush LatencyForeground(int? milliseconds)
+        {
+            var key = milliseconds switch
+            {
+                < 0   => "LatencyFailBrush",
+                < 200 => "LatencyGoodBrush",
+                _     => "LatencyHighBrush",
+            };
+            return (Brush)Application.Current.Resources[key];
         }
     }
 }

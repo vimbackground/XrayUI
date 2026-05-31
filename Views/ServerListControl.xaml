@@ -6,6 +6,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="using:XrayUI.Models"
              xmlns:vm="using:XrayUI.ViewModels"
+             xmlns:views="using:XrayUI.Views"
              mc:Ignorable="d"
              d:DesignHeight="500"
              d:DesignWidth="420">
@@ -137,12 +138,12 @@
         <Grid Grid.Row="2"
               Margin="0,12,0,0"
               ColumnSpacing="8"
-              HorizontalAlignment="Left"
               Visibility="{x:Bind ViewModel.IsFilterBarVisible, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0"
@@ -193,9 +194,33 @@
                                              Text="协议"
                                              GroupName="ServerSortMode"
                                              IsChecked="{x:Bind ViewModel.IsSortProtocol, Mode=TwoWay}" />
+                        <RadioMenuFlyoutItem x:Name="SortLatencyItem"
+                                             x:Uid="ServerList_SortLatencyItem"
+                                             Text="延迟"
+                                             GroupName="ServerSortMode"
+                                             IsChecked="{x:Bind ViewModel.IsSortLatency, Mode=TwoWay}"
+                                             IsEnabled="{x:Bind ViewModel.CanSortByLatency, Mode=OneWay}" />
                     </MenuFlyout>
                 </DropDownButton.Flyout>
             </DropDownButton>
+            <Button Grid.Column="3"
+                    x:Name="TestLatencyButton"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Command="{x:Bind ViewModel.TestAllLatenciesCommand}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Padding="8">
+                <Grid>
+                    <FontIcon Glyph="&#xEC4A;"
+                              FontSize="16"
+                              Visibility="{x:Bind ViewModel.IsTestingLatencies, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                    <ProgressRing Width="16"
+                                  Height="16"
+                                  IsActive="{x:Bind ViewModel.IsTestingLatencies, Mode=OneWay}"
+                                  Visibility="{x:Bind ViewModel.IsTestingLatencies, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </Grid>
+            </Button>
         </Grid>
 
         <ListView Grid.Row="3"
@@ -245,26 +270,45 @@
                                 </Border>
                             </Grid>
 
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="8"
-                                        Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                <TextBlock Text="{x:Bind Host, Mode=OneWay}"
-                                           FontSize="13"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{x:Bind Port, Mode=OneWay}"
-                                           FontSize="13"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Text="{x:Bind DisplayProtocol, Mode=OneWay}"
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0"
+                                            Orientation="Horizontal"
+                                            Spacing="8"
+                                            Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{x:Bind Host, Mode=OneWay}"
+                                               MaxWidth="180"
+                                               TextTrimming="CharacterEllipsis"
+                                               TextWrapping="NoWrap"
+                                               MaxLines="1"
+                                               FontSize="13"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind Port, Mode=OneWay}"
+                                               FontSize="13"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock Text="{x:Bind DisplayProtocol, Mode=OneWay}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
+                                </StackPanel>
+                                <TextBlock x:Uid="ServerList_ChainBadgeText"
+                                           Text="ProxyChain"
+                                           Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
-                            </StackPanel>
-                            <TextBlock x:Uid="ServerList_ChainBadgeText"
-                                       Text="ProxyChain"
-                                       Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
+
+                                <TextBlock Grid.Column="1"
+                                           Text="{x:Bind LatencyText, Mode=OneWay}"
+                                           Visibility="{x:Bind HasLatency, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           FontSize="13.5"
+                                           FontWeight="SemiBold"
+                                           Foreground="{x:Bind views:ServerListControl.LatencyForeground(LatencyMs), Mode=OneWay}" />
+                            </Grid>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

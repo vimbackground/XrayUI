@@ -757,6 +757,9 @@
   <data name="ServerList_SortProtocolItem.Text" xml:space="preserve">
     <value>协议</value>
   </data>
+  <data name="ServerList_SortLatencyItem.Text" xml:space="preserve">
+    <value>延迟</value>
+  </data>
   <data name="ServerList_ActivatedBadge.Text" xml:space="preserve">
     <value>● 已连接</value>
   </data>
@@ -777,6 +780,9 @@
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
     <value>排序</value>
+  </data>
+  <data name="ServerList_TestLatencyTooltip" xml:space="preserve">
+    <value>测试延迟</value>
   </data>
   <data name="Confirm_DeleteBatchMsg" xml:space="preserve">
     <value>确定要删除当前 {0} 个项目?</value>
