@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using XrayUI.Helpers;
 using XrayUI.Models;
 
 namespace XrayUI.Services
@@ -223,7 +224,7 @@ namespace XrayUI.Services
         {
             if (availableServers is null)
             {
-                throw new InvalidOperationException("链式代理需要服务器列表才能解析入口和出口节点。");
+                throw new InvalidOperationException(L.Chain_NeedServerList);
             }
 
             ServerEntry? entryServer = null;
@@ -237,12 +238,12 @@ namespace XrayUI.Services
 
             if (entryServer is null || exitServer is null)
             {
-                throw new InvalidOperationException("链式代理引用的入口或出口节点不存在，请重新编辑该链式代理。");
+                throw new InvalidOperationException(L.Chain_EndpointMissing);
             }
 
             if (entryServer.IsChain || exitServer.IsChain)
             {
-                throw new InvalidOperationException("链式代理不能嵌套链式代理，请重新选择入口和出口节点。");
+                throw new InvalidOperationException(L.Chain_NoNesting);
             }
 
             return (entryServer, exitServer);

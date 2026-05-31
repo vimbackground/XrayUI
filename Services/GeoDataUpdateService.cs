@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using XrayUI.Helpers;
 
 namespace XrayUI.Services
 {
@@ -38,7 +39,7 @@ namespace XrayUI.Services
             {
                 handler.Proxy    = new WebProxy(proxyUrl);
                 handler.UseProxy = true;
-                progress.Report($"通过本地代理下载（{proxyUrl}）…");
+                progress.Report(Loc.Format("GeoUpdate_ViaProxy", proxyUrl));
             }
             else
             {
@@ -64,7 +65,7 @@ namespace XrayUI.Services
                 var sumUrl = url + ".sha256sum";
                 var target = Path.Combine(XrayService.RulesDir, $"{name}.dat");
 
-                progress.Report($"正在检查 {name}.dat …");
+                progress.Report(Loc.Format("GeoUpdate_Checking", name));
 
                 // If the hash fetch fails (404, network), fall through to unconditional download — v2rayN parity.
                 string? remoteHash = await TryFetchRemoteHashAsync(client, sumUrl, ct);
@@ -74,7 +75,7 @@ namespace XrayUI.Services
                     var localHash = await ComputeSha256Async(target, ct);
                     if (string.Equals(localHash, remoteHash, StringComparison.OrdinalIgnoreCase))
                     {
-                        progress.Report($"{name}.dat 已是最新");
+                        progress.Report(Loc.Format("GeoUpdate_UpToDate", name));
                         skipped++;
                         continue;
                     }
@@ -91,7 +92,7 @@ namespace XrayUI.Services
                         if (!string.Equals(downloadedHash, remoteHash, StringComparison.OrdinalIgnoreCase))
                         {
                             throw new InvalidDataException(
-                                $"{name}.dat 校验失败：下载文件的 SHA256 与服务器公布的不一致。");
+                                Loc.Format("GeoUpdate_ChecksumFailed", name));
                         }
                     }
 
@@ -201,8 +202,8 @@ namespace XrayUI.Services
         {
             var mbReceived = received / 1024.0 / 1024.0;
             return total.HasValue
-                ? $"正在下载 {name} … {mbReceived:0.0} / {total.Value / 1024.0 / 1024.0:0.0} MB"
-                : $"正在下载 {name} … {mbReceived:0.0} MB";
+                ? Loc.Format("GeoUpdate_Downloading", name, mbReceived, total.Value / 1024.0 / 1024.0)
+                : Loc.Format("GeoUpdate_DownloadingNoTotal", name, mbReceived);
         }
     }
 }
