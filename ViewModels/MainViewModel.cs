@@ -75,7 +75,7 @@ namespace XrayUI.ViewModels
 
             Title = "Proxy Console";
 
-            ServerList   = new ServerListViewModel(dialogs, settings);
+            ServerList   = new ServerListViewModel(dialogs, settings, latencyProbe);
             ServerDetail = new ServerDetailViewModel(latencyProbe, aiUnlockCheck);
             ControlPanel = new ControlPanelViewModel(dialogs, settings, xray, tunService, startupService, updateService);
             Personalize  = new PersonalizeViewModel(dialogs, settings);

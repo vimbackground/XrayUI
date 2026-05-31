@@ -45,9 +45,11 @@ namespace XrayUI.ViewModels
             return client;
         }
 
-        private readonly IDialogService  _dialogs;
-        private readonly SettingsService _settings;
-        private readonly SemaphoreSlim   _settingsWriteLock = new(1, 1);
+        private readonly IDialogService     _dialogs;
+        private readonly SettingsService    _settings;
+        private readonly LatencyProbeService _latencyProbe;
+        private readonly SemaphoreSlim      _settingsWriteLock = new(1, 1);
+        private const int MaxConcurrentProbes = 16;
         private ObservableCollection<ServerEntry> _servers = new();
         private ServerEntry? _selectedServer;
         private readonly List<ServerEntry> _selectedServers = new();
@@ -65,10 +67,11 @@ namespace XrayUI.ViewModels
         public ObservableCollection<ServerGroupChip> GroupChips { get; } = new();
         public ObservableCollection<ServerEntry>     VisibleServers { get; } = new();
 
-        public ServerListViewModel(IDialogService dialogs, SettingsService settings)
+        public ServerListViewModel(IDialogService dialogs, SettingsService settings, LatencyProbeService latencyProbe)
         {
             _dialogs  = dialogs;
             _settings = settings;
+            _latencyProbe = latencyProbe;
 
             ProtocolColorStore.ColorsChanged += OnProtocolColorsChanged;
             _servers.CollectionChanged += OnServersCollectionChanged;
@@ -146,6 +149,7 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(IsSortDefault));
                     OnPropertyChanged(nameof(IsSortActive));
                     OnPropertyChanged(nameof(IsSortProtocol));
+                    OnPropertyChanged(nameof(IsSortLatency));
                     OnPropertyChanged(nameof(CanReorderInCurrentChip));
                     RebuildGroupedView();
                 }
@@ -155,6 +159,11 @@ namespace XrayUI.ViewModels
         // Active-server sorting is only available for chip = All; other chips should not
         // promote a single active server to the top of the subset.
         public bool CanSortByActive => _selectedChip?.Kind == ServerGroupChip.ChipKind.All;
+
+        // Latency sorting is only meaningful once at least one server has been probed;
+        // before the first "test all" sweep there is nothing to order by, so the menu
+        // item stays disabled (with an explanatory tooltip), mirroring CanSortByActive.
+        public bool CanSortByLatency => Servers.Any(s => s.LatencyMs.HasValue);
 
         // Shadow props for RadioMenuFlyoutItem.IsChecked TwoWay binding.
         public bool IsSortDefault
@@ -173,6 +182,12 @@ namespace XrayUI.ViewModels
         {
             get => _sortMode == ServerSortMode.Protocol;
             set { if (value) SortMode = ServerSortMode.Protocol; }
+        }
+
+        public bool IsSortLatency
+        {
+            get => _sortMode == ServerSortMode.Latency;
+            set { if (value) SortMode = ServerSortMode.Latency; }
         }
 
         public bool SelectAllGroup()
@@ -394,6 +409,17 @@ namespace XrayUI.ViewModels
 
         private void RebuildAll()
         {
+            // If the server set changed out from under a latency sort (e.g. a subscription
+            // refresh or preset import replaced entries with fresh, untested ones), the
+            // sort has nothing to order by — fall back to Default so the menu doesn't keep
+            // a now-disabled item checked, mirroring the Active-chip guard.
+            if (_sortMode == ServerSortMode.Latency && !CanSortByLatency)
+                _sortMode = ServerSortMode.Default;
+
+            OnPropertyChanged(nameof(CanSortByLatency));
+            OnPropertyChanged(nameof(IsSortDefault));
+            OnPropertyChanged(nameof(IsSortLatency));
+
             RebuildGroupChips();
             RebuildGroupedView();
         }
@@ -537,6 +563,12 @@ namespace XrayUI.ViewModels
                     filtered.OrderBy(s => s.IsActive ? 0 : 1),
                 ServerSortMode.Protocol =>
                     filtered.OrderBy(s => s.Protocol ?? string.Empty, StringComparer.OrdinalIgnoreCase),
+                ServerSortMode.Latency =>
+                    // Ascending by measured ms; untested (null) and failed/timeout
+                    // (negative sentinel) are bucketed last, then kept stable by ms.
+                    filtered
+                        .OrderBy(s => LatencySortBucket(s.LatencyMs))
+                        .ThenBy(s => s.LatencyMs ?? int.MaxValue),
                 _ => filtered,
             };
 
@@ -545,6 +577,16 @@ namespace XrayUI.ViewModels
 
             OnPropertyChanged(nameof(CanReorderInCurrentChip));
         }
+
+        // Latency sort ordering buckets: 0 = a real measurement (sorted by ms),
+        // 1 = failed/timeout (negative sentinel), 2 = never tested (null). Failures and
+        // untested both sink below real results, with untested last.
+        private static int LatencySortBucket(int? latencyMs) => latencyMs switch
+        {
+            null   => 2,
+            < 0    => 1,
+            _      => 0,
+        };
 
         private async Task ReloadKnownSubscriptionsAsync()
         {
@@ -586,6 +628,79 @@ namespace XrayUI.ViewModels
         private void NotifySelectedServerRunStateChanged()
         {
             OnPropertyChanged(nameof(CanRunSelectedServer));
+        }
+
+        // ── Latency batch test ────────────────────────────────────────────────
+
+        private bool _isTestingLatencies;
+        // Flat property (not a nested Command.IsRunning x:Bind) so the button's spinner
+        // binding stays WUI2010-safe.
+        public bool IsTestingLatencies
+        {
+            get => _isTestingLatencies;
+            private set => SetProperty(ref _isTestingLatencies, value);
+        }
+
+        // Probes every server's latency in parallel (capped concurrency) and writes the
+        // result onto each ServerEntry: the round-trip ms on success, or -1 for any
+        // failure (timeout/unreachable, shown as a single red label). The async command
+        // auto-disables while running, so the button is inert until the sweep finishes;
+        // results stream into the rows as each probe completes.
+        [RelayCommand]
+        private async Task TestAllLatencies()
+        {
+            var servers = Servers.ToList();
+            if (servers.Count == 0) return;
+
+            IsTestingLatencies = true;
+            try
+            {
+                using var throttle = new SemaphoreSlim(MaxConcurrentProbes);
+                var timeout = TimeSpan.FromSeconds(3);
+
+                // The latency sort only needs unlocking once (the first result flips
+                // CanSortByLatency false→true); continuations resume serially on the UI
+                // thread, so this flag needs no synchronization.
+                var sortUnlockNotified = false;
+
+                var tasks = servers.Select(async server =>
+                {
+                    await throttle.WaitAsync();
+                    try
+                    {
+                        // ProbeAsync is already async I/O, so it's awaited directly (no
+                        // Task.Run thread hop). No ConfigureAwait(false) either: the
+                        // continuation resumes on the UI thread (WinUI sync context), so the
+                        // bound ServerEntry update is safe — same as the detail panel's TestLatency.
+                        var result = await _latencyProbe.ProbeAsync(server, timeout);
+                        server.LatencyMs = result.Status == LatencyProbeStatus.Success
+                            ? result.Milliseconds
+                            : -1;
+
+                        // First result unlocks the latency sort option (fire once, not per probe).
+                        if (!sortUnlockNotified)
+                        {
+                            sortUnlockNotified = true;
+                            OnPropertyChanged(nameof(CanSortByLatency));
+                        }
+
+                        // If latency sort is already active, restream so rows reorder live
+                        // as probes land.
+                        if (_sortMode == ServerSortMode.Latency)
+                            RebuildGroupedView();
+                    }
+                    finally
+                    {
+                        throttle.Release();
+                    }
+                });
+
+                await Task.WhenAll(tasks);
+            }
+            finally
+            {
+                IsTestingLatencies = false;
+            }
         }
 
         // ── Import via link ───────────────────────────────────────────────────

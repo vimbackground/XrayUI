@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using XrayUI.Helpers;
 
 namespace XrayUI.Models
 {
@@ -65,6 +66,14 @@ namespace XrayUI.Models
         [JsonIgnore]
         [ObservableProperty]
         public partial bool IsActive { get; set; }
+
+        // Runtime-only latency probe result in milliseconds; null = not yet measured.
+        // Never persisted — a probe is meaningless across sessions and would bloat exports.
+        [JsonIgnore]
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LatencyText))]
+        [NotifyPropertyChangedFor(nameof(HasLatency))]
+        public partial int? LatencyMs { get; set; }
 
         [ObservableProperty]
         public partial bool IsFavorite { get; set; }
@@ -163,6 +172,22 @@ namespace XrayUI.Models
 
         [JsonIgnore]
         public bool IsChain => string.Equals(Protocol, "chain", System.StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Latency formatted for display: "30 ms" for a measurement, a timeout label for a
+        /// failed probe (negative sentinel such as -1), empty when not measured.
+        /// </summary>
+        [JsonIgnore]
+        public string LatencyText => LatencyMs switch
+        {
+            null   => string.Empty,
+            < 0    => L.ServerDetail_Timeout,
+            int ms => Loc.Format("ServerDetail_LatencyMs", ms),
+        };
+
+        /// <summary>Whether a measured latency is available to show in the list row.</summary>
+        [JsonIgnore]
+        public bool HasLatency => LatencyMs.HasValue;
 
         public void RefreshProtocolColor() => OnPropertyChanged(nameof(Protocol));
     }

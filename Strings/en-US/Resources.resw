@@ -757,6 +757,9 @@
   <data name="ServerList_SortProtocolItem.Text" xml:space="preserve">
     <value>Protocol</value>
   </data>
+  <data name="ServerList_SortLatencyItem.Text" xml:space="preserve">
+    <value>Latency</value>
+  </data>
   <data name="ServerList_ActivatedBadge.Text" xml:space="preserve">
     <value>● Activated</value>
   </data>
@@ -777,6 +780,9 @@
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
     <value>Sort</value>
+  </data>
+  <data name="ServerList_TestLatencyTooltip" xml:space="preserve">
+    <value>Test latency</value>
   </data>
   <data name="Confirm_DeleteBatchMsg" xml:space="preserve">
     <value>Are you sure you want to delete the selected {0} items?</value>
