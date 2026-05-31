@@ -259,4 +259,14 @@ public static class L
     public static string Dns_Strategy_V4Only    => Loc.GetString("Dns_Strategy_V4Only");
     public static string Dns_Strategy_V6Only    => Loc.GetString("Dns_Strategy_V6Only");
     public static string Dns_Strategy_Auto      => Loc.GetString("Dns_Strategy_Auto");
+
+    // ── Xray engine / chain / TUN preflight (parameterless; parameterized keys
+    //    like Xray_ExeNotFound / XrayLog_Started use Loc.Format at the call site) ──
+    public static string XrayLog_Stopped         => Loc.GetString("XrayLog_Stopped");
+    public static string XrayLog_ProcessExited   => Loc.GetString("XrayLog_ProcessExited");
+    public static string XrayLog_Shutdown        => Loc.GetString("XrayLog_Shutdown");
+    public static string Chain_NeedServerList    => Loc.GetString("Chain_NeedServerList");
+    public static string Chain_EndpointMissing   => Loc.GetString("Chain_EndpointMissing");
+    public static string Chain_NoNesting         => Loc.GetString("Chain_NoNesting");
+    public static string Tun_PreflightErrorTitle => Loc.GetString("Tun_PreflightErrorTitle");
 }

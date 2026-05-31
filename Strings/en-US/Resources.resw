@@ -1084,4 +1084,80 @@
   <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <!-- ── Xray engine / chain / TUN preflight (C# service layer) ── -->
+  <data name="Xray_ExeNotFound" xml:space="preserve">
+    <value>Could not find xray.exe
+Path: {0}</value>
+  </data>
+  <data name="Xray_ExitedImmediately" xml:space="preserve">
+    <value>xray exited immediately (exit code {0})</value>
+  </data>
+  <data name="XrayLog_Started" xml:space="preserve">
+    <value>[Started] {0}</value>
+  </data>
+  <data name="XrayLog_Config" xml:space="preserve">
+    <value>[Config] {0}</value>
+  </data>
+  <data name="XrayLog_Error" xml:space="preserve">
+    <value>[Error] {0}</value>
+  </data>
+  <data name="XrayLog_StartFailed" xml:space="preserve">
+    <value>[Error] Start failed: {0}</value>
+  </data>
+  <data name="XrayLog_Exception" xml:space="preserve">
+    <value>[Exception] {0}</value>
+  </data>
+  <data name="XrayLog_Stopped" xml:space="preserve">
+    <value>[Stopped]</value>
+  </data>
+  <data name="XrayLog_Shutdown" xml:space="preserve">
+    <value>[shutdown] xray stopped</value>
+  </data>
+  <data name="XrayLog_ProcessExited" xml:space="preserve">
+    <value>[xray process exited]</value>
+  </data>
+  <data name="XrayLog_JobCreateFailed" xml:space="preserve">
+    <value>[Warning] CreateJobObject failed (err={0}); orphan-process safety net disabled</value>
+  </data>
+  <data name="XrayLog_JobAssignFailed" xml:space="preserve">
+    <value>[Warning] AssignProcessToJobObject failed (err={0}); orphan-process safety net inactive</value>
+  </data>
+  <data name="XrayLog_JobBindException" xml:space="preserve">
+    <value>[Warning] Job Object bind exception: {0}</value>
+  </data>
+  <data name="Chain_NeedServerList" xml:space="preserve">
+    <value>Chain proxy needs the server list to resolve entry/exit nodes.</value>
+  </data>
+  <data name="Chain_EndpointMissing" xml:space="preserve">
+    <value>The chain proxy's entry or exit node no longer exists. Please edit the chain proxy again.</value>
+  </data>
+  <data name="Chain_NoNesting" xml:space="preserve">
+    <value>A chain proxy cannot nest another chain proxy. Please choose different entry/exit nodes.</value>
+  </data>
+  <data name="Tun_PreflightErrorTitle" xml:space="preserve">
+    <value>TUN mode error</value>
+  </data>
+  <data name="Tun_WintunNotFound" xml:space="preserve">
+    <value>Could not find wintun.dll
+Path: {0}</value>
+  </data>
+  <!-- ── Geo data update progress (GeoDataUpdateService) ── -->
+  <data name="GeoUpdate_ViaProxy" xml:space="preserve">
+    <value>Downloading via local proxy ({0}) …</value>
+  </data>
+  <data name="GeoUpdate_Checking" xml:space="preserve">
+    <value>Checking {0}.dat …</value>
+  </data>
+  <data name="GeoUpdate_UpToDate" xml:space="preserve">
+    <value>{0}.dat is up to date</value>
+  </data>
+  <data name="GeoUpdate_ChecksumFailed" xml:space="preserve">
+    <value>{0}.dat checksum failed: the downloaded file's SHA256 does not match the server's.</value>
+  </data>
+  <data name="GeoUpdate_Downloading" xml:space="preserve">
+    <value>Downloading {0} … {1:0.0} / {2:0.0} MB</value>
+  </data>
+  <data name="GeoUpdate_DownloadingNoTotal" xml:space="preserve">
+    <value>Downloading {0} … {1:0.0} MB</value>
+  </data>
 </root>

@@ -237,7 +237,7 @@ namespace XrayUI.ViewModels
 
             if (IsTunMode)
             {
-                if (!await RunTunPreflightAsync("TUN mode error")) return false;
+                if (!await RunTunPreflightAsync()) return false;
                 await CleanupPersistedTunRoutesAsync(appSettings);
             }
 
@@ -394,12 +394,12 @@ namespace XrayUI.ViewModels
         /// Runs the shared TUN-mode preflight: wintun availability and system-proxy clearing.
         /// Xray-core handles outbound interface selection through autoOutboundsInterface="auto".
         /// </summary>
-        private async Task<bool> RunTunPreflightAsync(string errorTitle)
+        private async Task<bool> RunTunPreflightAsync()
         {
             if (!_tunService.IsWintunAvailable())
             {
-                await _dialogs.ShowErrorAsync(errorTitle,
-                    $"Could not find wintun.dll\nPath: {_tunService.GetExpectedWintunPath()}");
+                await _dialogs.ShowErrorAsync(L.Tun_PreflightErrorTitle,
+                    Loc.Format("Tun_WintunNotFound", _tunService.GetExpectedWintunPath()));
                 return false;
             }
 

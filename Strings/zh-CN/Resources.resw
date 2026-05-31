@@ -1084,4 +1084,80 @@
   <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
     <value>删除</value>
   </data>
+  <!-- ── Xray engine / chain / TUN preflight (C# service layer) ── -->
+  <data name="Xray_ExeNotFound" xml:space="preserve">
+    <value>找不到 xray.exe
+路径：{0}</value>
+  </data>
+  <data name="Xray_ExitedImmediately" xml:space="preserve">
+    <value>xray 立即退出（退出码 {0}）</value>
+  </data>
+  <data name="XrayLog_Started" xml:space="preserve">
+    <value>[启动] {0}</value>
+  </data>
+  <data name="XrayLog_Config" xml:space="preserve">
+    <value>[配置] {0}</value>
+  </data>
+  <data name="XrayLog_Error" xml:space="preserve">
+    <value>[错误] {0}</value>
+  </data>
+  <data name="XrayLog_StartFailed" xml:space="preserve">
+    <value>[错误] 启动失败：{0}</value>
+  </data>
+  <data name="XrayLog_Exception" xml:space="preserve">
+    <value>[异常] {0}</value>
+  </data>
+  <data name="XrayLog_Stopped" xml:space="preserve">
+    <value>[已停止]</value>
+  </data>
+  <data name="XrayLog_Shutdown" xml:space="preserve">
+    <value>[关机] xray 已停止</value>
+  </data>
+  <data name="XrayLog_ProcessExited" xml:space="preserve">
+    <value>[xray 进程已退出]</value>
+  </data>
+  <data name="XrayLog_JobCreateFailed" xml:space="preserve">
+    <value>[警告] CreateJobObject 失败 (err={0})，孤儿进程兜底已禁用</value>
+  </data>
+  <data name="XrayLog_JobAssignFailed" xml:space="preserve">
+    <value>[警告] AssignProcessToJobObject 失败 (err={0})，孤儿进程兜底未生效</value>
+  </data>
+  <data name="XrayLog_JobBindException" xml:space="preserve">
+    <value>[警告] Job Object 绑定异常：{0}</value>
+  </data>
+  <data name="Chain_NeedServerList" xml:space="preserve">
+    <value>链式代理需要服务器列表才能解析入口和出口节点。</value>
+  </data>
+  <data name="Chain_EndpointMissing" xml:space="preserve">
+    <value>链式代理引用的入口或出口节点不存在，请重新编辑该链式代理。</value>
+  </data>
+  <data name="Chain_NoNesting" xml:space="preserve">
+    <value>链式代理不能嵌套链式代理，请重新选择入口和出口节点。</value>
+  </data>
+  <data name="Tun_PreflightErrorTitle" xml:space="preserve">
+    <value>TUN 模式错误</value>
+  </data>
+  <data name="Tun_WintunNotFound" xml:space="preserve">
+    <value>找不到 wintun.dll
+路径：{0}</value>
+  </data>
+  <!-- ── Geo data update progress (GeoDataUpdateService) ── -->
+  <data name="GeoUpdate_ViaProxy" xml:space="preserve">
+    <value>通过本地代理下载（{0}）…</value>
+  </data>
+  <data name="GeoUpdate_Checking" xml:space="preserve">
+    <value>正在检查 {0}.dat …</value>
+  </data>
+  <data name="GeoUpdate_UpToDate" xml:space="preserve">
+    <value>{0}.dat 已是最新</value>
+  </data>
+  <data name="GeoUpdate_ChecksumFailed" xml:space="preserve">
+    <value>{0}.dat 校验失败：下载文件的 SHA256 与服务器公布的不一致。</value>
+  </data>
+  <data name="GeoUpdate_Downloading" xml:space="preserve">
+    <value>正在下载 {0} … {1:0.0} / {2:0.0} MB</value>
+  </data>
+  <data name="GeoUpdate_DownloadingNoTotal" xml:space="preserve">
+    <value>正在下载 {0} … {1:0.0} MB</value>
+  </data>
 </root>

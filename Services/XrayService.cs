@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using XrayUI.Helpers;
 
 namespace XrayUI.Services
 {
@@ -158,8 +159,8 @@ namespace XrayUI.Services
 
             if (!File.Exists(ExePath))
             {
-                LastError = $"找不到 xray.exe\n路径：{ExePath}";
-                AppendLog("[错误] " + LastError);
+                LastError = Loc.Format("Xray_ExeNotFound", ExePath);
+                AppendLog(Loc.Format("XrayLog_Error", LastError));
                 return false;
             }
 
@@ -204,8 +205,8 @@ namespace XrayUI.Services
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
 
-                AppendLog($"[启动] {ExePath}");
-                AppendLog($"[配置] {ConfigPath}");
+                AppendLog(Loc.Format("XrayLog_Started", ExePath));
+                AppendLog(Loc.Format("XrayLog_Config", ConfigPath));
 
                 await Task.Delay(800);
 
@@ -214,8 +215,8 @@ namespace XrayUI.Services
                     var startupLog = StopStartupLogCaptureAndRead();
                     LastError = startupLog.Length > 0
                         ? startupLog
-                        : $"xray 立即退出（退出码 {_process.ExitCode}）";
-                    AppendLog("[错误] 启动失败：" + LastError);
+                        : Loc.Format("Xray_ExitedImmediately", _process.ExitCode);
+                    AppendLog(Loc.Format("XrayLog_StartFailed", LastError));
                     return false;
                 }
 
@@ -227,7 +228,7 @@ namespace XrayUI.Services
             {
                 StopStartupLogCapture();
                 LastError = ex.Message;
-                AppendLog("[异常] " + ex.Message);
+                AppendLog(Loc.Format("XrayLog_Exception", ex.Message));
                 return false;
             }
         }
@@ -270,7 +271,7 @@ namespace XrayUI.Services
                 _process = null;
             }
 
-            AppendLog("[已停止]");
+            AppendLog(L.XrayLog_Stopped);
             RunningChanged?.Invoke(this, false);
         }
 
@@ -327,13 +328,13 @@ namespace XrayUI.Services
                 process.Dispose();
             }
 
-            AppendLog("[shutdown] xray stopped");
+            AppendLog(L.XrayLog_Shutdown);
             RunningChanged?.Invoke(this, false);
         }
 
         private void OnProcessExited(object? sender, EventArgs e)
         {
-            AppendLog("[xray 进程已退出]");
+            AppendLog(L.XrayLog_ProcessExited);
             RunningChanged?.Invoke(this, false);
         }
 
@@ -403,19 +404,19 @@ namespace XrayUI.Services
                     _jobHandle = CreateKillOnCloseJob();
                     if (_jobHandle == IntPtr.Zero)
                     {
-                        AppendLog($"[警告] CreateJobObject 失败 (err={Marshal.GetLastWin32Error()})，孤儿进程兜底已禁用");
+                        AppendLog(Loc.Format("XrayLog_JobCreateFailed", Marshal.GetLastWin32Error()));
                         return;
                     }
                 }
 
                 if (!AssignProcessToJobObject(_jobHandle, process.Handle))
                 {
-                    AppendLog($"[警告] AssignProcessToJobObject 失败 (err={Marshal.GetLastWin32Error()})，孤儿进程兜底未生效");
+                    AppendLog(Loc.Format("XrayLog_JobAssignFailed", Marshal.GetLastWin32Error()));
                 }
             }
             catch (Exception ex)
             {
-                AppendLog($"[警告] Job Object 绑定异常：{ex.Message}");
+                AppendLog(Loc.Format("XrayLog_JobBindException", ex.Message));
             }
         }
 
