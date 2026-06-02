@@ -31,14 +31,15 @@
     <Content Remove="Assets\rules\geosite.dat" />
   </ItemGroup>
 
-  <!-- The standalone Updater lives in a sibling project; exclude it from the main app's
-       default file globs so we don't double-include its sources / Program.cs entry point. -->
+  <!-- The standalone Updater is a Rust project (updater-rs); built via the
+       PublishUpdaterAlongside target below. Keep its sources and (large) Cargo
+       target/ dir out of the C# build's default file globs. -->
   <ItemGroup>
-    <Compile Remove="XrayUI.Updater\**" />
-    <Content Remove="XrayUI.Updater\**" />
-    <None Remove="XrayUI.Updater\**" />
-    <Page Remove="XrayUI.Updater\**" />
-    <ApplicationDefinition Remove="XrayUI.Updater\**" />
+    <Compile Remove="updater-rs\**" />
+    <Content Remove="updater-rs\**" />
+    <None Remove="updater-rs\**" />
+    <Page Remove="updater-rs\**" />
+    <ApplicationDefinition Remove="updater-rs\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -100,7 +101,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WinUIEx" Version="2.9.0" />
+    <PackageReference Include="WinUIEx" Version="2.9.1" />
   </ItemGroup>
 
   <!--
@@ -131,22 +132,25 @@
     </Content>
   </ItemGroup>
 
-  <!-- Auto-publish the standalone Updater alongside the main app on local
+  <!-- Auto-build the standalone (Rust) Updater alongside the main app on local
        `dotnet publish`, so testing the in-app upgrade flow doesn't require
-       running two commands. CI bypasses this with -p:BuildingForCI=true
-       (it publishes the updater explicitly to keep step logs separated).
-       Skipped when no RID is set (e.g. plain `dotnet build`) since the
-       Exec would otherwise emit a malformed `-r` flag. -->
-  <Target Name="PublishUpdaterAlongside" AfterTargets="Publish"
-          Condition="'$(BuildingForCI)' != 'true' and '$(RuntimeIdentifier)' != ''">
+       running cargo by hand. CI bypasses this with -p:BuildingForCI=true
+       (it builds the updater explicitly to keep step logs separated).
+       Skipped when no RID is set (e.g. plain `dotnet build`). -->
+  <Target Name="PublishUpdaterAlongside" AfterTargets="Publish" Condition="'$(BuildingForCI)' != 'true' and '$(RuntimeIdentifier)' != ''">
     <PropertyGroup>
-      <UpdaterStagingDir>$(IntermediateOutputPath)updater-publish\</UpdaterStagingDir>
+      <!-- RID -> Rust target triple. -->
+      <RustUpdaterTarget Condition="'$(RuntimeIdentifier)' == 'win-x64'">x86_64-pc-windows-msvc</RustUpdaterTarget>
+      <RustUpdaterTarget Condition="'$(RuntimeIdentifier)' == 'win-arm64'">aarch64-pc-windows-msvc</RustUpdaterTarget>
+      <RustUpdaterTarget Condition="'$(RuntimeIdentifier)' == 'win-x86'">i686-pc-windows-msvc</RustUpdaterTarget>
     </PropertyGroup>
-    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)XrayUI.Updater\XrayUI.Updater.csproj&quot; -c $(Configuration) -r $(RuntimeIdentifier) -p:SelfContained=true -p:PublishAot=true -p:PublishTrimmed=true -p:PublishSingleFile=false -p:Version=$(Version) -o &quot;$(UpdaterStagingDir)&quot;" 
-          EnvironmentVariables="DOTNET_CLI_UI_LANGUAGE=en" />
-    <Copy SourceFiles="$(UpdaterStagingDir)XrayUI.Updater.exe"
-          DestinationFolder="$(PublishDir)" />
-    <Message Text="Bundled XrayUI.Updater.exe into $(PublishDir)" Importance="high" />
+    <Error Condition="'$(RustUpdaterTarget)' == ''" Text="No Rust target mapping for RuntimeIdentifier '$(RuntimeIdentifier)'. Add one to the PublishUpdaterAlongside target in XrayUI-dev.csproj." />
+    <!-- Always release-built (size-optimised, rarely debugged). Cargo can't emit a
+         dotted file name, so build xrayui-updater.exe and copy it to the contract
+         name XrayUI.Updater.exe that UpdateService.cs + shipped versions expect. -->
+    <Exec Command="cargo build --release --manifest-path &quot;$(MSBuildThisFileDirectory)updater-rs\Cargo.toml&quot; --bin xrayui-updater --target $(RustUpdaterTarget)" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)updater-rs\target\$(RustUpdaterTarget)\release\xrayui-updater.exe" DestinationFiles="$(PublishDir)XrayUI.Updater.exe" />
+    <Message Text="Bundled XrayUI.Updater.exe (Rust, $(RustUpdaterTarget)) into $(PublishDir)" Importance="high" />
   </Target>
 
 </Project>

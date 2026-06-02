@@ -66,9 +66,7 @@ namespace XrayUI
             ToolTipService.SetToolTip(MiniExpandButton,  L.MainWindow_ExpandFull);
             ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
 
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            var scale = DpiHelper.GetWindowScale(hWnd);
-            AppWindow.Resize(new SizeInt32((int)Math.Round(950 * scale), (int)Math.Round(600 * scale)));
+            // Initial size is established by ApplyWindowMode(isMini: false) below.
             _windowManager = WindowManager.Get(this);
             _windowMessageMonitor = new WindowMessageMonitor(this);
             _windowMessageMonitor.WindowMessageReceived += OnWindowMessageReceived;
@@ -280,8 +278,6 @@ namespace XrayUI
 
         private void ApplyWindowMode(bool isMini)
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            var scale = DpiHelper.GetWindowScale(hWnd);
             var presenter = (OverlappedPresenter)AppWindow.Presenter;
 
             var width  = isMini ? MiniWindowWidth  : FullWindowWidth;
@@ -291,9 +287,7 @@ namespace XrayUI
             presenter.IsResizable = !isMini;
             presenter.IsMaximizable = !isMini;
             AppTitleBar.Visibility = isMini ? Visibility.Collapsed : Visibility.Visible;
-            AppWindow.Resize(new SizeInt32(
-                (int)Math.Round(width * scale),
-                (int)Math.Round(height * scale)));
+            this.SetWindowSize(width, height);
         }
 
         private void MiniExpandButton_Click(object sender, RoutedEventArgs e)

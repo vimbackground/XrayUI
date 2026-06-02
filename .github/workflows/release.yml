@@ -20,12 +20,16 @@ jobs:
         include:
           - rid: win-x64
             platform: x64
+            rust_target: x86_64-pc-windows-msvc
           # Only win-x64 ships. To add a platform, append a matrix entry, e.g.
           #   - rid: win-x86
           #     platform: x86
+          #     rust_target: i686-pc-windows-msvc
           #   - rid: win-arm64
           #     platform: ARM64
-          # Note: AOT cross-compile to arm64 may require a windows-11-arm runner.
+          #     rust_target: aarch64-pc-windows-msvc
+          # Note: AOT cross-compile to arm64 may require a windows-11-arm runner;
+          # the Rust updater also needs the ARM64 MSVC tools on that runner.
 
     steps:
       - name: Checkout
@@ -64,29 +68,31 @@ jobs:
           -p:Version=${{ steps.ver.outputs.version }}
           -p:BuildingForCI=true
 
-      - name: Publish Updater (${{ matrix.rid }}, AOT)
+      - name: Install Rust (${{ matrix.rust_target }})
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Build Updater (${{ matrix.rust_target }})
         run: >
-          dotnet publish XrayUI.Updater/XrayUI.Updater.csproj
-          -c Release
-          -r ${{ matrix.rid }}
-          -p:SelfContained=true
-          -p:PublishAot=true
-          -p:PublishTrimmed=true
-          -p:PublishSingleFile=false
-          -p:Version=${{ steps.ver.outputs.version }}
-          -o updater-out
+          cargo build --release
+          --manifest-path updater-rs/Cargo.toml
+          --bin xrayui-updater
+          --target ${{ matrix.rust_target }}
 
       - name: Bundle updater into staging
         shell: pwsh
         run: |
           $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
-          $updaterExe = "updater-out/XrayUI.Updater.exe"
+          $updaterExe = "updater-rs/target/${{ matrix.rust_target }}/release/xrayui-updater.exe"
           if (-not (Test-Path $updaterExe)) {
-            Write-Host "::error::Updater publish did not produce $updaterExe"
+            Write-Host "::error::Updater build did not produce $updaterExe"
             exit 1
           }
-          Copy-Item $updaterExe -Destination "$publishDir/" -Force
-          Write-Host "Bundled XrayUI.Updater.exe into $publishDir"
+          # Cargo can't emit a dotted file name; copy to the contract filename that
+          # UpdateService.cs and already-released versions expect.
+          Copy-Item $updaterExe -Destination "$publishDir/XrayUI.Updater.exe" -Force
+          Write-Host "Bundled XrayUI.Updater.exe (Rust) into $publishDir"
 
       - name: Verify AOT exe produced
         shell: pwsh

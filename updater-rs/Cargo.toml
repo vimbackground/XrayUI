@@ -1,0 +1,37 @@
+[package]
+name = "xrayui-updater"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+# Cargo target names can't contain a dot, so the binary is built as
+# `xrayui-updater.exe` and copied/renamed to `XrayUI.Updater.exe` by the build
+# wiring (and, for now, by the manual verification step). The C# side only ever
+# refers to the final filename, never to this crate.
+[[bin]]
+name = "xrayui-updater"
+path = "src/main.rs"
+
+[dependencies]
+windows-sys = { version = "0.61.2", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+    "Win32_System_SystemInformation",
+    "Win32_System_Registry", # SHELLEXECUTEINFOW.hkeyClass pulls in HKEY
+    "Win32_UI_Shell",
+] }
+
+[build-dependencies]
+# Embeds a Win32 application manifest declaring requestedExecutionLevel=asInvoker.
+# Without it, an *.exe with "update" in its name trips Windows' installer-detection
+# heuristic and pops UAC on every launch — see XrayUI.Updater/app.manifest.
+embed-manifest = "1.5.0"
+
+# Size-tuned: this helper is logic-light, so favour bytes over speed.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
