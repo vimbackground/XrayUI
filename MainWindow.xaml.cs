@@ -66,7 +66,7 @@ namespace XrayUI
             ToolTipService.SetToolTip(MiniExpandButton,  L.MainWindow_ExpandFull);
             ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
 
-            this.SetWindowSize(FullWindowWidth, FullWindowHeight);
+            // Initial size is established by ApplyWindowMode(isMini: false) below.
             _windowManager = WindowManager.Get(this);
             _windowMessageMonitor = new WindowMessageMonitor(this);
             _windowMessageMonitor.WindowMessageReceived += OnWindowMessageReceived;

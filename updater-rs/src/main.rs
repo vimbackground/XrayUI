@@ -194,17 +194,9 @@ fn relaunch_elevated(original_args: &[String], log: &mut Logger) -> bool {
         .and_then(|p| p.to_str().map(str::to_string))
         .unwrap_or_else(|| "XrayUI.Updater.exe".to_string());
 
-    let mut params = String::new();
-    for a in original_args {
-        if !params.is_empty() {
-            params.push(' ');
-        }
-        params.push_str(&quote_arg(a));
-    }
-    if !params.is_empty() {
-        params.push(' ');
-    }
-    params.push_str(ELEVATED_FLAG);
+    let mut quoted: Vec<String> = original_args.iter().map(|a| quote_arg(a)).collect();
+    quoted.push(ELEVATED_FLAG.to_string());
+    let params = quoted.join(" ");
 
     let verb = wide("runas");
     let file = wide(&exe);
@@ -262,25 +254,25 @@ fn copy_overwrite(source: &Path, dest: &Path, log: &mut Logger) -> std::io::Resu
 
 /// Copy one file, retrying transient IO/permission failures a few times.
 fn copy_with_retry(src: &Path, dst: &Path, log: &mut Logger) -> std::io::Result<()> {
-    for attempt in 0..COPY_RETRY_COUNT {
+    let mut attempt = 0;
+    loop {
         match fs::copy(src, dst) {
             Ok(_) => return Ok(()),
             Err(e) => {
-                if attempt < COPY_RETRY_COUNT - 1 {
-                    log.log(&format!(
-                        "Copy retry {}/{} for {}: {e}",
-                        attempt + 1,
-                        COPY_RETRY_COUNT,
-                        dst.display()
-                    ));
-                    thread::sleep(Duration::from_millis(COPY_RETRY_DELAY_MS));
-                } else {
+                attempt += 1;
+                if attempt >= COPY_RETRY_COUNT {
                     return Err(e);
                 }
+                log.log(&format!(
+                    "Copy retry {}/{} for {}: {e}",
+                    attempt,
+                    COPY_RETRY_COUNT,
+                    dst.display()
+                ));
+                thread::sleep(Duration::from_millis(COPY_RETRY_DELAY_MS));
             }
         }
     }
-    unreachable!()
 }
 
 /// Depth-first collect every file (not directory) under `dir`.
