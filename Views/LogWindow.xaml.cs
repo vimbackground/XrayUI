@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Graphics;
+using WinUIEx;
 using XrayUI.Helpers;
 using XrayUI.Services;
 
@@ -43,9 +43,7 @@ namespace XrayUI.Views
             _reapplyConfigAsync = reapplyConfigAsync;
             _queue              = DispatcherQueue.GetForCurrentThread();
 
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            var scale = DpiHelper.GetWindowScale(hWnd);
-            AppWindow.Resize(new SizeInt32((int)Math.Round(900 * scale), (int)Math.Round(600 * scale)));
+            this.SetWindowSize(900, 600);
             AppWindow.Title = L.Log_Title;
 
             ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Windows.Graphics;
+using WinUIEx;
 using XrayUI.Helpers;
 using XrayUI.Models;
 
@@ -29,11 +29,7 @@ namespace XrayUI.Views
             this.InitializeComponent();
             _owner = owner;
 
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            var scale = DpiHelper.GetWindowScale(hWnd);
-            AppWindow.Resize(new SizeInt32(
-                (int)Math.Round(620 * scale),
-                (int)Math.Round(460 * scale)));
+            this.SetWindowSize(620, 460);
             AppWindow.Title = L.CustomRules_Title;
 			AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
 

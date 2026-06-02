@@ -41,6 +41,16 @@
     <ApplicationDefinition Remove="XrayUI.Updater\**" />
   </ItemGroup>
 
+  <!-- Experimental Rust port of the Updater. Keep its sources and (large) Cargo
+       target/ dir out of the C# build's default globs. Not yet wired into publish. -->
+  <ItemGroup>
+    <Compile Remove="updater-rs\**" />
+    <Content Remove="updater-rs\**" />
+    <None Remove="updater-rs\**" />
+    <Page Remove="updater-rs\**" />
+    <ApplicationDefinition Remove="updater-rs\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Default engine binaries (x64). Used for empty RID (`dotnet build` / BuildAndRun.ps1)
          and explicit -r win-x64 publishes. Explicit form avoids silently matching
@@ -100,7 +110,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WinUIEx" Version="2.9.0" />
+    <PackageReference Include="WinUIEx" Version="2.9.1" />
   </ItemGroup>
 
   <!--
@@ -131,22 +141,25 @@
     </Content>
   </ItemGroup>
 
-  <!-- Auto-publish the standalone Updater alongside the main app on local
+  <!-- Auto-build the standalone (Rust) Updater alongside the main app on local
        `dotnet publish`, so testing the in-app upgrade flow doesn't require
-       running two commands. CI bypasses this with -p:BuildingForCI=true
-       (it publishes the updater explicitly to keep step logs separated).
-       Skipped when no RID is set (e.g. plain `dotnet build`) since the
-       Exec would otherwise emit a malformed `-r` flag. -->
-  <Target Name="PublishUpdaterAlongside" AfterTargets="Publish"
-          Condition="'$(BuildingForCI)' != 'true' and '$(RuntimeIdentifier)' != ''">
+       running cargo by hand. CI bypasses this with -p:BuildingForCI=true
+       (it builds the updater explicitly to keep step logs separated).
+       Skipped when no RID is set (e.g. plain `dotnet build`). -->
+  <Target Name="PublishUpdaterAlongside" AfterTargets="Publish" Condition="'$(BuildingForCI)' != 'true' and '$(RuntimeIdentifier)' != ''">
     <PropertyGroup>
-      <UpdaterStagingDir>$(IntermediateOutputPath)updater-publish\</UpdaterStagingDir>
+      <!-- RID -> Rust target triple. -->
+      <RustUpdaterTarget Condition="'$(RuntimeIdentifier)' == 'win-x64'">x86_64-pc-windows-msvc</RustUpdaterTarget>
+      <RustUpdaterTarget Condition="'$(RuntimeIdentifier)' == 'win-arm64'">aarch64-pc-windows-msvc</RustUpdaterTarget>
+      <RustUpdaterTarget Condition="'$(RuntimeIdentifier)' == 'win-x86'">i686-pc-windows-msvc</RustUpdaterTarget>
     </PropertyGroup>
-    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)XrayUI.Updater\XrayUI.Updater.csproj&quot; -c $(Configuration) -r $(RuntimeIdentifier) -p:SelfContained=true -p:PublishAot=true -p:PublishTrimmed=true -p:PublishSingleFile=false -p:Version=$(Version) -o &quot;$(UpdaterStagingDir)&quot;" 
-          EnvironmentVariables="DOTNET_CLI_UI_LANGUAGE=en" />
-    <Copy SourceFiles="$(UpdaterStagingDir)XrayUI.Updater.exe"
-          DestinationFolder="$(PublishDir)" />
-    <Message Text="Bundled XrayUI.Updater.exe into $(PublishDir)" Importance="high" />
+    <Error Condition="'$(RustUpdaterTarget)' == ''" Text="No Rust target mapping for RuntimeIdentifier '$(RuntimeIdentifier)'. Add one to the PublishUpdaterAlongside target in XrayUI-dev.csproj." />
+    <!-- Always release-built (size-optimised, rarely debugged). Cargo can't emit a
+         dotted file name, so build xrayui-updater.exe and copy it to the contract
+         name XrayUI.Updater.exe that UpdateService.cs + shipped versions expect. -->
+    <Exec Command="cargo build --release --manifest-path &quot;$(MSBuildThisFileDirectory)updater-rs\Cargo.toml&quot; --bin xrayui-updater --target $(RustUpdaterTarget)" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)updater-rs\target\$(RustUpdaterTarget)\release\xrayui-updater.exe" DestinationFiles="$(PublishDir)XrayUI.Updater.exe" />
+    <Message Text="Bundled XrayUI.Updater.exe (Rust, $(RustUpdaterTarget)) into $(PublishDir)" Importance="high" />
   </Target>
 
 </Project>
