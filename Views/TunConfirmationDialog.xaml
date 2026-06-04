@@ -21,12 +21,7 @@
                          Click="MoreOptionsButton_Click" />
 
         <Border x:Name="AdvancedSettingsPanel"
-                Visibility="Collapsed"
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="{ThemeResource OverlayCornerRadius}"
-                Padding="16">
+                Visibility="Collapsed">
             <StackPanel Spacing="16">
                 <!-- MTU 设置 -->
                 <StackPanel Spacing="6">
@@ -60,6 +55,28 @@
                               HorizontalAlignment="Stretch"
                               SelectedIndex="0" />
                 </StackPanel>
+
+                <!-- IPv6 设置 -->
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="Ipv6LabelText"
+                               x:Uid="Tun_Ipv6Label"
+                               Text="开启IPv6"
+                               FontSize="15"
+                               VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <ToggleSwitch x:Name="Ipv6ToggleSwitch"
+                                  Grid.Column="1"
+                                  AutomationProperties.LabeledBy="{x:Bind Ipv6LabelText}"
+                                  MinWidth="0"
+                                  OnContent=""
+                                  OffContent=""
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center" />
+                </Grid>
             </StackPanel>
         </Border>
     </StackPanel>

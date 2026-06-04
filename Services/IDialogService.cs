@@ -16,9 +16,9 @@ namespace XrayUI.Services
         Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null);
         Task<bool> ShowConfirmationAsync(string title, string message, string? confirmText = null, string? cancelText = null, bool isDanger = false);
         /// <summary>
-        /// Shows the TUN confirmation dialog. Mutates <paramref name="settings"/>.TunMtu and
-        /// <paramref name="settings"/>.TunOutboundInterface in-place on confirm. Returns true if
-        /// the user confirmed (caller must persist), false if cancelled.
+        /// Shows the TUN confirmation dialog. Mutates <paramref name="settings"/>.TunMtu,
+        /// <paramref name="settings"/>.TunOutboundInterface, and <paramref name="settings"/>.TunIpv6Enabled
+        /// in-place on confirm. Returns true if the user confirmed (caller must persist), false if cancelled.
         /// </summary>
         Task<bool> ShowTunConfirmationDialogAsync(AppSettings settings);
         Task ShowShareLinkDialogAsync(string serverName, string link);
