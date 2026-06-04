@@ -473,7 +473,7 @@ namespace XrayUI.Services
 
         public async Task<bool> ShowTunConfirmationDialogAsync(AppSettings settings)
         {
-            var content = new TunConfirmationDialog(settings.TunMtu, settings.TunOutboundInterface);
+            var content = new TunConfirmationDialog(settings.TunMtu, settings.TunOutboundInterface, settings.TunIpv6Enabled);
 
             var dialog = CreateDialog();
             dialog.Title = L.Tun_EnableTitle;
@@ -487,6 +487,7 @@ namespace XrayUI.Services
 
             settings.TunMtu = content.Mtu;
             settings.TunOutboundInterface = content.SelectedInterface;
+            settings.TunIpv6Enabled = content.Ipv6Enabled;
             return true;
         }
 

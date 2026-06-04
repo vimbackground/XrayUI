@@ -118,6 +118,15 @@ namespace XrayUI.Services
                 sniffing["metadataOnly"] = false;
             }
 
+            // IPv6 is opt-in: only when enabled do we hand the TUN a v6 gateway and hijack ::/0,
+            // so IPv4-only networks keep the leak-free v4-only behaviour.
+            var gateway = settings.TunIpv6Enabled
+                ? CreateStringArray(XrayConfigConstants.TunGatewayV4, XrayConfigConstants.TunGatewayV6)
+                : CreateStringArray(XrayConfigConstants.TunGatewayV4);
+            var autoRoutes = settings.TunIpv6Enabled
+                ? CreateStringArray(XrayConfigConstants.TunAutoRouteV4, XrayConfigConstants.TunAutoRouteV6)
+                : CreateStringArray(XrayConfigConstants.TunAutoRouteV4);
+
             return new JsonObject
             {
                 ["tag"] = XrayConfigConstants.TunInboundTag,
@@ -126,8 +135,8 @@ namespace XrayUI.Services
                 {
                     ["name"] = XrayConfigConstants.TunInterfaceName,
                     ["MTU"] = XrayConfigConstants.NormalizeTunMtu(settings.TunMtu),
-                    ["gateway"] = CreateStringArray("172.18.0.1/30"),
-                    ["autoSystemRoutingTable"] = CreateStringArray("0.0.0.0/0"),
+                    ["gateway"] = gateway,
+                    ["autoSystemRoutingTable"] = autoRoutes,
                     ["autoOutboundsInterface"] = XrayConfigConstants.TunOutboundInterfaceAuto
                 },
                 ["sniffing"] = sniffing,

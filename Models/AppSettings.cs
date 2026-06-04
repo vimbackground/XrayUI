@@ -14,6 +14,9 @@ namespace XrayUI.Models
         public string? LastTunServerHost { get; set; }
         public int TunMtu { get; set; } = XrayConfigConstants.TunMtuDefault;
         public string TunOutboundInterface { get; set; } = XrayConfigConstants.TunOutboundInterfaceAuto;
+        /// <summary>Route IPv6 (::/0) through the TUN adapter too. Opt-in; off by default to avoid
+        /// IPv6 leak / Happy-Eyeballs stalls on IPv4-only networks.</summary>
+        public bool TunIpv6Enabled { get; set; } = false;
         public bool IsStartupEnabled { get; set; } = false;
         public bool IsAutoConnect    { get; set; } = false;
         /// <summary>true = global proxy (default); false = do not take over the system proxy.</summary>

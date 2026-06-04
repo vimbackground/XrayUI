@@ -1054,6 +1054,9 @@
   <data name="Tun_AutoInterfaceLabel" xml:space="preserve">
     <value>auto (recommended)</value>
   </data>
+  <data name="Tun_Ipv6Label.Text" xml:space="preserve">
+    <value>Enable IPv6 address</value>
+  </data>
   <data name="Subscription_DialogTitle_Add" xml:space="preserve">
     <value>Add Subscription</value>
   </data>
@@ -1084,7 +1087,6 @@
   <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
     <value>Delete</value>
   </data>
-  <!-- ── Xray engine / chain / TUN preflight (C# service layer) ── -->
   <data name="Xray_ExeNotFound" xml:space="preserve">
     <value>Could not find xray.exe
 Path: {0}</value>
@@ -1141,7 +1143,6 @@ Path: {0}</value>
     <value>Could not find wintun.dll
 Path: {0}</value>
   </data>
-  <!-- ── Geo data update progress (GeoDataUpdateService) ── -->
   <data name="GeoUpdate_ViaProxy" xml:space="preserve">
     <value>Downloading via local proxy ({0}) …</value>
   </data>

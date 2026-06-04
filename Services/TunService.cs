@@ -85,9 +85,11 @@ public class TunService
             {
                 // 0.0.0.0/0 is what current xray adds; the /1 split-routes are residue
                 // from earlier routing schemes that may still be lying around.
-                $"netsh interface ipv4 delete route 0.0.0.0/0 \"{TunInterfaceName}\" store=active",
+                $"netsh interface ipv4 delete route {XrayConfigConstants.TunAutoRouteV4} \"{TunInterfaceName}\" store=active",
                 $"netsh interface ipv4 delete route 0.0.0.0/1 \"{TunInterfaceName}\" store=active",
                 $"netsh interface ipv4 delete route 128.0.0.0/1 \"{TunInterfaceName}\" store=active",
+                // IPv6 default route — present only when TUN IPv6 was enabled; harmless to delete otherwise.
+                $"netsh interface ipv6 delete route {XrayConfigConstants.TunAutoRouteV6} \"{TunInterfaceName}\" store=active",
                 // Legacy route.exe form for the same /1 split-routes.
                 "route delete 0.0.0.0 mask 128.0.0.0",
                 "route delete 128.0.0.0 mask 128.0.0.0",
