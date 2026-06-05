@@ -180,6 +180,21 @@ namespace XrayUI.Views
             };
         }
 
+        // Right-click latency-test mode menu pushes the chosen mode into the VM; the toolbar icon
+        // follows automatically via x:Bind on LatencyTestMode (see *IconVisibility below).
+        private void TestModeConnectItem_Click(object sender, RoutedEventArgs e)
+            => ViewModel.LatencyTestMode = "connect";
+
+        private void TestModeRealItem_Click(object sender, RoutedEventArgs e)
+            => ViewModel.LatencyTestMode = "real";
+
+        // Toolbar icon visibility derived from the latency-test mode (bound from XAML).
+        public static Visibility ConnectModeIconVisibility(string mode)
+            => mode == "real" ? Visibility.Collapsed : Visibility.Visible;
+
+        public static Visibility RealModeIconVisibility(string mode)
+            => mode == "real" ? Visibility.Visible : Visibility.Collapsed;
+
         // Foreground for the per-row latency number, keyed off the measured value:
         // failed probe (negative, e.g. -1) → critical, ≥200 ms → caution, else success.
         public static Brush LatencyForeground(int? milliseconds)

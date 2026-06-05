@@ -74,13 +74,13 @@
                                                      Command="{x:Bind ViewModel.SetProxyModeCommand}"
                                                      CommandParameter="manual" />
                             </MenuFlyoutSubItem>
-                            <MenuFlyoutSeparator/>
+                            <MenuFlyoutSeparator />
                             <MenuFlyoutItem x:Uid="ControlPanel_StartupItem"
                                             Text="开机启动"
                                             Command="{x:Bind ViewModel.OpenStartupSettingsCommand}"
                                             Icon="{x:Bind ViewModel.StartupMenuIcon, Mode=OneWay}" />
                             <MenuFlyoutSubItem x:Uid="ControlPanel_RoutingSettingsItem"
-                                               Text="路由设置" >
+                                               Text="路由设置">
                                 <MenuFlyoutItem x:Uid="ControlPanel_RoutingGlobalItem"
                                                 Text="全局路由"
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
@@ -91,7 +91,7 @@
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.SetRoutingModeCommand}"
                                                 CommandParameter="smart" />
-                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutSeparator />
                                 <MenuFlyoutItem x:Uid="ControlPanel_CustomRulesItem"
                                                 Text="自定义规则..."
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
@@ -144,10 +144,10 @@
                             VerticalAlignment="Center"
                             Spacing="6">
                     <Grid>
-                        <FontIcon Glyph="&#xECCC;" 
+                        <FontIcon Glyph="&#xECCC;"
                                   Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                                   Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        <FontIcon Glyph="&#xECCC;" 
+                        <FontIcon Glyph="&#xECCC;"
                                   Foreground="{ThemeResource SystemFillColorNeutralBrush}"
                                   Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                     </Grid>
@@ -157,8 +157,9 @@
                                TextTrimming="CharacterEllipsis"
                                VerticalAlignment="Center">
                         <ToolTipService.ToolTip>
-        <ToolTip Content="{x:Bind ViewModel.StatusText, Mode=OneWay}" Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-    </ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                                     Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </ToolTipService.ToolTip>
                     </TextBlock>
                 </StackPanel>
             </StackPanel>

@@ -1161,4 +1161,10 @@ Path: {0}</value>
   <data name="GeoUpdate_DownloadingNoTotal" xml:space="preserve">
     <value>Downloading {0} … {1:0.0} MB</value>
   </data>
+  <data name="ServerList_TestModeConnect.Text" xml:space="preserve">
+    <value>Connection latency</value>
+  </data>
+  <data name="ServerList_TestModeReal.Text" xml:space="preserve">
+    <value>Test real delay</value>
+  </data>
 </root>
