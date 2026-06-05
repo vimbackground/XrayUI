@@ -35,7 +35,12 @@ namespace XrayUI.Services
         // This is exactly what v2rayN's GetRealPingTime does, so the numbers line up with it.
         private const int ProbeIterations = 2;
         private const int InterProbeDelayMs = 100;
-        private const int MaxConcurrency = 16;
+
+        // Up to 32 in-flight probes through the single test core. Comfortably safe — still more
+        // conservative than v2rayN (which runs a whole page concurrently with no per-item cap),
+        // and xray (Go) / .NET handle it trivially; the warm-up-take-min above keeps measurements
+        // stable even under brief contention. Halves the wave count vs 16 for dozens of nodes.
+        private const int MaxConcurrency = 32;
 
         // Give the throwaway core a moment to bind every socks inbound before we probe.
         private const int CoreReadyDelayMs = 800;
