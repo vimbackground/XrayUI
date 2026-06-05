@@ -26,8 +26,10 @@ namespace XrayUI.Services
     {
         private const string TestUrl = "http://www.gstatic.com/generate_204";
 
-        // Overall budget for one server's whole warm-up-then-measure cycle (matches v2rayN's 10s).
-        private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(10);
+        // Overall budget for one server's whole warm-up-then-measure cycle. 7s (vs v2rayN's 10s):
+        // a usable node returns its 204 well under this, and the shorter ceiling caps how long
+        // silent black-hole nodes stall the batch tail.
+        private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(7);
 
         // Probe each server twice on a *reused* (keep-alive) connection and keep the fastest:
         // the first request pays the one-time tunnel + TLS handshake (very pricey for reality),
