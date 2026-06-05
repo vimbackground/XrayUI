@@ -1161,4 +1161,10 @@
   <data name="GeoUpdate_DownloadingNoTotal" xml:space="preserve">
     <value>正在下载 {0} … {1:0.0} MB</value>
   </data>
+  <data name="ServerList_TestModeConnect.Text" xml:space="preserve">
+    <value>一键测试延迟</value>
+  </data>
+  <data name="ServerList_TestModeReal.Text" xml:space="preserve">
+    <value>真连接测试</value>
+  </data>
 </root>

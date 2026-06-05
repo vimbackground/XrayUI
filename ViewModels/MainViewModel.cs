@@ -71,11 +71,12 @@ namespace XrayUI.ViewModels
             var latencyProbe = new LatencyProbeService(
                 new TcpConnectProbeService(),
                 new PingProbeService());
+            var realLatencyProbe = new RealLatencyProbeService();
             var aiUnlockCheck = new AiUnlockCheckService();
 
             Title = "Proxy Console";
 
-            ServerList   = new ServerListViewModel(dialogs, settings, latencyProbe);
+            ServerList   = new ServerListViewModel(dialogs, settings, latencyProbe, realLatencyProbe);
             ServerDetail = new ServerDetailViewModel(latencyProbe, aiUnlockCheck);
             ControlPanel = new ControlPanelViewModel(dialogs, settings, xray, tunService, startupService, updateService);
             Personalize  = new PersonalizeViewModel(dialogs, settings);

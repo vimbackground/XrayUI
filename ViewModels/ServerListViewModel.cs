@@ -48,6 +48,7 @@ namespace XrayUI.ViewModels
         private readonly IDialogService     _dialogs;
         private readonly SettingsService    _settings;
         private readonly LatencyProbeService _latencyProbe;
+        private readonly RealLatencyProbeService _realLatencyProbe;
         private readonly SemaphoreSlim      _settingsWriteLock = new(1, 1);
         private const int MaxConcurrentProbes = 16;
         private ObservableCollection<ServerEntry> _servers = new();
@@ -67,11 +68,12 @@ namespace XrayUI.ViewModels
         public ObservableCollection<ServerGroupChip> GroupChips { get; } = new();
         public ObservableCollection<ServerEntry>     VisibleServers { get; } = new();
 
-        public ServerListViewModel(IDialogService dialogs, SettingsService settings, LatencyProbeService latencyProbe)
+        public ServerListViewModel(IDialogService dialogs, SettingsService settings, LatencyProbeService latencyProbe, RealLatencyProbeService realLatencyProbe)
         {
             _dialogs  = dialogs;
             _settings = settings;
             _latencyProbe = latencyProbe;
+            _realLatencyProbe = realLatencyProbe;
 
             ProtocolColorStore.ColorsChanged += OnProtocolColorsChanged;
             _servers.CollectionChanged += OnServersCollectionChanged;
@@ -641,11 +643,22 @@ namespace XrayUI.ViewModels
             private set => SetProperty(ref _isTestingLatencies, value);
         }
 
-        // Probes every server's latency in parallel (capped concurrency) and writes the
-        // result onto each ServerEntry: the round-trip ms on success, or -1 for any
-        // failure (timeout/unreachable, shown as a single red label). The async command
-        // auto-disables while running, so the button is inert until the sweep finishes;
-        // results stream into the rows as each probe completes.
+        private string _latencyTestMode = "connect";
+        // Business code (CLAUDE.md convention), set from the test button's right-click menu:
+        //   "connect" → TCP handshake to the server endpoint (no core needed)
+        //   "real"    → HTTP round-trip routed through a throwaway xray core (v2rayN "real delay")
+        public string LatencyTestMode
+        {
+            get => _latencyTestMode;
+            set => SetProperty(ref _latencyTestMode, value);
+        }
+
+        // Probes every server's latency and writes the result onto each ServerEntry: the
+        // round-trip ms on success, or -1 for any failure (timeout/unreachable, shown as a
+        // single red label). The async command auto-disables while running, so the button is
+        // inert until the sweep finishes; results stream into the rows as each probe completes.
+        // LatencyTestMode picks the probe: "connect" = direct TCP handshake to the endpoint;
+        // "real" = a real HTTP round-trip through a throwaway xray core (v2rayN "real delay").
         [RelayCommand]
         private async Task TestAllLatencies()
         {
@@ -653,54 +666,78 @@ namespace XrayUI.ViewModels
             if (servers.Count == 0) return;
 
             IsTestingLatencies = true;
+            _latencySortUnlocked = false;
             try
             {
-                using var throttle = new SemaphoreSlim(MaxConcurrentProbes);
-                var timeout = TimeSpan.FromSeconds(3);
-
-                // The latency sort only needs unlocking once (the first result flips
-                // CanSortByLatency false→true); continuations resume serially on the UI
-                // thread, so this flag needs no synchronization.
-                var sortUnlockNotified = false;
-
-                var tasks = servers.Select(async server =>
-                {
-                    await throttle.WaitAsync();
-                    try
-                    {
-                        // ProbeAsync is already async I/O, so it's awaited directly (no
-                        // Task.Run thread hop). No ConfigureAwait(false) either: the
-                        // continuation resumes on the UI thread (WinUI sync context), so the
-                        // bound ServerEntry update is safe — same as the detail panel's TestLatency.
-                        var result = await _latencyProbe.ProbeAsync(server, timeout);
-                        server.LatencyMs = result.Status == LatencyProbeStatus.Success
-                            ? result.Milliseconds
-                            : -1;
-
-                        // First result unlocks the latency sort option (fire once, not per probe).
-                        if (!sortUnlockNotified)
-                        {
-                            sortUnlockNotified = true;
-                            OnPropertyChanged(nameof(CanSortByLatency));
-                        }
-
-                        // If latency sort is already active, restream so rows reorder live
-                        // as probes land.
-                        if (_sortMode == ServerSortMode.Latency)
-                            RebuildGroupedView();
-                    }
-                    finally
-                    {
-                        throttle.Release();
-                    }
-                });
-
-                await Task.WhenAll(tasks);
+                if (LatencyTestMode == "real")
+                    await TestRealLatenciesAsync(servers);
+                else
+                    await TestConnectLatenciesAsync(servers);
             }
             finally
             {
                 IsTestingLatencies = false;
             }
+        }
+
+        // "connect" mode: direct TCP-handshake probe to each server endpoint, in parallel
+        // (capped concurrency). No proxy core involved.
+        private async Task TestConnectLatenciesAsync(List<ServerEntry> servers)
+        {
+            using var throttle = new SemaphoreSlim(MaxConcurrentProbes);
+            var timeout = TimeSpan.FromSeconds(3);
+
+            var tasks = servers.Select(async server =>
+            {
+                await throttle.WaitAsync();
+                try
+                {
+                    // ProbeAsync is already async I/O, awaited directly (no Task.Run hop). No
+                    // ConfigureAwait(false): the continuation resumes on the UI thread (WinUI
+                    // sync context), so ApplyLatencyResult's bound updates are safe.
+                    var result = await _latencyProbe.ProbeAsync(server, timeout);
+                    ApplyLatencyResult(server, result.Status == LatencyProbeStatus.Success
+                        ? result.Milliseconds ?? -1
+                        : -1);
+                }
+                finally
+                {
+                    throttle.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
+
+        // "real" mode: route a real HTTP request through each server via a dedicated throwaway
+        // xray core. Works even when nothing is connected and never touches the live session.
+        // Chain nodes aren't supported by the speed-test core yet, so they're skipped.
+        private Task TestRealLatenciesAsync(List<ServerEntry> servers)
+        {
+            var testable = servers.Where(s => !s.IsChain).ToList();
+            if (testable.Count == 0) return Task.CompletedTask;
+
+            // ProbeAllAsync marshals ApplyLatencyResult back onto the UI thread.
+            return _realLatencyProbe.ProbeAllAsync(testable, ApplyLatencyResult);
+        }
+
+        // Per-result bookkeeping shared by both probe modes (always invoked on the UI thread,
+        // serially): record the latency, unlock the latency-sort option once the first result
+        // lands, and restream the grouped view live if latency sort is already active. The
+        // _latencySortUnlocked flag is reset at the start of each TestAllLatencies run.
+        private bool _latencySortUnlocked;
+        private void ApplyLatencyResult(ServerEntry server, int latencyMs)
+        {
+            server.LatencyMs = latencyMs;
+
+            if (!_latencySortUnlocked)
+            {
+                _latencySortUnlocked = true;
+                OnPropertyChanged(nameof(CanSortByLatency));
+            }
+
+            if (_sortMode == ServerSortMode.Latency)
+                RebuildGroupedView();
         }
 
         // ── Import via link ───────────────────────────────────────────────────

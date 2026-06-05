@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <UserControl
     x:Class="XrayUI.Views.TunConfirmationDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -26,11 +27,12 @@
                 <!-- MTU 设置 -->
                 <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE946;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock x:Uid="Tun_MtuLabel"
                                    Text="最大传输单元"
                                    FontSize="15"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                     <NumberBox x:Name="MtuNumberBox"
                                Value="1500"
@@ -43,11 +45,12 @@
                 <!-- 出口网卡设置 -->
                 <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE839;" FontSize="16" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <FontIcon Glyph="&#xE839;" FontSize="16"
+                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock x:Uid="Tun_InterfaceLabel"
                                    Text="出口网卡"
                                    FontSize="15"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
 
                     <ComboBox x:Name="InterfaceComboBox"

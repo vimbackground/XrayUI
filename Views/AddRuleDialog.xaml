@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <ContentDialog
     x:Class="XrayUI.Views.AddRuleDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -21,8 +22,8 @@
             <ComboBox x:Name="TypeComboBox"
                       SelectedIndex="0"
                       HorizontalAlignment="Stretch">
-                <ComboBoxItem x:Uid="AddRule_TypeDomainItem" Content="域名（Domain）"  Tag="domain" />
-                <ComboBoxItem Content="IP"                                            Tag="ip" />
+                <ComboBoxItem x:Uid="AddRule_TypeDomainItem" Content="域名（Domain）" Tag="domain" />
+                <ComboBoxItem Content="IP" Tag="ip" />
                 <ComboBoxItem x:Uid="AddRule_TypeProcessItem" Content="进程（Process）" Tag="process" />
             </ComboBox>
         </StackPanel>
@@ -49,8 +50,8 @@
                 <ComboBox x:Name="BrowseFormatComboBox"
                           SelectedIndex="0"
                           MinWidth="130">
-                    <ComboBoxItem x:Uid="AddRule_BrowseNameItem"   Content="匹配同名进程" Tag="name" />
-                    <ComboBoxItem x:Uid="AddRule_BrowsePathItem"   Content="匹配完整路径" Tag="path" />
+                    <ComboBoxItem x:Uid="AddRule_BrowseNameItem" Content="匹配同名进程" Tag="name" />
+                    <ComboBoxItem x:Uid="AddRule_BrowsePathItem" Content="匹配完整路径" Tag="path" />
                     <ComboBoxItem x:Uid="AddRule_BrowseFolderItem" Content="匹配整个目录" Tag="folder" />
                 </ComboBox>
             </StackPanel>
@@ -70,9 +71,9 @@
             <ComboBox x:Name="OutboundComboBox"
                       SelectedIndex="0"
                       HorizontalAlignment="Stretch">
-                <ComboBoxItem x:Uid="AddRule_OutboundProxyItem"  Content="proxy（代理）"  Tag="proxy" />
+                <ComboBoxItem x:Uid="AddRule_OutboundProxyItem" Content="proxy（代理）" Tag="proxy" />
                 <ComboBoxItem x:Uid="AddRule_OutboundDirectItem" Content="direct（直连）" Tag="direct" />
-                <ComboBoxItem x:Uid="AddRule_OutboundBlockItem"  Content="block（阻断）"  Tag="block" />
+                <ComboBoxItem x:Uid="AddRule_OutboundBlockItem" Content="block（阻断）" Tag="block" />
             </ComboBox>
         </StackPanel>
 

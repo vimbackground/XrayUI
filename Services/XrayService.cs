@@ -12,7 +12,9 @@ namespace XrayUI.Services
 {
     public partial class XrayService
     {
-        private static readonly string ExePath = Path.Combine(
+        // Public so helper cores (e.g. RealLatencyProbeService's throwaway speed-test core) can
+        // launch the same engine without duplicating the path.
+        public static readonly string ExePath = Path.Combine(
             AppContext.BaseDirectory, "Assets", "engine", "xray.exe");
 
         public static readonly string RulesDir = Path.Combine(
@@ -26,11 +28,10 @@ namespace XrayUI.Services
 
         private Process? _process;
 
-        // Kernel-level safety net: xray.exe is assigned to this Job Object with
-        // KillOnJobClose, so if the UI process dies any way (taskkill /F, AV
-        // crash, OOM), the kernel kills xray.exe synchronously. Lifetime = this
-        // XrayService instance; reused across Start/Stop cycles.
-        private IntPtr _jobHandle = IntPtr.Zero;
+        // Kernel-level safety net: xray.exe is assigned to a kill-on-close Job Object, so if the
+        // UI process dies any way (taskkill /F, AV crash, OOM) the kernel kills xray.exe too.
+        // Created lazily on first start and reused across Start/Stop cycles.
+        private JobObjectGuard? _jobGuard;
 
         private StringBuilder _startupLog = new();
         private bool _collectStartupLog;
@@ -339,77 +340,22 @@ namespace XrayUI.Services
         }
 
         // ─────────── Job Object: orphan-xray safety net ───────────
-
-        private const uint JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000;
-        private const int JobObjectExtendedLimitInformation = 9;
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct JOBOBJECT_BASIC_LIMIT_INFORMATION
-        {
-            public long PerProcessUserTimeLimit;
-            public long PerJobUserTimeLimit;
-            public uint LimitFlags;
-            public UIntPtr MinimumWorkingSetSize;
-            public UIntPtr MaximumWorkingSetSize;
-            public uint ActiveProcessLimit;
-            public UIntPtr Affinity;
-            public uint PriorityClass;
-            public uint SchedulingClass;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct IO_COUNTERS
-        {
-            public ulong ReadOperationCount;
-            public ulong WriteOperationCount;
-            public ulong OtherOperationCount;
-            public ulong ReadTransferCount;
-            public ulong WriteTransferCount;
-            public ulong OtherTransferCount;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-        {
-            public JOBOBJECT_BASIC_LIMIT_INFORMATION BasicLimitInformation;
-            public IO_COUNTERS IoInfo;
-            public UIntPtr ProcessMemoryLimit;
-            public UIntPtr JobMemoryLimit;
-            public UIntPtr PeakProcessMemoryUsed;
-            public UIntPtr PeakJobMemoryUsed;
-        }
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        private static partial IntPtr CreateJobObjectW(IntPtr lpJobAttributes, IntPtr lpName);
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool SetInformationJobObject(
-            IntPtr hJob, int jobObjectInfoClass, IntPtr lpJobObjectInfo, uint cbJobObjectInfoLength);
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool CloseHandle(IntPtr hObject);
+        // The kill-on-close Job Object interop lives in Helpers/JobObjectGuard (shared with the
+        // real-delay speed-test core). The guard is created lazily and reused across Start/Stop
+        // cycles; each launched process is assigned to it.
 
         private void AttachToJobObject(Process process)
         {
             try
             {
-                if (_jobHandle == IntPtr.Zero)
+                _jobGuard ??= JobObjectGuard.Create();
+                if (_jobGuard is null)
                 {
-                    _jobHandle = CreateKillOnCloseJob();
-                    if (_jobHandle == IntPtr.Zero)
-                    {
-                        AppendLog(Loc.Format("XrayLog_JobCreateFailed", Marshal.GetLastWin32Error()));
-                        return;
-                    }
+                    AppendLog(Loc.Format("XrayLog_JobCreateFailed", Marshal.GetLastWin32Error()));
+                    return;
                 }
 
-                if (!AssignProcessToJobObject(_jobHandle, process.Handle))
+                if (!_jobGuard.TryAssign(process))
                 {
                     AppendLog(Loc.Format("XrayLog_JobAssignFailed", Marshal.GetLastWin32Error()));
                 }
@@ -417,37 +363,6 @@ namespace XrayUI.Services
             catch (Exception ex)
             {
                 AppendLog(Loc.Format("XrayLog_JobBindException", ex.Message));
-            }
-        }
-
-        private static IntPtr CreateKillOnCloseJob()
-        {
-            var handle = CreateJobObjectW(IntPtr.Zero, IntPtr.Zero);
-            if (handle == IntPtr.Zero) return IntPtr.Zero;
-
-            var info = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION
-            {
-                BasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION
-                {
-                    LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-                }
-            };
-
-            int size = Marshal.SizeOf<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>();
-            IntPtr buf = Marshal.AllocHGlobal(size);
-            try
-            {
-                Marshal.StructureToPtr(info, buf, fDeleteOld: false);
-                if (!SetInformationJobObject(handle, JobObjectExtendedLimitInformation, buf, (uint)size))
-                {
-                    _ = CloseHandle(handle);
-                    return IntPtr.Zero;
-                }
-                return handle;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(buf);
             }
         }
     }

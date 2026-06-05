@@ -831,5 +831,72 @@ namespace XrayUI.Services
         {
             array.Add((JsonNode?)JsonValue.Create(value));
         }
+
+        /// <summary>
+        /// Builds a dedicated speed-test config for the "real delay" latency test: one socks
+        /// inbound + one proxy outbound per server, paired 1:1 via routing (in-{i} → out-{i}).
+        /// Run in a throwaway core separate from the live connection. No TUN/DNS/fakedns — just
+        /// enough to route an HTTP probe through each server. Chain servers are not supported;
+        /// the caller must filter them out.
+        /// </summary>
+        /// <param name="entries">Each server paired with the local socks port it should listen on.</param>
+        public static string BuildSpeedtestConfig(
+            IReadOnlyList<(ServerEntry server, int port)> entries)
+        {
+            var inbounds = new JsonArray();
+            var outbounds = new JsonArray();
+            var rules = new JsonArray();
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var (server, port) = entries[i];
+                var inTag = $"in-{i}";
+                var outTag = $"out-{i}";
+
+                AddNode(inbounds, new JsonObject
+                {
+                    ["tag"] = inTag,
+                    ["protocol"] = "socks",
+                    ["listen"] = "127.0.0.1",
+                    ["port"] = port,
+                    ["settings"] = new JsonObject
+                    {
+                        ["auth"] = "noauth",
+                        ["udp"] = false
+                    }
+                });
+
+                AddNode(outbounds, BuildProxyOutbound(server, outTag));
+
+                AddNode(rules, new JsonObject
+                {
+                    ["type"] = "field",
+                    ["inboundTag"] = CreateStringArray(inTag),
+                    ["outboundTag"] = outTag
+                });
+            }
+
+            // Freedom fallback so any unmatched traffic inside the core has somewhere to go.
+            AddNode(outbounds, new JsonObject
+            {
+                ["tag"] = DirectOutboundTag,
+                ["protocol"] = "freedom",
+                ["settings"] = new JsonObject()
+            });
+
+            var config = new JsonObject
+            {
+                ["log"] = new JsonObject { ["loglevel"] = "warning" },
+                ["inbounds"] = inbounds,
+                ["outbounds"] = outbounds,
+                ["routing"] = new JsonObject
+                {
+                    ["domainStrategy"] = "AsIs",
+                    ["rules"] = rules
+                }
+            };
+
+            return config.ToJsonString(JsonOpts);
+        }
     }
 }
