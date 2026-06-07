@@ -457,21 +457,26 @@ namespace XrayUI.ViewModels
             var cts = new CancellationTokenSource();
             _aiCheckCts = cts;
 
+            // Update each indicator the moment its own check returns, instead of
+            // batching with Task.WhenAll (which would gate every dot on the slowest
+            // check — Gemini). The await resumes on the UI thread, so touching the
+            // status brushes here is safe.
+            async Task RunOne(Task<AiUnlockStatus> check, Action<AiUnlockStatus> assign)
+            {
+                var status = await check;
+                if (cts.IsCancellationRequested) return;
+                assign(status);
+                UpdateAiUnlockDisplay();
+            }
+
             try
             {
-                // Run all checks in parallel
-                var openAiTask = _aiUnlockCheck.CheckOpenAiAsync(httpProxyPort, cts.Token);
-                var claudeTask = _aiUnlockCheck.CheckClaudeAsync(httpProxyPort, cts.Token);
-                var geminiTask = _aiUnlockCheck.CheckGeminiAsync(httpProxyPort, cts.Token);
-
-                var results = await Task.WhenAll(openAiTask, claudeTask, geminiTask);
-
-                if (cts.IsCancellationRequested) return;
-
-                _openAiStatus = results[0];
-                _claudeStatus = results[1];
-                _geminiStatus = results[2];
-                UpdateAiUnlockDisplay();
+                // All three requests are kicked off before the first await, so they
+                // still run in parallel.
+                await Task.WhenAll(
+                    RunOne(_aiUnlockCheck.CheckOpenAiAsync(httpProxyPort, cts.Token), s => _openAiStatus = s),
+                    RunOne(_aiUnlockCheck.CheckClaudeAsync(httpProxyPort, cts.Token), s => _claudeStatus = s),
+                    RunOne(_aiUnlockCheck.CheckGeminiAsync(httpProxyPort, cts.Token), s => _geminiStatus = s));
             }
             catch (OperationCanceledException)
             {
