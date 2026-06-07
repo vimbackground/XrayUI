@@ -198,7 +198,7 @@ namespace XrayUI.Services
 
         // Mainland China is blocked, but its SARs and Taiwan are not.
         private static readonly string[] ChinaTerms = { "China", "中国" };
-        private static readonly string[] ChinaExceptions = { "Hong Kong", "香港", "Macau", "澳门", "Taiwan", "台湾" };
+        private static readonly string[] ChinaExceptions = { "Hong Kong", "香港", "Macau", "Macao", "澳门", "Taiwan", "台湾" };
 
         // Regions where Gemini is unavailable regardless of its own flag.
         private static readonly string[] OtherBlockedTerms =
