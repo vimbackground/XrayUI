@@ -29,14 +29,6 @@ namespace XrayUI.Services
     {
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
 
-        /// <summary>Countries where Gemini is not available (based on official supported list).</summary>
-        private static readonly HashSet<string> GeminiBlockedCountries = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "CN", // China
-            "RU", // Russia
-            "IR", // Iran
-        };
-
         /// <summary>
         /// Check OpenAI API reachability.
         /// Sends a GET to https://api.openai.com/ and inspects the response body.
@@ -47,12 +39,7 @@ namespace XrayUI.Services
         {
             try
             {
-                using var handler = new HttpClientHandler
-                {
-                    Proxy = new WebProxy($"http://127.0.0.1:{httpProxyPort}"),
-                    UseProxy = true
-                };
-                using var client = new HttpClient(handler) { Timeout = Timeout };
+                using var client = CreateProxiedClient(httpProxyPort);
 
                 var response = await client.GetAsync("https://api.openai.com/", ct);
                 var body = await response.Content.ReadAsStringAsync(ct);
@@ -86,12 +73,7 @@ namespace XrayUI.Services
         {
             try
             {
-                using var handler = new HttpClientHandler
-                {
-                    Proxy = new WebProxy($"http://127.0.0.1:{httpProxyPort}"),
-                    UseProxy = true
-                };
-                using var client = new HttpClient(handler) { Timeout = Timeout };
+                using var client = CreateProxiedClient(httpProxyPort);
 
                 // Use GET like the bash curl -sI approach (HEAD may be blocked)
                 var request = new HttpRequestMessage(HttpMethod.Get, "https://api.anthropic.com/v1/messages");
@@ -126,34 +108,63 @@ namespace XrayUI.Services
         }
 
         /// <summary>
-        /// Check Gemini availability by resolving the proxy exit IP's country.
-        /// Uses Cloudflare trace (primary) or ipinfo.io (fallback) to determine geolocation,
-        /// then checks against the Gemini unsupported countries list.
+        /// Check Gemini Web availability by using Gemini's own geo preflight RPC.
         /// </summary>
         public async Task<AiUnlockStatus> CheckGeminiAsync(int httpProxyPort, CancellationToken ct = default)
         {
             try
             {
-                using var handler = new HttpClientHandler
+                using var client = CreateProxiedClient(httpProxyPort);
+
+                // RPC K4WWud is Gemini's geo preflight: the response carries the visitor's
+                // resolved location plus Gemini's own "unsupported region" flag.
+                var request = new HttpRequestMessage(HttpMethod.Post, "https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=K4WWud");
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                request.Content = new FormUrlEncodedContent(new[]
                 {
-                    Proxy = new WebProxy($"http://127.0.0.1:{httpProxyPort}"),
-                    UseProxy = true
-                };
-                using var client = new HttpClient(handler) { Timeout = Timeout };
+                    new KeyValuePair<string, string>("f.req", "[[[\"K4WWud\",\"[[1],[\\\"en-US\\\"]]\",null,\"generic\"]]]")
+                });
 
-                // Primary: Cloudflare trace
-                var country = await GetCountryFromCloudflareAsync(client, ct);
-
-                // Fallback: ipinfo.io
-                if (string.IsNullOrEmpty(country))
-                    country = await GetCountryFromIpInfoAsync(client, ct);
-
-                if (string.IsNullOrEmpty(country))
+                var response = await client.SendAsync(request, ct);
+                if (!response.IsSuccessStatusCode)
                     return AiUnlockStatus.Blocked;
 
-                return GeminiBlockedCountries.Contains(country)
-                    ? AiUnlockStatus.Blocked
-                    : AiUnlockStatus.Unlocked;
+                var body = await response.Content.ReadAsStringAsync(ct);
+
+                // Skip Google's anti-XSS prefix )]}'\n to reach the JSON array.
+                var jsonStart = body.IndexOf("[[", StringComparison.Ordinal);
+                if (jsonStart == -1)
+                    return AiUnlockStatus.Blocked;
+
+                using var doc = JsonDocument.Parse(body.AsMemory(jsonStart));
+
+                // Outer: [["wrb.fr", "K4WWud", innerJsonString, ...]]
+                if (!TryGetArrayItem(doc.RootElement, 0, out var outer) ||
+                    !TryGetArrayItem(outer, 2, out var innerJsonElem))
+                    return AiUnlockStatus.Blocked;
+
+                var innerJsonStr = innerJsonElem.GetString();
+                if (string.IsNullOrEmpty(innerJsonStr))
+                    return AiUnlockStatus.Blocked;
+
+                using var innerDoc = JsonDocument.Parse(innerJsonStr);
+
+                // Inner: [[locationDisplayName, "SWML_...", isUnsupportedRegion, ...]]
+                if (!TryGetArrayItem(innerDoc.RootElement, 0, out var inner) ||
+                    inner.ValueKind != JsonValueKind.Array || inner.GetArrayLength() < 3)
+                    return AiUnlockStatus.Blocked;
+
+                // Gemini's own authoritative "unsupported region" flag.
+                if (inner[2].ValueKind == JsonValueKind.True)
+                    return AiUnlockStatus.Blocked;
+
+                var location = inner[0].ValueKind == JsonValueKind.String ? inner[0].GetString() : null;
+                if (string.IsNullOrEmpty(location))
+                    return AiUnlockStatus.Blocked;
+
+                // Deliberate policy on top of the RPC flag: treat mainland China and the other
+                // unsupported regions as blocked even when Gemini reports them as supported.
+                return IsBlockedRegion(location) ? AiUnlockStatus.Blocked : AiUnlockStatus.Unlocked;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -165,52 +176,58 @@ namespace XrayUI.Services
             }
         }
 
-        /// <summary>
-        /// Parse loc= from Cloudflare cdn-cgi/trace response.
-        /// </summary>
-        private static async Task<string?> GetCountryFromCloudflareAsync(HttpClient client, CancellationToken ct)
+        /// <summary>Build an <see cref="HttpClient"/> routed through the local HTTP proxy.</summary>
+        private static HttpClient CreateProxiedClient(int httpProxyPort)
         {
-            try
+            var handler = new HttpClientHandler
             {
-                var body = await client.GetStringAsync("https://www.cloudflare.com/cdn-cgi/trace", ct);
-                foreach (var line in body.Split('\n'))
-                {
-                    if (line.StartsWith("loc=", StringComparison.OrdinalIgnoreCase))
-                        return line.Substring(4).Trim();
-                }
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch
-            {
-                // fall through to return null
-            }
-            return null;
+                Proxy = new WebProxy($"http://127.0.0.1:{httpProxyPort}"),
+                UseProxy = true
+            };
+            // HttpClient disposes the handler together with itself.
+            return new HttpClient(handler) { Timeout = Timeout };
         }
 
-        /// <summary>
-        /// Parse country from ipinfo.io/json response.
-        /// </summary>
-        private static async Task<string?> GetCountryFromIpInfoAsync(HttpClient client, CancellationToken ct)
+        /// <summary>Index into a JSON array only when it is an array long enough to hold <paramref name="index"/>.</summary>
+        private static bool TryGetArrayItem(JsonElement parent, int index, out JsonElement item)
         {
-            try
+            if (parent.ValueKind == JsonValueKind.Array && parent.GetArrayLength() > index)
             {
-                var body = await client.GetStringAsync("https://ipinfo.io/json", ct);
-                using var doc = JsonDocument.Parse(body);
-                if (doc.RootElement.TryGetProperty("country", out var prop))
-                    return prop.GetString();
+                item = parent[index];
+                return true;
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            item = default;
+            return false;
+        }
+
+        // Mainland China is blocked, but its SARs and Taiwan are not.
+        private static readonly string[] ChinaTerms = { "China", "中国" };
+        private static readonly string[] ChinaExceptions = { "Hong Kong", "香港", "Macau", "澳门", "Taiwan", "台湾" };
+
+        // Regions where Gemini is unavailable regardless of its own flag.
+        private static readonly string[] OtherBlockedTerms =
+        {
+            "Russia", "俄罗斯",
+            "Iran", "伊朗",
+            "North Korea", "朝鲜",
+            "Syria", "叙利亚",
+            "Cuba", "古巴"
+        };
+
+        private static bool IsBlockedRegion(string location)
+        {
+            bool isChinaMainland = ContainsAny(location, ChinaTerms) && !ContainsAny(location, ChinaExceptions);
+            return isChinaMainland || ContainsAny(location, OtherBlockedTerms);
+        }
+
+        private static bool ContainsAny(string text, string[] terms)
+        {
+            foreach (var term in terms)
             {
-                throw;
+                if (text.Contains(term, StringComparison.OrdinalIgnoreCase))
+                    return true;
             }
-            catch
-            {
-                // fall through to return null
-            }
-            return null;
+            return false;
         }
     }
 }
