@@ -149,21 +149,17 @@ namespace XrayUI.Services
 
                 using var innerDoc = JsonDocument.Parse(innerJsonStr);
 
-                // Inner: [[locationDisplayName, "SWML_...", isUnsupportedRegion, ...]]
+                // Inner: [[locationDisplayName, ...]] — the visitor's resolved location.
                 if (!TryGetArrayItem(innerDoc.RootElement, 0, out var inner) ||
-                    inner.ValueKind != JsonValueKind.Array || inner.GetArrayLength() < 3)
+                    !TryGetArrayItem(inner, 0, out var locationElem))
                     return AiUnlockStatus.Blocked;
 
-                // Gemini's own authoritative "unsupported region" flag.
-                if (inner[2].ValueKind == JsonValueKind.True)
-                    return AiUnlockStatus.Blocked;
-
-                var location = inner[0].ValueKind == JsonValueKind.String ? inner[0].GetString() : null;
+                var location = locationElem.ValueKind == JsonValueKind.String ? locationElem.GetString() : null;
                 if (string.IsNullOrEmpty(location))
                     return AiUnlockStatus.Blocked;
 
-                // Deliberate policy on top of the RPC flag: treat mainland China and the other
-                // unsupported regions as blocked even when Gemini reports them as supported.
+                // Availability is decided purely from the API-reported location: mainland China,
+                // Russia, Iran, North Korea, Syria and Cuba are treated as blocked.
                 return IsBlockedRegion(location) ? AiUnlockStatus.Blocked : AiUnlockStatus.Unlocked;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
