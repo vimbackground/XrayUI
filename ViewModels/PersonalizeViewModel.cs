@@ -12,19 +12,8 @@ namespace XrayUI.ViewModels
         private readonly SettingsService _settings;
         private readonly IDialogService _dialogs;
 
-        private Color _ssColor;
-        private Color _vlessColor;
-        private Color _vmessColor;
-        private Color _hysteria2Color;
-        private Color _fallbackColor;
-
-        private int _selectedThemeIndex;
-        private int _selectedBackdropIndex;
-        private int _selectedLanguageIndex;
         private int _initialLanguageIndex = -1;
-        private bool _showLanguageRestartHint;
-        private bool _showLatencyInDetails = true;
-        private bool _showAiUnlockInDetails = true;
+        private bool _suppressLanguageRestartHint;
 
         public event EventHandler? CloseRequested;
         public event EventHandler? PresetImported;
@@ -33,106 +22,82 @@ namespace XrayUI.ViewModels
         {
             _dialogs = dialogs;
             _settings = settings;
+            ShowLatencyInDetails = true;
+            ShowAiUnlockInDetails = true;
         }
 
         // ── Colors ────────────────────────────────────────────────────────────
 
-        public Color SsColor
+        [ObservableProperty]
+        public partial Color SsColor { get; set; }
+
+        [ObservableProperty]
+        public partial Color VlessColor { get; set; }
+
+        [ObservableProperty]
+        public partial Color VmessColor { get; set; }
+
+        [ObservableProperty]
+        public partial Color Hysteria2Color { get; set; }
+
+        [ObservableProperty]
+        public partial Color FallbackColor { get; set; }
+
+        partial void OnSsColorChanged(Color value)
         {
-            get => _ssColor;
-            set
-            {
-                if (SetProperty(ref _ssColor, value))
-                {
-                    ProtocolColorStore.Ss = value;
-                    ProtocolColorStore.NotifyColorsChanged();
-                }
-            }
+            ProtocolColorStore.Ss = value;
+            ProtocolColorStore.NotifyColorsChanged();
         }
 
-        public Color VlessColor
+        partial void OnVlessColorChanged(Color value)
         {
-            get => _vlessColor;
-            set
-            {
-                if (SetProperty(ref _vlessColor, value))
-                {
-                    ProtocolColorStore.Vless = value;
-                    ProtocolColorStore.NotifyColorsChanged();
-                }
-            }
+            ProtocolColorStore.Vless = value;
+            ProtocolColorStore.NotifyColorsChanged();
         }
 
-        public Color VmessColor
+        partial void OnVmessColorChanged(Color value)
         {
-            get => _vmessColor;
-            set
-            {
-                if (SetProperty(ref _vmessColor, value))
-                {
-                    ProtocolColorStore.Vmess = value;
-                    ProtocolColorStore.NotifyColorsChanged();
-                }
-            }
+            ProtocolColorStore.Vmess = value;
+            ProtocolColorStore.NotifyColorsChanged();
         }
 
-        public Color Hysteria2Color
+        partial void OnHysteria2ColorChanged(Color value)
         {
-            get => _hysteria2Color;
-            set
-            {
-                if (SetProperty(ref _hysteria2Color, value))
-                {
-                    ProtocolColorStore.Hysteria2 = value;
-                    ProtocolColorStore.NotifyColorsChanged();
-                }
-            }
+            ProtocolColorStore.Hysteria2 = value;
+            ProtocolColorStore.NotifyColorsChanged();
         }
 
-        public Color FallbackColor
+        partial void OnFallbackColorChanged(Color value)
         {
-            get => _fallbackColor;
-            set
-            {
-                if (SetProperty(ref _fallbackColor, value))
-                {
-                    ProtocolColorStore.Fallback = value;
-                    ProtocolColorStore.NotifyColorsChanged();
-                }
-            }
+            ProtocolColorStore.Fallback = value;
+            ProtocolColorStore.NotifyColorsChanged();
         }
 
         // ── Theme ─────────────────────────────────────────────────────────────
         // Bound TwoWay to CommunityToolkit Segmented.SelectedIndex.
         // 0 = Light, 1 = Dark, 2 = System/Default
 
-        public int SelectedThemeIndex
+        [ObservableProperty]
+        public partial int SelectedThemeIndex { get; set; }
+
+        partial void OnSelectedThemeIndexChanged(int value)
         {
-            get => _selectedThemeIndex;
-            set
+            var theme = value switch
             {
-                if (!SetProperty(ref _selectedThemeIndex, value)) return;
-                var theme = value switch
-                {
-                    0 => ElementTheme.Light,
-                    1 => ElementTheme.Dark,
-                    _ => ElementTheme.Default,
-                };
-                ThemeHelper.ApplyTheme(theme);
-            }
+                0 => ElementTheme.Light,
+                1 => ElementTheme.Dark,
+                _ => ElementTheme.Default,
+            };
+            ThemeHelper.ApplyTheme(theme);
         }
 
         // ── Backdrop ──────────────────────────────────────────────────────────
 
-        public int SelectedBackdropIndex
-        {
-            get => _selectedBackdropIndex;
-            set
-            {
-                if (!SetProperty(ref _selectedBackdropIndex, value)) return;
-                ThemeHelper.ApplyBackdrop(value == 1 ? "Acrylic" : "Mica");
-            }
-        }
+        [ObservableProperty]
+        public partial int SelectedBackdropIndex { get; set; }
+
+        partial void OnSelectedBackdropIndexChanged(int value) =>
+            ThemeHelper.ApplyBackdrop(value == 1 ? "Acrylic" : "Mica");
 
         // ── Language ──────────────────────────────────────────────────────────
 
@@ -140,47 +105,35 @@ namespace XrayUI.ViewModels
         /// for the dropdown contents. Adding a language is a one-line edit in LanguageHelper.</summary>
         public LanguageInfo[] SupportedLanguages => LanguageHelper.SupportedLanguages;
 
-        public int SelectedLanguageIndex
+        [ObservableProperty]
+        public partial int SelectedLanguageIndex { get; set; }
+
+        partial void OnSelectedLanguageIndexChanged(int value)
         {
-            get => _selectedLanguageIndex;
-            set
-            {
-                if (!SetProperty(ref _selectedLanguageIndex, value)) return;
-                // Hint visibility tracks divergence from the loaded value, not "has the
+            // Hint visibility tracks divergence from the loaded value, not whether the
                 // user touched the dropdown" — flipping back to the initial choice means
-                // no restart is needed, so the hint should disappear too. The -1 guard
-                // suppresses the side effect during the initial LoadLanguage call.
-                if (_initialLanguageIndex >= 0)
-                    ShowLanguageRestartHint = value != _initialLanguageIndex;
-            }
+            // no restart is needed, so the hint should disappear too.
+            if (!_suppressLanguageRestartHint && _initialLanguageIndex >= 0)
+                ShowLanguageRestartHint = value != _initialLanguageIndex;
         }
 
-        public bool ShowLanguageRestartHint
-        {
-            get => _showLanguageRestartHint;
-            set => SetProperty(ref _showLanguageRestartHint, value);
-        }
+        [ObservableProperty]
+        public partial bool ShowLanguageRestartHint { get; set; }
 
         /// <summary>Persist the currently-selected language. Call right before <see cref="App.Restart"/>.</summary>
         public async Task ApplyLanguageAsync()
         {
-            var tag = LanguageHelper.TagAt(_selectedLanguageIndex);
+            var tag = LanguageHelper.TagAt(SelectedLanguageIndex);
             var s = await _settings.LoadSettingsAsync();
             s.Language = tag;
             await _settings.SaveSettingsAsync(s);
         }
 
-        public bool ShowLatencyInDetails
-        {
-            get => _showLatencyInDetails;
-            set => SetProperty(ref _showLatencyInDetails, value);
-        }
+        [ObservableProperty]
+        public partial bool ShowLatencyInDetails { get; set; }
 
-        public bool ShowAiUnlockInDetails
-        {
-            get => _showAiUnlockInDetails;
-            set => SetProperty(ref _showAiUnlockInDetails, value);
-        }
+        [ObservableProperty]
+        public partial bool ShowAiUnlockInDetails { get; set; }
 
         // ── Commands ──────────────────────────────────────────────────────────
 
@@ -232,7 +185,7 @@ namespace XrayUI.ViewModels
             // Language doesn't take effect until the next process start, but Done still
             // persists it — otherwise the user would have to click the restart hint to
             // save at all, which is surprising compared to how Theme / Backdrop behave.
-            s.Language = LanguageHelper.TagAt(_selectedLanguageIndex);
+            s.Language = LanguageHelper.TagAt(SelectedLanguageIndex);
             await _settings.SaveSettingsAsync(s);
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -241,28 +194,20 @@ namespace XrayUI.ViewModels
 
         public void LoadFromStore()
         {
-            _ssColor        = ProtocolColorStore.Ss;
-            _vlessColor     = ProtocolColorStore.Vless;
-            _vmessColor     = ProtocolColorStore.Vmess;
-            _hysteria2Color = ProtocolColorStore.Hysteria2;
-            _fallbackColor  = ProtocolColorStore.Fallback;
+            SsColor        = ProtocolColorStore.Ss;
+            VlessColor     = ProtocolColorStore.Vless;
+            VmessColor     = ProtocolColorStore.Vmess;
+            Hysteria2Color = ProtocolColorStore.Hysteria2;
+            FallbackColor  = ProtocolColorStore.Fallback;
 
-            OnPropertyChanged(nameof(SsColor));
-            OnPropertyChanged(nameof(VlessColor));
-            OnPropertyChanged(nameof(VmessColor));
-            OnPropertyChanged(nameof(Hysteria2Color));
-            OnPropertyChanged(nameof(FallbackColor));
-
-            _selectedThemeIndex = ThemeHelper.CurrentTheme switch
+            SelectedThemeIndex = ThemeHelper.CurrentTheme switch
             {
                 ElementTheme.Light => 0,
                 ElementTheme.Dark  => 1,
                 _                  => 2,
             };
-            OnPropertyChanged(nameof(SelectedThemeIndex));
 
-            _selectedBackdropIndex = ThemeHelper.CurrentBackdrop == "Acrylic" ? 1 : 0;
-            OnPropertyChanged(nameof(SelectedBackdropIndex));
+            SelectedBackdropIndex = ThemeHelper.CurrentBackdrop == "Acrylic" ? 1 : 0;
         }
 
         public void LoadDisplayOptions(AppSettings settings)
@@ -276,9 +221,10 @@ namespace XrayUI.ViewModels
             // Assign through the field to bypass the setter's InfoBar side effect, then
             // record this as the baseline so divergence-from-baseline drives the hint.
             var index = LanguageHelper.IndexOf(settings.Language);
-            _selectedLanguageIndex = index;
+            _suppressLanguageRestartHint = true;
+            SelectedLanguageIndex = index;
+            _suppressLanguageRestartHint = false;
             _initialLanguageIndex = index;
-            OnPropertyChanged(nameof(SelectedLanguageIndex));
         }
     }
 }

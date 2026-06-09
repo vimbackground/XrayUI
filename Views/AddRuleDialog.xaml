@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <ContentDialog
     x:Class="XrayUI.Views.AddRuleDialog"
@@ -59,7 +59,7 @@
             <TextBlock x:Name="HintTextBlock"
                        Text="支持精确匹配、regexp:、geosite: 前缀"
                        FontSize="11"
-                       Opacity="0.6"
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 

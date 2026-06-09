@@ -51,18 +51,11 @@ namespace XrayUI.ViewModels
         private readonly RealLatencyProbeService _realLatencyProbe;
         private readonly SemaphoreSlim      _settingsWriteLock = new(1, 1);
         private const int MaxConcurrentProbes = 16;
-        private ObservableCollection<ServerEntry> _servers = new();
-        private ServerEntry? _selectedServer;
         private readonly List<ServerEntry> _selectedServers = new();
-        private bool _isProxyRunning;
         private bool _disposed;
 
         // ── Grouping state ────────────────────────────────────────────────────
-        private ServerGroupChip? _selectedChip;
-        private string _searchQuery = string.Empty;
-        private bool _isFilterPanelOpen;
         private bool _suppressRebuild;
-        private ServerSortMode _sortMode = ServerSortMode.Default;
         private List<SubscriptionEntry> _knownSubscriptions = new();
 
         public ObservableCollection<ServerGroupChip> GroupChips { get; } = new();
@@ -74,9 +67,11 @@ namespace XrayUI.ViewModels
             _settings = settings;
             _latencyProbe = latencyProbe;
             _realLatencyProbe = realLatencyProbe;
+            Servers = new ObservableCollection<ServerEntry>();
+            SearchQuery = string.Empty;
+            LatencyTestMode = "connect";
 
             ProtocolColorStore.ColorsChanged += OnProtocolColorsChanged;
-            _servers.CollectionChanged += OnServersCollectionChanged;
         }
 
         private void OnProtocolColorsChanged(object? sender, EventArgs e)
@@ -90,77 +85,70 @@ namespace XrayUI.ViewModels
             if (_disposed) return;
             _disposed = true;
             ProtocolColorStore.ColorsChanged -= OnProtocolColorsChanged;
-            _servers.CollectionChanged -= OnServersCollectionChanged;
+            Servers.CollectionChanged -= OnServersCollectionChanged;
             foreach (var server in _selectedServers)
             {
                 server.PropertyChanged -= OnSelectedItemPropertyChanged;
             }
         }
 
-        public ObservableCollection<ServerEntry> Servers
+        [ObservableProperty]
+        public partial ObservableCollection<ServerEntry> Servers { get; set; }
+
+        partial void OnServersChanging(ObservableCollection<ServerEntry> oldValue, ObservableCollection<ServerEntry> newValue)
         {
-            get => _servers;
-            set
-            {
-                if (_servers != null)
-                    _servers.CollectionChanged -= OnServersCollectionChanged;
-                if (SetProperty(ref _servers, value) && _servers != null)
-                {
-                    _servers.CollectionChanged += OnServersCollectionChanged;
-                    NotifySelectedServerRunStateChanged();
-                }
-            }
+            if (oldValue is not null)
+                oldValue.CollectionChanged -= OnServersCollectionChanged;
         }
 
-        public ServerGroupChip? SelectedChip
+        partial void OnServersChanged(ObservableCollection<ServerEntry> value)
         {
-            get => _selectedChip;
-            set
+            if (value is not null)
+                value.CollectionChanged += OnServersCollectionChanged;
+            NotifySelectedServerRunStateChanged();
+        }
+
+        [ObservableProperty]
+        public partial ServerGroupChip? SelectedChip { get; set; }
+
+        partial void OnSelectedChipChanged(ServerGroupChip? value)
+        {
+            OnPropertyChanged(nameof(CanSortByActive));
+
+            // When leaving the All chip while sorting by active server, fall back to default
+            // to avoid a disabled menu item remaining checked.
+            if (SortMode == ServerSortMode.Active && !CanSortByActive)
             {
-                if (SetProperty(ref _selectedChip, value))
-                {
-                    OnPropertyChanged(nameof(CanSortByActive));
-
-                    // When leaving the All chip while sorting by active server, fall back to default
-                    // to avoid a disabled menu item remaining checked.
-                    if (_sortMode == ServerSortMode.Active && !CanSortByActive)
-                    {
-                        SortMode = ServerSortMode.Default;
-                        return;
-                    }
-
-                    RebuildGroupedView();
-                    OnPropertyChanged(nameof(CanReorderInCurrentChip));
-                }
+                SortMode = ServerSortMode.Default;
+                return;
             }
+
+            RebuildGroupedView();
+            OnPropertyChanged(nameof(CanReorderInCurrentChip));
         }
 
         public bool CanReorderInCurrentChip =>
-            string.IsNullOrWhiteSpace(_searchQuery)
-            && _sortMode == ServerSortMode.Default
+            string.IsNullOrWhiteSpace(SearchQuery)
+            && SortMode == ServerSortMode.Default
             && VisibleServers.Count > 1
             && !HasMultipleSelectedServers;
 
-        public ServerSortMode SortMode
+        [ObservableProperty]
+        public partial ServerSortMode SortMode { get; set; }
+
+        partial void OnSortModeChanged(ServerSortMode value)
         {
-            get => _sortMode;
-            set
-            {
-                if (SetProperty(ref _sortMode, value))
-                {
-                    OnPropertyChanged(nameof(IsSortDefault));
-                    OnPropertyChanged(nameof(IsSortActive));
-                    OnPropertyChanged(nameof(IsSortProtocol));
-                    OnPropertyChanged(nameof(IsSortLatency));
-                    OnPropertyChanged(nameof(CanReorderInCurrentChip));
-                    RebuildGroupedView();
-                }
-            }
+            OnPropertyChanged(nameof(IsSortDefault));
+            OnPropertyChanged(nameof(IsSortActive));
+            OnPropertyChanged(nameof(IsSortProtocol));
+            OnPropertyChanged(nameof(IsSortLatency));
+            OnPropertyChanged(nameof(CanReorderInCurrentChip));
+            RebuildGroupedView();
         }
 
         // Active-server sorting is only available for chip = All; other chips should not
         // promote a single active server to the top of the subset.
-        public bool CanSortByActive => _selectedChip?.Kind == ServerGroupChip.ChipKind.All;
+        public bool CanSortByActive => SelectedChip?.Kind == ServerGroupChip.ChipKind.All;
 
         // Latency sorting is only meaningful once at least one server has been probed;
         // before the first "test all" sweep there is nothing to order by, so the menu
@@ -170,93 +158,75 @@ namespace XrayUI.ViewModels
         // Shadow props for RadioMenuFlyoutItem.IsChecked TwoWay binding.
         public bool IsSortDefault
         {
-            get => _sortMode == ServerSortMode.Default;
+            get => SortMode == ServerSortMode.Default;
             set { if (value) SortMode = ServerSortMode.Default; }
         }
 
         public bool IsSortActive
         {
-            get => _sortMode == ServerSortMode.Active;
+            get => SortMode == ServerSortMode.Active;
             set { if (value) SortMode = ServerSortMode.Active; }
         }
 
         public bool IsSortProtocol
         {
-            get => _sortMode == ServerSortMode.Protocol;
+            get => SortMode == ServerSortMode.Protocol;
             set { if (value) SortMode = ServerSortMode.Protocol; }
         }
 
         public bool IsSortLatency
         {
-            get => _sortMode == ServerSortMode.Latency;
+            get => SortMode == ServerSortMode.Latency;
             set { if (value) SortMode = ServerSortMode.Latency; }
         }
 
         public bool SelectAllGroup()
         {
             var allChip = GroupChips.FirstOrDefault(c => c.Kind == ServerGroupChip.ChipKind.All);
-            if (allChip == null || _selectedChip?.Kind == ServerGroupChip.ChipKind.All)
+            if (allChip == null || SelectedChip?.Kind == ServerGroupChip.ChipKind.All)
                 return false;
 
             SelectedChip = allChip;
             return true;
         }
 
-        public string SearchQuery
-        {
-            get => _searchQuery;
-            set
-            {
-                if (SetProperty(ref _searchQuery, value ?? string.Empty))
-                {
-                    if (!string.IsNullOrWhiteSpace(_searchQuery) && SelectAllGroup())
-                        return;
+        [ObservableProperty]
+        public partial string? SearchQuery { get; set; }
 
-                    RebuildGroupedView();
-                }
-            }
+        partial void OnSearchQueryChanged(string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value) && SelectAllGroup())
+                return;
+
+            RebuildGroupedView();
         }
 
         public bool IsChipBarVisible =>
             GroupChips.Count > 0;
 
-        public bool IsFilterPanelOpen
-        {
-            get => _isFilterPanelOpen;
-            set
-            {
-                if (SetProperty(ref _isFilterPanelOpen, value))
-                    OnPropertyChanged(nameof(IsFilterBarVisible));
-            }
-        }
-
         public bool IsFilterBarVisible =>
-            IsChipBarVisible && _isFilterPanelOpen;
+            IsChipBarVisible && IsFilterPanelOpen;
 
-        public ServerEntry? SelectedServer
-        {
-            get => _selectedServer;
-            set
-            {
-                if (SetProperty(ref _selectedServer, value))
-                    SetSelectedServers(value is null
-                        ? Array.Empty<ServerEntry>()
-                        : new[] { value });
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsFilterBarVisible))]
+        public partial bool IsFilterPanelOpen { get; set; }
 
-        public bool IsProxyRunning
+        [ObservableProperty]
+        public partial ServerEntry? SelectedServer { get; set; }
+
+        partial void OnSelectedServerChanged(ServerEntry? value) =>
+            SetSelectedServers(value is null
+                ? Array.Empty<ServerEntry>()
+                : new[] { value });
+
+        [ObservableProperty]
+        public partial bool IsProxyRunning { get; set; }
+
+        partial void OnIsProxyRunningChanged(bool value)
         {
-            get => _isProxyRunning;
-            set
-            {
-                if (SetProperty(ref _isProxyRunning, value))
-                {
-                    NotifyServerActionStateChanged();
-                    if (_sortMode == ServerSortMode.Active)
-                        RebuildGroupedView();
-                }
-            }
+            NotifyServerActionStateChanged();
+            if (SortMode == ServerSortMode.Active)
+                RebuildGroupedView();
         }
 
         public bool IsSelectedServerLocked => IsProxyRunning && SelectedServer?.IsActive == true;
@@ -415,8 +385,8 @@ namespace XrayUI.ViewModels
             // refresh or preset import replaced entries with fresh, untested ones), the
             // sort has nothing to order by — fall back to Default so the menu doesn't keep
             // a now-disabled item checked, mirroring the Active-chip guard.
-            if (_sortMode == ServerSortMode.Latency && !CanSortByLatency)
-                _sortMode = ServerSortMode.Default;
+            if (SortMode == ServerSortMode.Latency && !CanSortByLatency)
+                SortMode = ServerSortMode.Default;
 
             OnPropertyChanged(nameof(CanSortByLatency));
             OnPropertyChanged(nameof(IsSortDefault));
@@ -457,7 +427,7 @@ namespace XrayUI.ViewModels
                 _knownSubscriptions.Where(k => !string.IsNullOrEmpty(k.Id)).Select(k => k.Id!),
                 StringComparer.Ordinal);
 
-            var previouslySelectedKey = ChipKey(_selectedChip);
+            var previouslySelectedKey = ChipKey(SelectedChip);
             GroupChips.Clear();
 
             GroupChips.Add(new ServerGroupChip
@@ -516,12 +486,9 @@ namespace XrayUI.ViewModels
                 toSelect = GroupChips.FirstOrDefault(c => ChipKey(c) == previouslySelectedKey);
             toSelect ??= GroupChips.FirstOrDefault();
 
-            // Set backing field directly to avoid SelectedChip's setter triggering a second rebuild.
-            if (!ReferenceEquals(_selectedChip, toSelect))
+            if (!ReferenceEquals(SelectedChip, toSelect))
             {
-                _selectedChip = toSelect;
-                OnPropertyChanged(nameof(SelectedChip));
-                OnPropertyChanged(nameof(CanReorderInCurrentChip));
+                SelectedChip = toSelect;
             }
 
             OnPropertyChanged(nameof(IsChipBarVisible));
@@ -541,16 +508,16 @@ namespace XrayUI.ViewModels
         {
             VisibleServers.Clear();
 
-            var query = _searchQuery.Trim();
+            var query = (SearchQuery ?? string.Empty).Trim();
             bool MatchesSearch(ServerEntry s) =>
                 string.IsNullOrEmpty(query) ||
                 (!string.IsNullOrEmpty(s.Name) &&
                  s.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
 
-            IEnumerable<ServerEntry> candidates = _selectedChip?.Kind switch
+            IEnumerable<ServerEntry> candidates = SelectedChip?.Kind switch
             {
                 ServerGroupChip.ChipKind.Subscription =>
-                    Servers.Where(s => s.SubscriptionId == (_selectedChip.SubscriptionId ?? string.Empty)),
+                    Servers.Where(s => s.SubscriptionId == (SelectedChip.SubscriptionId ?? string.Empty)),
                 ServerGroupChip.ChipKind.Ungrouped =>
                     Servers.Where(s => string.IsNullOrEmpty(s.SubscriptionId)),
                 ServerGroupChip.ChipKind.Favorites =>
@@ -559,7 +526,7 @@ namespace XrayUI.ViewModels
             };
 
             var filtered = candidates.Where(MatchesSearch);
-            IEnumerable<ServerEntry> ordered = _sortMode switch
+            IEnumerable<ServerEntry> ordered = SortMode switch
             {
                 ServerSortMode.Active =>
                     filtered.OrderBy(s => s.IsActive ? 0 : 1),
@@ -610,7 +577,7 @@ namespace XrayUI.ViewModels
             if (e.PropertyName == nameof(ServerEntry.IsActive))
             {
                 NotifyServerActionStateChanged();
-                if (_sortMode == ServerSortMode.Active)
+                if (SortMode == ServerSortMode.Active)
                     RebuildGroupedView();
             }
         }
@@ -634,24 +601,16 @@ namespace XrayUI.ViewModels
 
         // ── Latency batch test ────────────────────────────────────────────────
 
-        private bool _isTestingLatencies;
         // Flat property (not a nested Command.IsRunning x:Bind) so the button's spinner
         // binding stays WUI2010-safe.
-        public bool IsTestingLatencies
-        {
-            get => _isTestingLatencies;
-            private set => SetProperty(ref _isTestingLatencies, value);
-        }
+        [ObservableProperty]
+        public partial bool IsTestingLatencies { get; private set; }
 
-        private string _latencyTestMode = "connect";
         // Business code (CLAUDE.md convention), set from the test button's right-click menu:
         //   "connect" → TCP handshake to the server endpoint (no core needed)
         //   "real"    → HTTP round-trip routed through a throwaway xray core (v2rayN "real delay")
-        public string LatencyTestMode
-        {
-            get => _latencyTestMode;
-            set => SetProperty(ref _latencyTestMode, value);
-        }
+        [ObservableProperty]
+        public partial string LatencyTestMode { get; set; }
 
         // Probes every server's latency and writes the result onto each ServerEntry: the
         // round-trip ms on success, or -1 for any failure (timeout/unreachable, shown as a
@@ -736,7 +695,7 @@ namespace XrayUI.ViewModels
                 OnPropertyChanged(nameof(CanSortByLatency));
             }
 
-            if (_sortMode == ServerSortMode.Latency)
+            if (SortMode == ServerSortMode.Latency)
                 RebuildGroupedView();
         }
 
@@ -1105,7 +1064,7 @@ namespace XrayUI.ViewModels
         {
             if (SelectedServer is null) return;
             var server = SelectedServer;
-            var isFavoritesChip = _selectedChip?.Kind == ServerGroupChip.ChipKind.Favorites;
+            var isFavoritesChip = SelectedChip?.Kind == ServerGroupChip.ChipKind.Favorites;
             server.IsFavorite = !server.IsFavorite;
             var justFavorited = server.IsFavorite;
 

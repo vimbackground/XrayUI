@@ -12,9 +12,6 @@ namespace XrayUI.ViewModels
     {
         private readonly Func<SubscriptionEntry, Task> _onRefresh;
         private readonly Func<SubscriptionEntry, Task<bool>> _onDelete;
-        private int _selectedIndex;
-        private string _subscriptionUrl = string.Empty;
-        private string _subscriptionName = string.Empty;
 
         public ObservableCollection<SubscriptionEntry> Subscriptions { get; }
 
@@ -28,40 +25,25 @@ namespace XrayUI.ViewModels
 
             Subscriptions = new ObservableCollection<SubscriptionEntry>(source);
             Subscriptions.CollectionChanged += OnCollectionChanged;
+            SubscriptionUrl = string.Empty;
+            SubscriptionName = string.Empty;
         }
 
-        public int SelectedIndex
-        {
-            get => _selectedIndex;
-            set
-            {
-                if (SetProperty(ref _selectedIndex, value))
-                {
-                    OnPropertyChanged(nameof(IsAddPage));
-                    OnPropertyChanged(nameof(IsManagePage));
-                    OnPropertyChanged(nameof(AddPageVisibility));
-                    OnPropertyChanged(nameof(ManagePageVisibility));
-                    OnPropertyChanged(nameof(CanAddSubscription));
-                    OnPropertyChanged(nameof(DialogTitle));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsAddPage))]
+        [NotifyPropertyChangedFor(nameof(IsManagePage))]
+        [NotifyPropertyChangedFor(nameof(AddPageVisibility))]
+        [NotifyPropertyChangedFor(nameof(ManagePageVisibility))]
+        [NotifyPropertyChangedFor(nameof(CanAddSubscription))]
+        [NotifyPropertyChangedFor(nameof(DialogTitle))]
+        public partial int SelectedIndex { get; set; }
 
-        public string SubscriptionUrl
-        {
-            get => _subscriptionUrl;
-            set
-            {
-                if (SetProperty(ref _subscriptionUrl, value))
-                    OnPropertyChanged(nameof(CanAddSubscription));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanAddSubscription))]
+        public partial string SubscriptionUrl { get; set; }
 
-        public string SubscriptionName
-        {
-            get => _subscriptionName;
-            set => SetProperty(ref _subscriptionName, value);
-        }
+        [ObservableProperty]
+        public partial string SubscriptionName { get; set; }
 
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {

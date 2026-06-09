@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl
     x:Class="XrayUI.Views.AddChainProxyDialog"
@@ -86,7 +86,7 @@
             <TextBlock x:Uid="ChainProxy_Hint"
                        Text="流量经入口代理转发，再由出口代理出站"
                        FontSize="11"
-                       Opacity="0.6"
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                        TextWrapping="Wrap" />
         </StackPanel>
 

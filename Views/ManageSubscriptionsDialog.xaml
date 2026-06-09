@@ -56,7 +56,7 @@
             <TextBlock x:Uid="Subscription_AutoImportHintText"
                        Text="将自动解析并导入该订阅中的全部节点"
                        FontSize="12"
-                       Opacity="0.65" />
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
         </StackPanel>
 
         <Grid Visibility="{x:Bind ViewModel.ManagePageVisibility, Mode=OneWay}">
@@ -65,7 +65,7 @@
                        HorizontalAlignment="Center"
                        Margin="0,48,0,48"
                        FontSize="14"
-                       Opacity="0.6"
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                        Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}" />
 
             <ScrollViewer MaxHeight="440"
@@ -92,11 +92,11 @@
                                                    TextTrimming="CharacterEllipsis" />
                                         <TextBlock Text="{x:Bind Url, Mode=OneWay}"
                                                    FontSize="12"
-                                                   Opacity="0.65"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                    TextTrimming="CharacterEllipsis" />
                                         <TextBlock Text="{x:Bind LastUpdatedText, Mode=OneWay}"
                                                    FontSize="12"
-                                                   Opacity="0.7"
+                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                                    Visibility="{x:Bind HasError, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                         <TextBlock Text="{x:Bind LastErrorText, Mode=OneWay}"
                                                    FontSize="12"
@@ -140,7 +140,7 @@
                                                                Text="将同时删除该订阅下的所有节点。"
                                                                TextWrapping="Wrap"
                                                                FontSize="12"
-                                                               Opacity="0.7" />
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                     <Button x:Uid="Subscription_DeleteConfirmBtn"
                                                             Click="ConfirmDelete_Click"
                                                             Style="{StaticResource DangerAccentButtonStyle}"

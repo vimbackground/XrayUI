@@ -21,25 +21,17 @@ namespace XrayUI.ViewModels
         private CancellationTokenSource? _latencyTestCts;
         private CancellationTokenSource? _aiCheckCts;
         private int _latencyTestVersion;
-        private ServerEntry? _activeServer;
-        private bool _isProxyRunning;
         private AiUnlockStatus? _openAiStatus;
         private AiUnlockStatus? _claudeStatus;
         private AiUnlockStatus? _geminiStatus;
-        private ServerEntry? _selectedServer;
-        private string _latencyText = string.Empty;
-        private bool _isTestingLatency;
-        private SolidColorBrush _openAiStatusBrush = null!;
-        private SolidColorBrush _claudeStatusBrush = null!;
-        private SolidColorBrush _geminiStatusBrush = null!;
-        private bool _showLatencyInDetails = true;
-        private bool _showAiUnlockInDetails = true;
 
         public ServerDetailViewModel(LatencyProbeService latencyProbe, AiUnlockCheckService aiUnlockCheck)
         {
             _latencyProbe = latencyProbe;
             _aiUnlockCheck = aiUnlockCheck;
-            _latencyText = L.ServerDetail_NotTested;
+            LatencyText = L.ServerDetail_NotTested;
+            ShowLatencyInDetails = true;
+            ShowAiUnlockInDetails = true;
             ResetAiUnlockDisplay();
         }
 
@@ -48,48 +40,14 @@ namespace XrayUI.ViewModels
         private ServerEntry? ResolveChainServer(string id)
             => string.IsNullOrEmpty(id) ? null : GetAllServers().FirstOrDefault(s => s.Id == id);
 
-        public ServerEntry? SelectedServer
-        {
-            get => _selectedServer;
-            set
-            {
-                var oldValue = _selectedServer;
-                if (SetProperty(ref _selectedServer, value))
-                {
-                    OnSelectedServerChanged(oldValue, value);
-                }
-            }
-        }
+        [ObservableProperty]
+        public partial ServerEntry? SelectedServer { get; set; }
 
-        public ServerEntry? ActiveServer
-        {
-            get => _activeServer;
-            set
-            {
-                if (ReferenceEquals(_activeServer, value))
-                {
-                    return;
-                }
+        [ObservableProperty]
+        public partial ServerEntry? ActiveServer { get; set; }
 
-                _activeServer = value;
-                UpdateAiUnlockDisplay();
-            }
-        }
-
-        public bool IsProxyRunning
-        {
-            get => _isProxyRunning;
-            private set
-            {
-                if (_isProxyRunning == value)
-                {
-                    return;
-                }
-
-                _isProxyRunning = value;
-                UpdateAiUnlockDisplay();
-            }
-        }
+        [ObservableProperty]
+        public partial bool IsProxyRunning { get; private set; }
 
         public string SelectedName => SelectedServer?.Name ?? L.ServerDetail_NoServer;
 
@@ -172,51 +130,23 @@ namespace XrayUI.ViewModels
         public Visibility SelectedTransportVisibility
             => SelectedServer?.IsChain == true ? Visibility.Collapsed : Visibility.Visible;
 
-        public string LatencyText
-        {
-            get => _latencyText;
-            set => SetProperty(ref _latencyText, value);
-        }
+        [ObservableProperty]
+        public partial string LatencyText { get; set; }
 
-        public bool IsTestingLatency
-        {
-            get => _isTestingLatency;
-            set
-            {
-                if (SetProperty(ref _isTestingLatency, value))
-                {
-                    OnIsTestingLatencyChanged(value);
-                }
-            }
-        }
+        [ObservableProperty]
+        public partial bool IsTestingLatency { get; set; }
 
         public bool CanTestLatency => !IsTestingLatency && SelectedServer is not null;
 
         public bool CanCopyShareLink => !string.IsNullOrWhiteSpace(SelectedShareLink);
 
-        public bool ShowLatencyInDetails
-        {
-            get => _showLatencyInDetails;
-            set
-            {
-                if (SetProperty(ref _showLatencyInDetails, value))
-                {
-                    OnPropertyChanged(nameof(LatencyVisibility));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LatencyVisibility))]
+        public partial bool ShowLatencyInDetails { get; set; }
 
-        public bool ShowAiUnlockInDetails
-        {
-            get => _showAiUnlockInDetails;
-            set
-            {
-                if (SetProperty(ref _showAiUnlockInDetails, value))
-                {
-                    OnPropertyChanged(nameof(AiUnlockVisibility));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(AiUnlockVisibility))]
+        public partial bool ShowAiUnlockInDetails { get; set; }
 
         public Visibility LatencyVisibility => ShowLatencyInDetails ? Visibility.Visible : Visibility.Collapsed;
 
@@ -224,25 +154,16 @@ namespace XrayUI.ViewModels
 
         // ── AI Unlock indicators ──────────────────────────────────────────────
 
-        public SolidColorBrush OpenAiStatusBrush
-        {
-            get => _openAiStatusBrush;
-            set => SetProperty(ref _openAiStatusBrush, value);
-        }
+        [ObservableProperty]
+        public partial SolidColorBrush OpenAiStatusBrush { get; set; }
 
-        public SolidColorBrush ClaudeStatusBrush
-        {
-            get => _claudeStatusBrush;
-            set => SetProperty(ref _claudeStatusBrush, value);
-        }
+        [ObservableProperty]
+        public partial SolidColorBrush ClaudeStatusBrush { get; set; }
 
-        public SolidColorBrush GeminiStatusBrush
-        {
-            get => _geminiStatusBrush;
-            set => SetProperty(ref _geminiStatusBrush, value);
-        }
+        [ObservableProperty]
+        public partial SolidColorBrush GeminiStatusBrush { get; set; }
 
-        private void OnSelectedServerChanged(ServerEntry? oldValue, ServerEntry? newValue)
+        partial void OnSelectedServerChanged(ServerEntry? oldValue, ServerEntry? newValue)
         {
             if (oldValue is not null)
             {
@@ -267,7 +188,11 @@ namespace XrayUI.ViewModels
             _ = TestLatency();
         }
 
-        private void OnIsTestingLatencyChanged(bool value)
+        partial void OnActiveServerChanged(ServerEntry? value) => UpdateAiUnlockDisplay();
+
+        partial void OnIsProxyRunningChanged(bool value) => UpdateAiUnlockDisplay();
+
+        partial void OnIsTestingLatencyChanged(bool value)
         {
             OnPropertyChanged(nameof(CanTestLatency));
             TestLatencyCommand.NotifyCanExecuteChanged();

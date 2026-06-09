@@ -19,28 +19,18 @@ namespace XrayUI.ViewModels
         private readonly Func<bool>? _isTunMode;
         private readonly Func<string?>? _getProxyUrl;
 
-        private bool _isEffectiveNow;
-
         public ObservableCollection<CustomRoutingRule> Rules { get; } = new();
 
         /// <summary>True, iff current RoutingMode is "smart". UI shows a banner when false.</summary>
-        public bool IsEffectiveNow
-        {
-            get => _isEffectiveNow;
-            private set
-            {
-                if (SetProperty(ref _isEffectiveNow, value))
-                {
-                    OnPropertyChanged(nameof(IsNotEffectiveNow));
-                    OnPropertyChanged(nameof(NotEffectiveVisibility));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsNotEffectiveNow))]
+        [NotifyPropertyChangedFor(nameof(NotEffectiveVisibility))]
+        public partial bool IsEffectiveNow { get; private set; }
 
-        public bool IsNotEffectiveNow => !_isEffectiveNow;
+        public bool IsNotEffectiveNow => !IsEffectiveNow;
 
         // Direct Visibility binding — avoids converter lookup in Window root.
-        public Visibility NotEffectiveVisibility => _isEffectiveNow ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility NotEffectiveVisibility => IsEffectiveNow ? Visibility.Collapsed : Visibility.Visible;
 
         /// <summary>
         /// View is expected to open AddRuleDialog when this fires.

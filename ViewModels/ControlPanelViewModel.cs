@@ -19,16 +19,6 @@ namespace XrayUI.ViewModels
         private readonly GeoDataUpdateService _geoUpdate = new();
         private readonly IUpdateService _update;
         private UpdateInfo? _availableUpdate;
-        private bool _isUpdateAvailable;
-        private string _startStopButtonContent = L.ControlPanel_Start;
-        private bool _startStopButtonChecked;
-        private bool _isRunning;
-        private bool _isTunMode;
-        private int _localPort = 16890;
-        private string _routingMode = "smart";
-        private bool _isSystemProxyEnabled = true;
-        private bool _isStartupEnabled;
-        private bool _isAutoConnect;
         // Guards OnIsTunModeChanged from firing the dialog when we update internally
         private bool _isTunInternalUpdate;
 
@@ -52,29 +42,21 @@ namespace XrayUI.ViewModels
         // Serializes concurrent reapply calls (custom-rules save, routing-mode toggle,
         // proxy-mode toggle can all race) and blocks re-entry.
         private readonly SemaphoreSlim _reapplyLock = new(1, 1);
-        private bool _isReapplying;
 
         /// <summary>True while ReapplyRoutingAsync is mid-restart. UI uses this to
         /// disable related menu items and show the applying state.</summary>
-        public bool IsReapplying
-        {
-            get => _isReapplying;
-            private set
-            {
-                if (SetProperty(ref _isReapplying, value))
-                {
-                    OnPropertyChanged(nameof(IsModeToggleEnabled));
-                    OnPropertyChanged(nameof(IsTunToggleEnabled));
-                    OnPropertyChanged(nameof(IsNotReapplying));
-                    NotifyStartStopStateChanged();
-                    OnPropertyChanged(nameof(StatusText));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsModeToggleEnabled))]
+        [NotifyPropertyChangedFor(nameof(IsTunToggleEnabled))]
+        [NotifyPropertyChangedFor(nameof(IsNotReapplying))]
+        [NotifyPropertyChangedFor(nameof(StatusText))]
+        public partial bool IsReapplying { get; private set; }
+
+        partial void OnIsReapplyingChanged(bool value) => NotifyStartStopStateChanged();
 
         /// <summary>Inverse of <see cref="IsReapplying"/> for x:Bind IsEnabled targets
         /// (x:Bind doesn't support expression negation).</summary>
-        public bool IsNotReapplying => !_isReapplying;
+        public bool IsNotReapplying => !IsReapplying;
 
         public bool CanStartStop => !IsReapplying && (IsRunning || CanStartSelectedServer());
 
@@ -102,40 +84,30 @@ namespace XrayUI.ViewModels
             _tunService     = tunService;
             _startupService = startupService;
             _update         = update;
+
+            StartStopButtonContent = L.ControlPanel_Start;
+            LocalPort              = 16890;
+            RoutingMode            = "smart";
+            IsSystemProxyEnabled   = true;
         }
 
         // ── Running state ─────────────────────────────────────────────────────────────────────────────────────────────
 
-        public string StartStopButtonContent
-        {
-            get => _startStopButtonContent;
-            private set => SetProperty(ref _startStopButtonContent, value);
-        }
+        [ObservableProperty]
+        public partial string StartStopButtonContent { get; private set; }
 
-        public bool StartStopButtonChecked
-        {
-            get => _startStopButtonChecked;
-            private set => SetProperty(ref _startStopButtonChecked, value);
-        }
+        [ObservableProperty]
+        public partial bool StartStopButtonChecked { get; private set; }
 
-        public bool IsRunning
-        {
-            get => _isRunning;
-            set
-            {
-                if (SetProperty(ref _isRunning, value))
-                {
-                    OnIsRunningChanged(value);
-                }
-            }
-        }
+        [ObservableProperty]
+        public partial bool IsRunning { get; set; }
 
         public string StatusText =>
             IsReapplying ? L.ControlPanel_StatusApplying :
             IsRunning    ? _activeServerName :
                            L.ControlPanel_StatusNotRunning;
 
-        private void OnIsRunningChanged(bool value)
+        partial void OnIsRunningChanged(bool value)
         {
             StartStopButtonContent = value ? L.ControlPanel_Stop : L.ControlPanel_Start;
             StartStopButtonChecked = value;
@@ -212,7 +184,7 @@ namespace XrayUI.ViewModels
         {
             await CleanupTunStateAsync();
             await _xray.StopAsync();
-            if (_isSystemProxyEnabled && !IsTunMode)
+            if (IsSystemProxyEnabled && !IsTunMode)
                 SystemProxyService.ClearProxy();
             _activeServer     = null;
             _activeServerName = string.Empty;
@@ -265,8 +237,8 @@ namespace XrayUI.ViewModels
             else
             {
                 appSettings.LastTunServerHost    = null;
-                appSettings.IsSystemProxyEnabled = _isSystemProxyEnabled;
-                if (_isSystemProxyEnabled)
+                appSettings.IsSystemProxyEnabled = IsSystemProxyEnabled;
+                if (IsSystemProxyEnabled)
                     SystemProxyService.SetProxy("127.0.0.1", appSettings.LocalMixedPort);
                 await TrySaveSettingsAsync(appSettings, "persist system proxy settings");
             }
@@ -320,7 +292,7 @@ namespace XrayUI.ViewModels
                     settings.LocalMixedPort        = LocalPort;
                     settings.RoutingMode           = RoutingMode;
                     settings.IsTunMode             = IsTunMode;
-                    settings.IsSystemProxyEnabled  = _isSystemProxyEnabled;
+                    settings.IsSystemProxyEnabled  = IsSystemProxyEnabled;
 
                     var cfg = XrayConfigBuilder.Build(activeServer, settings, availableServers: GetAllServers());
 
@@ -334,7 +306,7 @@ namespace XrayUI.ViewModels
                         return;
                     }
 
-                    if (_isSystemProxyEnabled)
+                    if (IsSystemProxyEnabled)
                     {
                         SystemProxyService.SetProxy("127.0.0.1", settings.LocalMixedPort);
                     }
@@ -513,17 +485,8 @@ namespace XrayUI.ViewModels
 
         // ── TUN mode toggle ───────────────────────────────────────────────────
 
-        public bool IsTunMode
-        {
-            get => _isTunMode;
-            set
-            {
-                if (SetProperty(ref _isTunMode, value))
-                {
-                    OnIsTunModeChanged(value);
-                }
-            }
-        }
+        [ObservableProperty]
+        public partial bool IsTunMode { get; set; }
 
         public string TunModeText => IsTunMode ? "On" : "Off";
 
@@ -538,7 +501,7 @@ namespace XrayUI.ViewModels
         /// restarting xray and updating the network stack. It is also disabled during reapply.</summary>
         public bool IsTunToggleEnabled => !IsRunning && !IsReapplying;
 
-        private void OnIsTunModeChanged(bool value)
+        partial void OnIsTunModeChanged(bool value)
         {
             OnPropertyChanged(nameof(TunModeText));
             OnPropertyChanged(nameof(IsModeToggleEnabled));
@@ -634,17 +597,9 @@ namespace XrayUI.ViewModels
 
         // ── Local port ────────────────────────────────────────────────────────
 
-        public int LocalPort
-        {
-            get => _localPort;
-            set
-            {
-                if (SetProperty(ref _localPort, value))
-                {
-                    OnPropertyChanged(nameof(LocalPortText));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LocalPortText))]
+        public partial int LocalPort { get; set; }
 
         public string LocalPortText => $":{LocalPort}";
 
@@ -709,25 +664,19 @@ namespace XrayUI.ViewModels
         /// <summary>Business code: "smart" | "global". This is what gets persisted to
         /// settings.json and what XAML RadioButton.CommandParameter values match against.
         /// For display, bind to <see cref="RoutingModeText"/>.</summary>
-        public string RoutingMode
-        {
-            get => _routingMode;
-            set
-            {
-                if (SetProperty(ref _routingMode, value))
-                    OnPropertyChanged(nameof(RoutingModeText));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RoutingModeText))]
+        public partial string RoutingMode { get; set; }
 
         /// <summary>Localized display string for the status bar / mini view.</summary>
-        public string RoutingModeText => _routingMode == "global" ? L.ControlPanel_RoutingGlobal : L.ControlPanel_RoutingSmart;
+        public string RoutingModeText => RoutingMode == "global" ? L.ControlPanel_RoutingGlobal : L.ControlPanel_RoutingSmart;
 
         [RelayCommand]
         private async Task SetRoutingMode(string mode)
         {
             // No-op guard: clicking the already-selected radio must not
             // trigger a wasteful xray restart.
-            if (mode == _routingMode) return;
+            if (mode == RoutingMode) return;
 
             RoutingMode = mode;
             var s = await _settings.LoadSettingsAsync();
@@ -744,21 +693,13 @@ namespace XrayUI.ViewModels
 
         // ── Proxy mode ────────────────────────────────────────────────────────
 
-        public bool IsSystemProxyEnabled
-        {
-            get => _isSystemProxyEnabled;
-            set
-            {
-                if (SetProperty(ref _isSystemProxyEnabled, value))
-                {
-                    OnPropertyChanged(nameof(IsGlobalProxyChecked));
-                    OnPropertyChanged(nameof(IsNoTakeoverChecked));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsGlobalProxyChecked))]
+        [NotifyPropertyChangedFor(nameof(IsNoTakeoverChecked))]
+        public partial bool IsSystemProxyEnabled { get; set; }
 
-        public bool IsGlobalProxyChecked => _isSystemProxyEnabled;
-        public bool IsNoTakeoverChecked  => !_isSystemProxyEnabled;
+        public bool IsGlobalProxyChecked => IsSystemProxyEnabled;
+        public bool IsNoTakeoverChecked  => !IsSystemProxyEnabled;
 
         [RelayCommand]
         private async Task SetProxyMode(string mode)
@@ -769,7 +710,7 @@ namespace XrayUI.ViewModels
 
             // No-op guard: clicking the already-selected radio must not re-hit
             // the registry or re-write settings.
-            if (want == _isSystemProxyEnabled) return;
+            if (want == IsSystemProxyEnabled) return;
 
             IsSystemProxyEnabled = want;
             var s = await _settings.LoadSettingsAsync();
@@ -790,21 +731,12 @@ namespace XrayUI.ViewModels
 
         // ── Startup ───────────────────────────────────────────────────────────
 
-        public bool IsStartupEnabled
-        {
-            get => _isStartupEnabled;
-            set
-            {
-                if (SetProperty(ref _isStartupEnabled, value))
-                    OnPropertyChanged(nameof(StartupMenuIcon));
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(StartupMenuIcon))]
+        public partial bool IsStartupEnabled { get; set; }
 
-        public bool IsAutoConnect
-        {
-            get => _isAutoConnect;
-            set => SetProperty(ref _isAutoConnect, value);
-        }
+        [ObservableProperty]
+        public partial bool IsAutoConnect { get; set; }
 
         /// <summary>
         /// Returns a checkmark icon when auto-start is enabled, null otherwise.
@@ -812,7 +744,7 @@ namespace XrayUI.ViewModels
         /// using ToggleMenuFlyoutItem (which has timing issues with Command).
         /// </summary>
         private static readonly FontIcon _startupIcon = new() { Glyph = "\uE73E" };
-        public IconElement? StartupMenuIcon => _isStartupEnabled ? _startupIcon : null;
+        public IconElement? StartupMenuIcon => IsStartupEnabled ? _startupIcon : null;
 
         [RelayCommand]
         private async Task OpenStartupSettings()
@@ -879,20 +811,12 @@ namespace XrayUI.ViewModels
 
         /// <summary>True iff a newer release was found at startup. Drives the gear
         /// button's yellow dot and the update menu item.</summary>
-        public bool IsUpdateAvailable
-        {
-            get => _isUpdateAvailable;
-            private set
-            {
-                if (SetProperty(ref _isUpdateAvailable, value))
-                {
-                    OnPropertyChanged(nameof(UpdateBadgeVisibility));
-                    OnPropertyChanged(nameof(UpdateMenuText));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UpdateBadgeVisibility))]
+        [NotifyPropertyChangedFor(nameof(UpdateMenuText))]
+        public partial bool IsUpdateAvailable { get; private set; }
 
-        public Visibility UpdateBadgeVisibility => _isUpdateAvailable ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility UpdateBadgeVisibility => IsUpdateAvailable ? Visibility.Visible : Visibility.Collapsed;
         public string     UpdateMenuText        => Loc.Format("ControlPanel_UpdateFound", _availableUpdate?.NewVersion);
 
         /// <summary>Called from MainViewModel after the background check completes.

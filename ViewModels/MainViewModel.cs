@@ -18,7 +18,6 @@ namespace XrayUI.ViewModels
         private ServerEntry? _activeServer;
         private string _activeLatencyText = string.Empty;
         private bool _showPersonalize;
-        private bool _isMiniMode;
 
         public ServerListViewModel   ServerList   { get; }
         public ServerDetailViewModel ServerDetail { get; }
@@ -28,21 +27,13 @@ namespace XrayUI.ViewModels
         public Visibility MainContentVisibility => _showPersonalize ? Visibility.Collapsed : Visibility.Visible;
         public Visibility PersonalizeVisibility  => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
         public Visibility BackButtonVisibility   => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
-        public Visibility MiniModeVisibility     => _isMiniMode      ? Visibility.Visible   : Visibility.Collapsed;
-        public Visibility FullModeVisibility     => _isMiniMode      ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility MiniModeVisibility     => IsMiniMode       ? Visibility.Visible   : Visibility.Collapsed;
+        public Visibility FullModeVisibility     => IsMiniMode       ? Visibility.Collapsed : Visibility.Visible;
 
-        public bool IsMiniMode
-        {
-            get => _isMiniMode;
-            set
-            {
-                if (SetProperty(ref _isMiniMode, value))
-                {
-                    OnPropertyChanged(nameof(MiniModeVisibility));
-                    OnPropertyChanged(nameof(FullModeVisibility));
-                }
-            }
-        }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(MiniModeVisibility))]
+        [NotifyPropertyChangedFor(nameof(FullModeVisibility))]
+        public partial bool IsMiniMode { get; set; }
 
         public string ActiveServerName =>
             (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? L.Main_NoSelection;

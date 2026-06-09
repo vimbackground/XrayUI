@@ -2,13 +2,13 @@
 {
     public partial class BaseViewModel : ObservableObject
     {
-        private string _title = string.Empty;
-
-        public string Title
+        protected BaseViewModel()
         {
-            get => _title;
-            set => SetProperty(ref _title, value);
+            Title = string.Empty;
         }
+
+        [ObservableProperty]
+        public partial string Title { get; set; }
     }
 }
 
