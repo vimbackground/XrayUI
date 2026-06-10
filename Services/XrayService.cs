@@ -26,6 +26,11 @@ namespace XrayUI.Services
 
         private const int LogBufferMax = 500;
 
+        // Upper bound on waiting for the readiness line of a freshly launched core (see
+        // XrayReadySignal). Normally Ready lands in tens of ms; this cap only bites when
+        // the core stays silent, where it reproduces the old fixed-delay behavior.
+        private static readonly TimeSpan StartupReadyCap = TimeSpan.FromSeconds(3);
+
         private Process? _process;
 
         // Kernel-level safety net: xray.exe is assigned to a kill-on-close Job Object, so if the
@@ -183,6 +188,7 @@ namespace XrayUI.Services
                 psi.EnvironmentVariables["XRAY_LOCATION_ASSET"] = RulesDir;
 
                 _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                var readySignal = XrayReadySignal.Attach(_process);
 
                 _process.OutputDataReceived += (_, e) =>
                 {
@@ -209,9 +215,12 @@ namespace XrayUI.Services
                 AppendLog(Loc.Format("XrayLog_Started", ExePath));
                 AppendLog(Loc.Format("XrayLog_Config", ConfigPath));
 
-                await Task.Delay(800);
+                // Ready typically lands well under 100ms; Exited surfaces bad configs / port
+                // clashes / TUN elevation failures immediately instead of after a fixed wait.
+                // TimedOut with the process still alive counts as success, same as before.
+                var outcome = await readySignal.WaitAsync(StartupReadyCap);
 
-                if (_process.HasExited)
+                if (outcome == XrayReadySignal.Outcome.Exited || _process.HasExited)
                 {
                     var startupLog = StopStartupLogCaptureAndRead();
                     LastError = startupLog.Length > 0

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -44,8 +44,10 @@ namespace XrayUI.Services
         // stable even under brief contention. Halves the wave count vs 16 for dozens of nodes.
         private const int MaxConcurrency = 32;
 
-        // Give the throwaway core a moment to bind every socks inbound before we probe.
-        private const int CoreReadyDelayMs = 800;
+        // Upper bound on waiting for the throwaway core's readiness line (printed after every
+        // socks inbound is bound — see XrayReadySignal). Normally arrives in tens of ms; the
+        // cap reproduces the old fixed-delay behavior if the core stays silent.
+        private static readonly TimeSpan CoreReadyCap = TimeSpan.FromSeconds(2);
 
         // Dedicated config path, separate from XrayService's xray_config.json so a test never
         // clobbers the live session's config file.
@@ -119,6 +121,7 @@ namespace XrayUI.Services
                 psi.EnvironmentVariables["XRAY_LOCATION_ASSET"] = XrayService.RulesDir;
 
                 process = new Process { StartInfo = psi };
+                var readySignal = XrayReadySignal.Attach(process);
                 // xray logs to both stdout and stderr; capture both so a failed start has a reason.
                 void Capture(string? line)
                 {
@@ -133,8 +136,9 @@ namespace XrayUI.Services
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                // 4. Wait for the inbounds to come up.
-                await Task.Delay(CoreReadyDelayMs, ct).ConfigureAwait(false);
+                // 4. Wait until the core reports every inbound is up. An early exit falls
+                // through to the HasExited check below, which reads the captured log.
+                await readySignal.WaitAsync(CoreReadyCap, ct).ConfigureAwait(false);
 
                 if (process.HasExited)
                 {
