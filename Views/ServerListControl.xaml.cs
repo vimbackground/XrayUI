@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -84,6 +85,12 @@ namespace XrayUI.Views
         private void ServersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ViewModel.SetSelectedServers(ServersListView.SelectedItems.OfType<ServerEntry>().ToArray());
+        }
+
+        private void ActiveBadge_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is UIElement element)
+                element.CenterPoint = new Vector3((float)e.NewSize.Width / 2f, (float)e.NewSize.Height / 2f, 0f);
         }
 
         private async void ServerItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -194,6 +201,12 @@ namespace XrayUI.Views
 
         public static Visibility RealModeIconVisibility(string mode)
             => mode == "real" ? Visibility.Visible : Visibility.Collapsed;
+
+        public static double ActiveBadgeOpacity(bool isActive)
+            => isActive ? 1.0 : 0.0;
+
+        public static Vector3 ActiveBadgeScale(bool isActive)
+            => isActive ? Vector3.One : new Vector3(0.92f, 0.92f, 1f);
 
         // Foreground for the per-row latency number, keyed off the measured value:
         // failed probe (negative, e.g. -1) → critical, ≥200 ms → caution, else success.

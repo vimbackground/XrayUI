@@ -143,14 +143,8 @@
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Spacing="6">
-                    <Grid>
-                        <FontIcon Glyph="&#xECCC;"
-                                  Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                  Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        <FontIcon Glyph="&#xECCC;"
-                                  Foreground="{ThemeResource SystemFillColorNeutralBrush}"
-                                  Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
-                    </Grid>
+                    <FontIcon Glyph="&#xECCC;"
+                              Foreground="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource RunningStatusBrushConverter}}" />
                     <TextBlock FontSize="14"
                                Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
                                MaxWidth="125"
