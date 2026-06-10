@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <StackPanel Spacing="12" Width="280">
-        <!-- 核心警告提示 -->
+        <!-- UAC warning message -->
         <TextBlock Text="TUN 模式需要管理员权限，程序将会重启，是否继续？"
                    x:Uid="Tun_EnableMsg"
                    TextWrapping="Wrap" />
@@ -24,7 +24,7 @@
         <Border x:Name="AdvancedSettingsPanel"
                 Visibility="Collapsed">
             <StackPanel Spacing="16">
-                <!-- MTU 设置 -->
+                <!-- MTU setting -->
                 <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE946;" FontSize="16"
@@ -42,7 +42,7 @@
                                HorizontalAlignment="Stretch" />
                 </StackPanel>
 
-                <!-- 出口网卡设置 -->
+                <!-- network interface setting -->
                 <StackPanel Spacing="6">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE839;" FontSize="16"
@@ -59,7 +59,7 @@
                               SelectedIndex="0" />
                 </StackPanel>
 
-                <!-- IPv6 设置 -->
+                <!-- IPv6 setting -->
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />

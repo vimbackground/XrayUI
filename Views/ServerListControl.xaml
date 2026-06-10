@@ -283,8 +283,17 @@
                                         CornerRadius="3"
                                         Padding="6,2"
                                         Visibility="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Opacity="{x:Bind views:ServerListControl.ActiveBadgeOpacity(IsActive), Mode=OneWay}"
+                                        Scale="{x:Bind views:ServerListControl.ActiveBadgeScale(IsActive), Mode=OneWay}"
                                         Grid.Column="1"
-                                        Margin="8,0,0,0">
+                                        Margin="8,0,0,0"
+                                        SizeChanged="ActiveBadge_SizeChanged">
+                                    <Border.OpacityTransition>
+                                        <ScalarTransition Duration="0:0:0.18" />
+                                    </Border.OpacityTransition>
+                                    <Border.ScaleTransition>
+                                        <Vector3Transition Duration="0:0:0.18" />
+                                    </Border.ScaleTransition>
                                     <TextBlock x:Uid="ServerList_ActivatedBadge"
                                                Text="● Activated"
                                                FontSize="12"

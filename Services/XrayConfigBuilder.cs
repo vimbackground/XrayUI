@@ -14,6 +14,9 @@ namespace XrayUI.Services
     /// </summary>
     public static class XrayConfigBuilder
     {
+        // Must stay at debug/info/warning: XrayReadySignal detects core readiness via the
+        // Warning-level "core: Xray x.y.z started" log line, which "error"/"none" would
+        // suppress — degrading every connect/switch/reapply to the 3s timeout fallback.
         private const string DefaultLogLevel = "info";
         private const string ProxyOutboundTag = "proxy";
         private const string DirectOutboundTag = "direct";
@@ -886,6 +889,7 @@ namespace XrayUI.Services
 
             var config = new JsonObject
             {
+                // Keep ≥ warning visibility: XrayReadySignal needs the "started" line.
                 ["log"] = new JsonObject { ["loglevel"] = "warning" },
                 ["inbounds"] = inbounds,
                 ["outbounds"] = outbounds,
