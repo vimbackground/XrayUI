@@ -14,6 +14,11 @@ A native Windows GUI client for the Xray core, built with WinUI 3.
 - Auto-start on boot, auto-connect
 - Theme and protocol color customization
 
+## UI Preview
+<img width="1465" height="982" alt="image" src="https://github.com/user-attachments/assets/ff288102-d874-4ecb-87dd-0a9d880cc1cf" />
+
+
+
 ## Build
 
 Requires .NET 10 SDK and Windows 10 1809 or later.
