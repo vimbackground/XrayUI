@@ -612,17 +612,18 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial string LatencyTestMode { get; set; }
 
-        // Probes every server's latency and writes the result onto each ServerEntry: the
-        // round-trip ms on success, or -1 for any failure (timeout/unreachable, shown as a
-        // single red label). The async command auto-disables while running, so the button is
-        // inert until the sweep finishes; results stream into the rows as each probe completes.
-        // LatencyTestMode picks the probe: "connect" = direct TCP handshake to the endpoint;
-        // "real" = a real HTTP round-trip through a throwaway xray core (v2rayN "real delay").
-        [RelayCommand]
+		// Probes Probes Current group latency and writes the result onto each ServerEntry: the
+		// round-trip ms on success, or -1 for any failure (timeout/unreachable, shown as a
+		// single red label). The async command auto-disables while running, so the button is
+		// inert until the sweep finishes; results stream into the rows as each probe completes.
+		// LatencyTestMode picks the probe: "connect" = direct TCP handshake to the endpoint;
+		// "real" = a real HTTP round-trip through a throwaway xray core (v2rayN "real delay").
+		[RelayCommand]
         private async Task TestAllLatencies()
         {
-            var servers = Servers.ToList();
-            if (servers.Count == 0) return;
+            var servers = VisibleServers.ToList();
+
+			if (servers.Count == 0) return;
 
             IsTestingLatencies = true;
             _latencySortUnlocked = false;
