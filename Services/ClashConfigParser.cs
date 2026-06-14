@@ -75,16 +75,22 @@ namespace XrayUI.Services
             return entry;
         }
 
-        private static ServerEntry MapSs(YamlMappingNode p) => new()
+        private static ServerEntry? MapSs(YamlMappingNode p)
         {
-            Name       = Str(p, "name"),
-            Protocol   = "ss",
-            Host       = Str(p, "server"),
-            Port       = Int(p, "port"),
-            Encryption = Str(p, "cipher"),
-            Password   = Str(p, "password"),
-            Network    = "tcp",
-        };
+            if (Child(p, "plugin") is not null || Child(p, "plugin-opts") is not null)
+                return null;
+
+            return new ServerEntry
+            {
+                Name       = Str(p, "name"),
+                Protocol   = "ss",
+                Host       = Str(p, "server"),
+                Port       = Int(p, "port"),
+                Encryption = Str(p, "cipher"),
+                Password   = Str(p, "password"),
+                Network    = "tcp",
+            };
+        }
 
         private static ServerEntry? MapVmess(YamlMappingNode p)
         {
@@ -129,6 +135,7 @@ namespace XrayUI.Services
                 AllowInsecure = Bool(p, "skip-cert-verify"),
                 PublicKey     = reality is null ? string.Empty : Str(reality, "public-key"),
                 ShortId       = reality is null ? string.Empty : Str(reality, "short-id"),
+                SpiderX       = reality is null ? string.Empty : Str(reality, "spider-x"),
                 Path          = t.path,
                 WsHost        = t.wsHost,
                 Flow          = Str(p, "flow"),
