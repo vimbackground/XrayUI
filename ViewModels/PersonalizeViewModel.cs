@@ -152,6 +152,28 @@ namespace XrayUI.ViewModels
 
         public static bool PresetExists() => PresetImportService.PresetExists();
 
+        /// <summary>
+        /// Parses a Clash YAML config and appends its supported nodes to the saved server list
+        /// (pure append, no dedupe — same semantics as "import from link"). Reuses the
+        /// <see cref="PresetImported"/> reload path so the live list refreshes from disk.
+        /// Returns (imported, skipped). Throws on invalid YAML — the caller surfaces it.
+        /// </summary>
+        public async Task<(int Imported, int Skipped)> ImportClashConfigAsync(string yamlText)
+        {
+            var parsed = ClashConfigParser.Parse(yamlText);
+
+            if (parsed.Nodes.Count > 0)
+            {
+                // Imported nodes are manual entries (ServerEntry defaults SubscriptionId to "").
+                var servers = await _settings.LoadServersAsync();
+                servers.AddRange(parsed.Nodes);
+                await _settings.SaveServersAsync(servers);
+                PresetImported?.Invoke(this, EventArgs.Empty);
+            }
+
+            return (parsed.Nodes.Count, parsed.Skipped);
+        }
+
         public async Task<PresetImportResult?> ConfirmAndImportPresetAsync()
         {
             var confirmed = await _dialogs.ShowConfirmationAsync(

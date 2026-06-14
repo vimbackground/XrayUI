@@ -979,6 +979,27 @@
   <data name="Personalize_ImportBtn.Content" xml:space="preserve">
     <value>Import</value>
   </data>
+  <data name="Personalize_ImportMenuRestore.Text" xml:space="preserve">
+    <value>Restore from Backup</value>
+  </data>
+  <data name="Personalize_ImportMenuClash.Text" xml:space="preserve">
+    <value>Import Clash Config</value>
+  </data>
+  <data name="Personalize_ClashImportSuccess" xml:space="preserve">
+    <value>Clash config imported</value>
+  </data>
+  <data name="Personalize_ClashImportSuccessMsg" xml:space="preserve">
+    <value>Imported {0} node(s), skipped {1} unsupported.</value>
+  </data>
+  <data name="Personalize_ClashImportNoNodesTitle" xml:space="preserve">
+    <value>No nodes imported</value>
+  </data>
+  <data name="Personalize_ClashImportNoNodesMsg" xml:space="preserve">
+    <value>No importable nodes found in this file (all unsupported protocols, or not a valid Clash config).</value>
+  </data>
+  <data name="Personalize_ClashImportFailed" xml:space="preserve">
+    <value>Clash import failed</value>
+  </data>
   <data name="Personalize_ExportTooltip" xml:space="preserve">
     <value>Export preset configuration</value>
   </data>

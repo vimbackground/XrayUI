@@ -102,6 +102,9 @@
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
     <PackageReference Include="WinUIEx" Version="2.9.1" />
+    <!-- Clash YAML import: parsed via YamlDotNet's reflection-free RepresentationModel
+         (YamlStream) only — never the typed Deserializer — to stay AOT/trim-safe. -->
+    <PackageReference Include="YamlDotNet" Version="18.0.0" />
   </ItemGroup>
 
   <!--
