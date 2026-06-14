@@ -60,5 +60,43 @@ namespace XrayUI.Services
                 return null;
             }
         }
+
+        public static string AddHysteria2SalamanderMask(string finalmask, string password)
+        {
+            var parsed = Parse(finalmask);
+            if (parsed is not null and not JsonObject)
+                return finalmask;
+
+            if (parsed is null && !string.IsNullOrWhiteSpace(finalmask))
+                return finalmask;
+
+            var root = parsed as JsonObject ?? [];
+            var udp = root["udp"] as JsonArray;
+            if (udp is null)
+            {
+                udp = [];
+                root["udp"] = udp;
+            }
+
+            foreach (var item in udp)
+            {
+                if (item is JsonObject itemObject
+                    && string.Equals(itemObject["type"]?.GetValue<string>(), "salamander", StringComparison.OrdinalIgnoreCase))
+                {
+                    return root.ToJsonString(AppJsonSerializerContext.WriteReadable);
+                }
+            }
+
+            udp.Insert(0, new JsonObject
+            {
+                ["type"] = "salamander",
+                ["settings"] = new JsonObject
+                {
+                    ["password"] = password
+                }
+            });
+
+            return root.ToJsonString(AppJsonSerializerContext.WriteReadable);
+        }
     }
 }

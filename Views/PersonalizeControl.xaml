@@ -585,11 +585,23 @@
                                     Padding="12,6"
                                     Content="导出"
                                     Click="ExportPresetButton_Click" />
-                            <Button x:Name="ImportPresetButton"
-                                    x:Uid="Personalize_ImportBtn"
-                                    Padding="12,6"
-                                    Content="导入"
-                                    Click="ImportPresetButton_Click" />
+                            <DropDownButton x:Name="ImportDropDownButton"
+                                            x:Uid="Personalize_ImportBtn"
+                                            Padding="12,6"
+                                            Content="导入">
+                                <DropDownButton.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                                        <MenuFlyoutItem x:Name="ImportPresetMenuItem"
+                                                        x:Uid="Personalize_ImportMenuRestore"
+                                                        Text="恢复配置备份"
+                                                        Click="ImportPresetButton_Click" />
+                                        <MenuFlyoutItem x:Name="ImportClashMenuItem"
+                                                        x:Uid="Personalize_ImportMenuClash"
+                                                        Text="导入 Clash 配置"
+                                                        Click="ImportClashConfig_Click" />
+                                    </MenuFlyout>
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
                         </StackPanel>
                     </Grid>
                 </Border>

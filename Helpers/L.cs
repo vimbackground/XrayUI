@@ -133,6 +133,10 @@ public static class L
     public static string Personalize_PresetMissingMsg      => Loc.GetString("Personalize_PresetMissingMsg");
     public static string Personalize_ExportTooltip         => Loc.GetString("Personalize_ExportTooltip");
     public static string Personalize_ImportTooltip         => Loc.GetString("Personalize_ImportTooltip");
+    public static string Personalize_ClashImportSuccess        => Loc.GetString("Personalize_ClashImportSuccess");
+    public static string Personalize_ClashImportNoNodesTitle   => Loc.GetString("Personalize_ClashImportNoNodesTitle");
+    public static string Personalize_ClashImportNoNodesMsg     => Loc.GetString("Personalize_ClashImportNoNodesMsg");
+    public static string Personalize_ClashImportFailed         => Loc.GetString("Personalize_ClashImportFailed");
     public static string Error_ExportFailed                => Loc.GetString("Error_ExportFailed");
 
     // ── CustomRules / AddRule ──────────────────────────────────────────────
