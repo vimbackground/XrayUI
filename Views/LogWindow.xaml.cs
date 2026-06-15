@@ -1,8 +1,9 @@
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using WinUIEx;
 using XrayUI.Helpers;
@@ -45,8 +46,9 @@ namespace XrayUI.Views
 
             this.SetWindowSize(900, 600);
             AppWindow.Title = L.Log_Title;
+			AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
 
-            ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
+			ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
             MaskAddressSubMenu.Text = L.Log_IpMask;
             MaskOffMenuItem.Text    = L.Log_MaskOff;
             AutoScrollToggle.Content = L.Log_AutoScroll;

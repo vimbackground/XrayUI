@@ -716,7 +716,7 @@
     <value>路由:</value>
   </data>
   <data name="Personalize_LanguageLbl.Text" xml:space="preserve">
-    <value>语言</value>
+    <value>语言和区域</value>
   </data>
   <data name="ServerList_HeaderText.Text" xml:space="preserve">
     <value>服务器列表</value>
@@ -938,7 +938,7 @@
     <value>选择应用界面的显示语言</value>
   </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
-    <value>重启应用以应用语言更改</value>
+    <value>重启应用以应用更改</value>
   </data>
   <data name="Personalize_LangRestartBtn.Content" xml:space="preserve">
     <value>重启</value>
@@ -1187,5 +1187,20 @@
   </data>
   <data name="ServerList_TestModeReal.Text" xml:space="preserve">
     <value>真连接测试</value>
+  </data>
+  <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
+    <value>区域设置</value>
+  </data>
+  <data name="Personalize_Region_CN.Content" xml:space="preserve">
+    <value>中国</value>
+  </data>
+  <data name="Personalize_Region_RU.Content" xml:space="preserve">
+    <value>俄罗斯</value>
+  </data>
+  <data name="Personalize_Region_IR.Content" xml:space="preserve">
+    <value>伊朗</value>
+  </data>
+  <data name="Personalize_RoutingRegionDesc.Text" xml:space="preserve">
+    <value>选择智能路由的国家或地区</value>
   </data>
 </root>

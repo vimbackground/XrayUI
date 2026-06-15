@@ -113,6 +113,7 @@ namespace XrayUI.ViewModels
             ControlPanel.InitializePersonalize(s);
             Personalize.LoadDisplayOptions(s);
             Personalize.LoadLanguage(s);
+            Personalize.LoadRegion(s);
             ServerDetail.ShowLatencyInDetails = s.ShowLatencyInDetails;
             ServerDetail.ShowAiUnlockInDetails = s.ShowAiUnlockInDetails;
 

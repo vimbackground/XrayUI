@@ -78,61 +78,97 @@
                     <ComboBoxItem x:Uid="Personalize_Acrylic" Content="亚克力" />
                 </ComboBox>
             </StackPanel>
-            <!-- ── Language ────────────────────────────────────────────────── -->
+            <!-- ── Language & Region ───────────────────────────────────────── -->
             <StackPanel Spacing="10">
                 <TextBlock x:Uid="Personalize_LanguageLbl"
-                           Text="语言"
+                           Text="语言和区域"
                            FontSize="15"
                            FontWeight="SemiBold" />
 
-                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{ThemeResource OverlayCornerRadius}">
-                    <Grid Padding="16,13"
-                          ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                <Expander HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          CornerRadius="{ThemeResource OverlayCornerRadius}"
+                          Background="{ThemeResource LayerFillColorDefaultBrush}"
+                          BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
+                    <Expander.Header>
+                        <!-- Application language -->
+                        <Grid Padding="0,12"
+                              ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <FontIcon Grid.Column="0"
-                                  Glyph="&#xF2B7;"
-                                  FontSize="16"
-                                  VerticalAlignment="Center"
-                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xF2B7;"
+                                      FontSize="16"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Spacing="2">
-                            <TextBlock x:Uid="Personalize_AppLanguageTitle"
-                                       Text="应用语言"
-                                       FontSize="14" />
-                            <TextBlock x:Uid="Personalize_AppLanguageDesc"
-                                       Text="选择应用界面的显示语言"
-                                       FontSize="12"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </StackPanel>
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                                <TextBlock x:Uid="Personalize_AppLanguageTitle"
+                                           Text="应用语言"
+                                           FontSize="14" />
+                                <TextBlock x:Uid="Personalize_AppLanguageDesc"
+                                           Text="选择应用界面的显示语言"
+                                           FontSize="12"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
 
-                        <ComboBox Grid.Column="2"
-                                  MinWidth="160"
-                                  VerticalAlignment="Center"
-                                  ItemsSource="{x:Bind ViewModel.SupportedLanguages, Mode=OneTime}"
-                                  SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate x:DataType="helpers:LanguageInfo">
-                                    <TextBlock Text="{x:Bind DisplayName}" />
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </Grid>
-                </Border>
+                            <ComboBox Grid.Column="2"
+                                      MinWidth="130"
+                                      Margin="0,0,-18,0"
+                                      VerticalAlignment="Center"
+                                      ItemsSource="{x:Bind ViewModel.SupportedLanguages, Mode=OneTime}"
+                                      SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="helpers:LanguageInfo">
+                                        <TextBlock Text="{x:Bind DisplayName}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Expander.Header>
+
+                    <!-- Region (domestic region for smart routing) -->
+                    <StackPanel Margin="-16,-12,-16,-12">
+                        <Grid Padding="42,12,16,12"
+                              ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                                <TextBlock x:Uid="Personalize_RoutingRegionTitle"
+                                           Text="区域设置"
+                                           FontSize="14" />
+                                <TextBlock x:Uid="Personalize_RoutingRegionDesc"
+                                           Text="选择直连的国家或地区"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1"
+                                      MinWidth="130"
+                                      VerticalAlignment="Center"
+                                      SelectedIndex="{x:Bind ViewModel.SelectedRegionIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="Personalize_Region_CN" Content="中国" />
+                                <ComboBoxItem x:Uid="Personalize_Region_RU" Content="俄罗斯" />
+                                <ComboBoxItem x:Uid="Personalize_Region_IR" Content="伊朗" />
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
 
                 <InfoBar x:Uid="Personalize_LangRestartBar"
-                         IsOpen="{x:Bind ViewModel.ShowLanguageRestartHint, Mode=TwoWay}"
+                         IsOpen="{x:Bind ViewModel.ShowRestartHint, Mode=TwoWay}"
                          Severity="Informational"
-                         Title="重启应用以应用语言更改"
+                         Title="重启应用以应用更改"
                          IsClosable="False">
                     <InfoBar.ActionButton>
                         <Button x:Uid="Personalize_LangRestartBtn"
