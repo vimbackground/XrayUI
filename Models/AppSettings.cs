@@ -9,6 +9,9 @@ namespace XrayUI.Models
         public int LocalMixedPort { get; set; } = 16890;
         /// <summary>"smart" | "global"</summary>
         public string RoutingMode { get; set; } = "smart";
+        /// <summary>Domestic region treated as direct in smart routing: "cn" | "ru" | "ir".
+        /// Maps to geosite/geoip tokens in <see cref="XrayUI.Services.XrayConfigBuilder"/>.</summary>
+        public string RoutingRegion { get; set; } = "cn";
         /// <summary>Whether TUN mode is enabled.</summary>
         public bool IsTunMode { get; set; } = false;
         public string? LastTunServerHost { get; set; }

@@ -716,7 +716,7 @@
     <value>Routing:</value>
   </data>
   <data name="Personalize_LanguageLbl.Text" xml:space="preserve">
-    <value>Language</value>
+    <value>Language &amp; Region</value>
   </data>
   <data name="ServerList_HeaderText.Text" xml:space="preserve">
     <value>Server List</value>
@@ -845,7 +845,7 @@
     <value>Add</value>
   </data>
   <data name="CustomRules_NotEffectiveText.Text" xml:space="preserve">
-    <value>Global routing is active — custom rules are not in effect. They will apply when switching back to Smart Routing.</value>
+    <value>Global routing is active. Custom rules apply only in Smart Routing.</value>
   </data>
   <data name="CustomRules_SaveBtn.Content" xml:space="preserve">
     <value>Save</value>
@@ -938,7 +938,7 @@
     <value>Choose interface language</value>
   </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
-    <value>Restart XrayUI to apply  language changes</value>
+    <value>Restart XrayUI to apply changes</value>
   </data>
   <data name="Personalize_LangRestartBtn.Content" xml:space="preserve">
     <value>Restart</value>
@@ -1187,5 +1187,20 @@ Path: {0}</value>
   </data>
   <data name="ServerList_TestModeReal.Text" xml:space="preserve">
     <value>Test real delay</value>
+  </data>
+  <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="Personalize_Region_CN.Content" xml:space="preserve">
+    <value>China</value>
+  </data>
+  <data name="Personalize_Region_RU.Content" xml:space="preserve">
+    <value>Russia</value>
+  </data>
+  <data name="Personalize_Region_IR.Content" xml:space="preserve">
+    <value>Iran</value>
+  </data>
+  <data name="Personalize_RoutingRegionDesc.Text" xml:space="preserve">
+    <value>Region routed setting</value>
   </data>
 </root>

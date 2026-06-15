@@ -113,7 +113,7 @@ namespace XrayUI.Views
 
         private async void LanguageRestartButton_Click(object sender, RoutedEventArgs e)
         {
-            await ViewModel.ApplyLanguageAsync();
+            await ViewModel.ApplyPendingChangesAsync();
             App.Restart();
         }
     }

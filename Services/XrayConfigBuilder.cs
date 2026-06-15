@@ -711,8 +711,8 @@ namespace XrayUI.Services
         }
 
         /// <summary>
-        /// The default smart-mode routing object — proxy Google, direct geosite:cn / geoip:cn,
-        /// fallback everything else to proxy. Returned as a fresh JsonObject so callers can
+        /// The default smart-mode routing object — proxy Google, direct domestic geosite/geoip
+        /// (per settings.RoutingRegion), fallback everything else to proxy. Returned as a fresh JsonObject so callers can
         /// either inject it into the live xray config or persist it as the seed of
         /// settings.AdvancedRouting (the "advanced editor" template).
         /// </summary>
@@ -726,17 +726,18 @@ namespace XrayUI.Services
                 ["outboundTag"] = ProxyOutboundTag,
                 ["domain"] = CreateStringArray("geosite:google")
             });
+            var (geositeDomestic, geoipDomestic) = RegionGeoTokens(settings.RoutingRegion);
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
                 ["outboundTag"] = DirectOutboundTag,
-                ["domain"] = CreateStringArray("geosite:cn", "geosite:private")
+                ["domain"] = CreateStringArray(geositeDomestic, "geosite:private")
             });
             AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
                 ["outboundTag"] = DirectOutboundTag,
-                ["ip"] = CreateStringArray("geoip:cn", "geoip:private")
+                ["ip"] = CreateStringArray(geoipDomestic, "geoip:private")
             });
             if (includeFallback)
             {
@@ -760,6 +761,30 @@ namespace XrayUI.Services
             });
         }
 
+        /// <summary>
+        /// Maps a routing region code to its domestic geosite/geoip tokens. "cn" (default) uses
+        /// geosite:cn / geoip:cn; "ru"/"ir" use geosite:category-ru|ir + geoip:ru|ir — the shipped
+        /// geosite.dat (Loyalsoldier) has no bare geosite:ru / geosite:ir, only the category-* lists.
+        /// </summary>
+        private static (string geosite, string geoip) RegionGeoTokens(string? region) => region switch
+        {
+            "ru" => ("geosite:category-ru", "geoip:ru"),
+            "ir" => ("geosite:category-ir", "geoip:ir"),
+            _    => ("geosite:cn", "geoip:cn"),
+        };
+
+        /// <summary>
+        /// Default "direct" DNS resolver for the selected region, used only when the user hasn't set
+        /// <see cref="AppSettings.DirectDnsServer"/>. CN keeps the existing fast domestic resolvers;
+        /// RU/IR use well-known in-country public resolvers (Yandex / Shecan).
+        /// </summary>
+        private static string DefaultDirectDns(string? region, bool tunMode) => region switch
+        {
+            "ru" => "77.88.8.8",
+            "ir" => "178.22.122.100",
+            _    => tunMode ? "223.5.5.5" : "114.114.114.114",
+        };
+
         private static JsonObject CustomRuleToJsonObject(CustomRoutingRule rule)
         {
             var node = new JsonObject
@@ -778,14 +803,15 @@ namespace XrayUI.Services
 
         private static JsonObject BuildDns(AppSettings settings)
         {
+            var (geositeDomestic, _) = RegionGeoTokens(settings.RoutingRegion);
             var directDns = settings.DirectDnsServer
-                ?? (settings.IsTunMode ? "223.5.5.5" : "114.114.114.114");
+                ?? DefaultDirectDns(settings.RoutingRegion, settings.IsTunMode);
             var proxyDns = settings.ProxyDnsServer ?? "8.8.8.8";
 
             var directEntry = new JsonObject
             {
                 ["address"]      = directDns,
-                ["domains"]      = CreateStringArray("geosite:cn", "geosite:private"),
+                ["domains"]      = CreateStringArray(geositeDomestic, "geosite:private"),
                 ["skipFallback"] = true,
             };
 
