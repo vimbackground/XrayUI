@@ -60,7 +60,8 @@
         </Grid>
 
         <!-- Mini mode compact panel -->
-        <Grid Grid.Row="1"
+        <Grid x:Name="MiniModePanel"
+              Grid.Row="1"
               Visibility="{x:Bind ViewModel.MiniModeVisibility, Mode=OneWay}"
               Margin="16,0,16,0">
             <!-- Mini content: tighten vertical rhythm to match the mockup -->
@@ -157,7 +158,8 @@
             </Grid>
         </Grid>
 
-        <Grid Grid.Row="1"
+        <Grid x:Name="FullModePanel"
+              Grid.Row="1"
               Visibility="{x:Bind ViewModel.FullModeVisibility, Mode=OneWay}"
               Margin="16,0,16,16"
               ColumnSpacing="16">
