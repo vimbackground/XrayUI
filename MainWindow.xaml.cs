@@ -272,8 +272,19 @@ namespace XrayUI
 
         private void SetMiniMode(bool isMini)
         {
+            if (ViewModel.IsMiniMode == isMini) return;
+
+            var incoming = isMini ? MiniModePanel : FullModePanel;
+
+            // Snap to the new mode immediately so the click feels as instant as it
+            // did before — no blocking fade-out. The only animation is a quick
+            // entrance on the new content: stage it hidden so it doesn't flash when
+            // its bound Visibility flips, switch modes + resize the HWND, then let
+            // the new panel scale/fade in as a non-blocking flourish.
+            WindowModeTransition.PrepareHidden(incoming);
             ViewModel.IsMiniMode = isMini;
             ApplyWindowMode(isMini);
+            WindowModeTransition.FadeIn(incoming);
         }
 
         private void ApplyWindowMode(bool isMini)
