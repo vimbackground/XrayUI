@@ -15,11 +15,14 @@ namespace XrayUI.Models
 
         public bool IsEnabled { get; set; } = true;
 
+        /// <summary>True when this rule matches on process name (xray <c>process</c> field).</summary>
+        [JsonIgnore] public bool IsProcess => Type == "process";
+
         // Helpers for x:Bind (OneTime) inside DataTemplate.
         // Visibility is computed directly to avoid converter lookups in a Window root.
         [JsonIgnore] public Visibility DomainVisibility  => Type == "domain"  ? Visibility.Visible : Visibility.Collapsed;
         [JsonIgnore] public Visibility IpVisibility      => Type == "ip"      ? Visibility.Visible : Visibility.Collapsed;
-        [JsonIgnore] public Visibility ProcessVisibility => Type == "process" ? Visibility.Visible : Visibility.Collapsed;
+        [JsonIgnore] public Visibility ProcessVisibility => IsProcess         ? Visibility.Visible : Visibility.Collapsed;
 
         public CustomRoutingRule Clone() => new()
         {
