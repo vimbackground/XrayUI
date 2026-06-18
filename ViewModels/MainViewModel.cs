@@ -118,8 +118,8 @@ namespace XrayUI.ViewModels
             ServerDetail.ShowAiUnlockInDetails = s.ShowAiUnlockInDetails;
 
             // Reconcile external state vs persisted setting (external is ground truth)
-            var externalEnabled = _startupService.IsStartupEnabled();
-            if (s.IsStartupEnabled != externalEnabled)
+            var externalEnabled = await Task.Run(_startupService.IsStartupEnabled);
+			if (s.IsStartupEnabled != externalEnabled)
             {
                 s.IsStartupEnabled = externalEnabled;
                 await _settings.SaveSettingsAsync(s);
