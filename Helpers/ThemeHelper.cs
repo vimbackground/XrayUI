@@ -1,3 +1,5 @@
+using System;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media;
 
 namespace XrayUI.Helpers
@@ -9,6 +11,8 @@ namespace XrayUI.Helpers
 
         private static ElementTheme _currentTheme = ElementTheme.Default;
         public static ElementTheme CurrentTheme => _currentTheme;
+
+        private static event Action<ElementTheme>? ThemeChanged;
 
         private static string _currentBackdrop = "Mica";
         public static string CurrentBackdrop => _currentBackdrop;
@@ -27,6 +31,39 @@ namespace XrayUI.Helpers
             _currentTheme = theme;
             if (RootElement != null)
                 RootElement.RequestedTheme = theme;
+
+            ThemeChanged?.Invoke(theme);
+        }
+
+        public static void ApplyTitleBarTheme(Window window, ElementTheme theme)
+        {
+            window.AppWindow.TitleBar.PreferredTheme = theme switch
+            {
+                ElementTheme.Light => TitleBarTheme.Light,
+                ElementTheme.Dark  => TitleBarTheme.Dark,
+                _                  => TitleBarTheme.UseDefaultAppMode,
+            };
+        }
+
+        /// <summary>
+        /// Makes a secondary window follow the app's light/dark theme: seeds the
+        /// initial theme on <paramref name="root"/> and the title bar, then keeps
+        /// both in sync until the window closes (self-unsubscribes on Closed).
+        /// Backdrop is intentionally left to each window (fixed Mica in XAML).
+        /// </summary>
+        public static void FollowAppTheme(Window window, FrameworkElement root)
+        {
+            root.RequestedTheme = _currentTheme;
+            ApplyTitleBarTheme(window, _currentTheme);
+
+            void OnChanged(ElementTheme theme)
+            {
+                root.RequestedTheme = theme;
+                ApplyTitleBarTheme(window, theme);
+            }
+
+            ThemeChanged += OnChanged;
+            window.Closed += (_, _) => ThemeChanged -= OnChanged;
         }
 
         public static void ApplyBackdrop(string backdrop)
