@@ -46,7 +46,7 @@ namespace XrayUI.Views
 
             this.SetWindowSize(900, 600);
             AppWindow.Title = L.Log_Title;
-			AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
+            ThemeHelper.FollowAppTheme(this, WindowRoot);
 
 			ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
             MaskAddressSubMenu.Text = L.Log_IpMask;
@@ -68,15 +68,17 @@ namespace XrayUI.Views
             _flushTimer.Tick += OnFlushTick;
             _flushTimer.Start();
 
-            this.Closed += (_, _) =>
-            {
-                _flushTimer.Stop();
-                _xray.LogReceived    -= OnLogReceived;
-                _xray.RunningChanged -= OnRunningChanged;
-            };
+            this.Closed += OnClosed;
         }
 
         // ── Event handlers ─────────────────────────────────────────────────────
+
+        private void OnClosed(object sender, WindowEventArgs args)
+        {
+            _flushTimer.Stop();
+            _xray.LogReceived    -= OnLogReceived;
+            _xray.RunningChanged -= OnRunningChanged;
+        }
 
         private void OnLogReceived(object? sender, string line)
         {
