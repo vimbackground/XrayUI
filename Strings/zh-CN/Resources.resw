@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -914,22 +914,22 @@
     <value>浏览文件夹...</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>youtube.com 或 geosite:cn</value>
+    <value>youtube.com、geosite:cn，或每行一个</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>192.168.0.0/16 或 geoip:cn</value>
+    <value>192.168.0.0/16、geoip:cn，或每行一个</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>可手填进程名 / 路径 / 文件夹，或点浏览选取</value>
+    <value>进程名、路径或文件夹；可用逗号或换行分隔</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>支持精确匹配、regexp:、geosite: 前缀</value>
+    <value>支持精确匹配、regexp:、geosite: 前缀。多个值可用逗号、分号或换行分隔。</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>支持 CIDR 与 geoip: 前缀</value>
+    <value>支持 CIDR 与 geoip: 前缀。多个值可用逗号、分号或换行分隔。</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>同名进程：匹配任意路径下的同名 exe；完整路径：只匹配此 exe；整个目录：匹配该目录下所有 exe</value>
+    <value>支持同名进程、完整路径或文件夹。多个值可用逗号、分号或换行分隔；浏览会追加到列表。</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>应用语言</value>

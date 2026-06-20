@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
 using XrayUI.Helpers;
 using XrayUI.Models;
+using XrayUI.Services;
 
 namespace XrayUI.Views
 {
@@ -151,7 +153,7 @@ namespace XrayUI.Views
 
                 // Trailing backslash makes xray treat this as a folder match for
                 // all executables under the directory.
-                MatchTextBox.Text = folder.Path.TrimEnd('\\') + "\\";
+                AppendMatchValue(folder.Path.TrimEnd('\\') + "\\");
                 return;
             }
 
@@ -165,13 +167,13 @@ namespace XrayUI.Views
             var file = await picker.PickSingleFileAsync();
             if (file is null) return;
 
-            MatchTextBox.Text = format == "path" ? file.Path : file.Name;
+            AppendMatchValue(format == "path" ? file.Path : file.Name);
         }
 
         private void OnPrimaryClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             var match = MatchTextBox.Text?.Trim() ?? "";
-            if (match.Length == 0)
+            if (CustomRuleValueParser.Parse(match).Count == 0)
             {
                 ErrorText.Visibility = Visibility.Visible;
                 args.Cancel = true;
@@ -188,6 +190,17 @@ namespace XrayUI.Views
                 OutboundTag = outboundTag,
                 IsEnabled   = true,
             };
+        }
+
+        private void AppendMatchValue(string value)
+        {
+            var values = CustomRuleValueParser.Parse(MatchTextBox.Text);
+            if (!values.Contains(value, StringComparer.OrdinalIgnoreCase))
+            {
+                values.Add(value);
+            }
+
+            MatchTextBox.Text = string.Join(Environment.NewLine, values);
         }
     }
 }

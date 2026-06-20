@@ -12,7 +12,9 @@
     CloseButtonText="取消"
     DefaultButton="Primary">
 
-    <StackPanel Spacing="16" MinWidth="320" MaxWidth="380">
+    <ScrollViewer MaxHeight="640"
+                  VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="16" MinWidth="520" MaxWidth="560">
 
         <StackPanel Spacing="6">
             <TextBlock x:Uid="AddRule_TypeLabelText"
@@ -34,7 +36,10 @@
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <TextBox x:Name="MatchTextBox"
-                     PlaceholderText="youtube.com 或 geosite:cn" />
+                     PlaceholderText="youtube.com 或 geosite:cn"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="140" />
 
             <!-- Browse helpers (visible only when Type = process) -->
             <StackPanel x:Name="BrowsePanel"
@@ -49,7 +54,7 @@
                 </Button>
                 <ComboBox x:Name="BrowseFormatComboBox"
                           SelectedIndex="0"
-                          MinWidth="130">
+                          MinWidth="170">
                     <ComboBoxItem x:Uid="AddRule_BrowseNameItem" Content="匹配同名进程" Tag="name" />
                     <ComboBoxItem x:Uid="AddRule_BrowsePathItem" Content="匹配完整路径" Tag="path" />
                     <ComboBoxItem x:Uid="AddRule_BrowseFolderItem" Content="匹配整个目录" Tag="folder" />
@@ -85,4 +90,5 @@
                    Visibility="Collapsed" />
 
     </StackPanel>
+    </ScrollViewer>
 </ContentDialog>

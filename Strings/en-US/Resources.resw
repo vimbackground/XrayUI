@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -914,22 +914,22 @@
     <value>Browse folder...</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>youtube.com or geosite:cn</value>
+    <value>youtube.com, geosite:cn, or one per line</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>192.168.0.0/16 or geoip:cn</value>
+    <value>192.168.0.0/16, geoip:cn, or one per line</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>Type a process name / path / folder, or click Browse</value>
+    <value>Process names, paths, or folders; comma or newline separated</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>Supports exact match, regexp:, geosite: prefixes</value>
+    <value>Supports exact match, regexp:, geosite: prefixes. Separate multiple values with comma, semicolon, or newline.</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>Supports CIDR and geoip: prefixes</value>
+    <value>Supports CIDR and geoip: prefixes. Separate multiple values with comma, semicolon, or newline.</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>By name: matches any exe with this name. By full path: matches only this exe. By folder: matches all exes under the folder.</value>
+    <value>By name, full path, or folder. Separate multiple values with comma, semicolon, or newline; Browse appends to the list.</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>Application language</value>
