@@ -49,7 +49,8 @@ namespace XrayUI.Helpers
         /// Makes a secondary window follow the app's light/dark theme: seeds the
         /// initial theme on <paramref name="root"/> and the title bar, then keeps
         /// both in sync until the window closes (self-unsubscribes on Closed).
-        /// Backdrop is intentionally left to each window (fixed Mica in XAML).
+        /// Backdrop is intentionally left to each window and should be assigned
+        /// after this call when it needs to respect the seeded app theme.
         /// </summary>
         public static void FollowAppTheme(Window window, FrameworkElement root)
         {

@@ -9,6 +9,8 @@ namespace XrayUI.Views
 {
     public sealed partial class PersonalizeControl
     {
+        private const double AppLanguageHeaderReservedWidth = 114;
+
         public PersonalizeViewModel ViewModel { get; set; } = null!;
 
         public PersonalizeControl()
@@ -115,6 +117,11 @@ namespace XrayUI.Views
         {
             await ViewModel.ApplyPendingChangesAsync();
             App.Restart();
+        }
+
+        private void AppLanguageSettingsExpander_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            AppLanguageHeaderGrid.Width = Math.Max(0, e.NewSize.Width - AppLanguageHeaderReservedWidth);
         }
     }
 }

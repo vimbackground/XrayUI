@@ -85,29 +85,23 @@
                            FontSize="15"
                            FontWeight="SemiBold" />
 
-                <Expander HorizontalAlignment="Stretch"
-                          HorizontalContentAlignment="Stretch"
-                          CornerRadius="{ThemeResource OverlayCornerRadius}"
-                          Background="{ThemeResource LayerFillColorDefaultBrush}"
-                          BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
-                    <Expander.Header>
-                        <!-- Application language -->
-                        <Grid Padding="0,12"
-                              ColumnSpacing="12">
+                <controls:SettingsExpander HorizontalAlignment="Stretch"
+                                           HorizontalContentAlignment="Stretch"
+                                           SizeChanged="AppLanguageSettingsExpander_SizeChanged"
+                                           x:Name="AppLanguageSettingsExpander">
+                    <controls:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xF2B7;" />
+                    </controls:SettingsExpander.HeaderIcon>
+                    <controls:SettingsExpander.Header>
+                        <Grid x:Name="AppLanguageHeaderGrid"
+                              ColumnSpacing="12"
+                              HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <FontIcon Grid.Column="0"
-                                      Glyph="&#xF2B7;"
-                                      FontSize="16"
-                                      VerticalAlignment="Center"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
-                            <StackPanel Grid.Column="1"
-                                        VerticalAlignment="Center"
+                            <StackPanel VerticalAlignment="Center"
                                         Spacing="2">
                                 <TextBlock x:Uid="Personalize_AppLanguageTitle"
                                            Text="应用语言"
@@ -118,9 +112,8 @@
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
 
-                            <ComboBox Grid.Column="2"
+                            <ComboBox Grid.Column="1"
                                       MinWidth="130"
-                                      Margin="0,0,-18,0"
                                       VerticalAlignment="Center"
                                       ItemsSource="{x:Bind ViewModel.SupportedLanguages, Mode=OneTime}"
                                       SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}">
@@ -131,39 +124,32 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                         </Grid>
-                    </Expander.Header>
+                    </controls:SettingsExpander.Header>
 
-                    <!-- Region (domestic region for smart routing) -->
-                    <StackPanel Margin="-16,-12,-16,-12">
-                        <Grid Padding="42,12,16,12"
-                              ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0"
-                                        VerticalAlignment="Center"
-                                        Spacing="2">
+                    <!-- Expanded row: region (domestic region for smart routing) -->
+                    <controls:SettingsExpander.Items>
+                        <controls:SettingsCard>
+                            <controls:SettingsCard.Header>
                                 <TextBlock x:Uid="Personalize_RoutingRegionTitle"
                                            Text="区域设置"
                                            FontSize="14" />
+                            </controls:SettingsCard.Header>
+                            <controls:SettingsCard.Description>
                                 <TextBlock x:Uid="Personalize_RoutingRegionDesc"
-                                           Text="选择直连的国家或地区"
+                                           Text="选择智能路由的国家或地区"
                                            FontSize="12"
                                            TextWrapping="Wrap"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ComboBox Grid.Column="1"
-                                      MinWidth="130"
-                                      VerticalAlignment="Center"
+                            </controls:SettingsCard.Description>
+                            <ComboBox MinWidth="130"
                                       SelectedIndex="{x:Bind ViewModel.SelectedRegionIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="Personalize_Region_CN" Content="中国" />
                                 <ComboBoxItem x:Uid="Personalize_Region_RU" Content="俄罗斯" />
                                 <ComboBoxItem x:Uid="Personalize_Region_IR" Content="伊朗" />
                             </ComboBox>
-                        </Grid>
-                    </StackPanel>
-                </Expander>
+                        </controls:SettingsCard>
+                    </controls:SettingsExpander.Items>
+                </controls:SettingsExpander>
 
                 <InfoBar x:Uid="Personalize_LangRestartBar"
                          IsOpen="{x:Bind ViewModel.ShowRestartHint, Mode=TwoWay}"
