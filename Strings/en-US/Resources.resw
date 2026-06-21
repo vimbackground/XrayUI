@@ -914,22 +914,22 @@
     <value>Browse folder...</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>youtube.com, geosite:cn, or one per line</value>
+    <value>One domain or rule per line (e.g. youtube.com or geosite:cn)</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>192.168.0.0/16, geoip:cn, or one per line</value>
+    <value>One IP rule per line (e.g. 192.168.0.0/16 or geoip:cn)</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
     <value>One process name, full path, or folder per line</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>Supports exact match, regexp:, geosite: prefixes. Separate multiple values with comma, semicolon, or newline.</value>
+    <value>Supports exact match and regexp:/geosite: prefixes. Add one value per line.</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>Supports CIDR and geoip: prefixes. Separate multiple values with comma, semicolon, or newline.</value>
+    <value>Supports CIDR and geoip: prefixes. Add one value per line.</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>One per line; multi-select available and removes duplicates.</value>
+    <value>One value per line; Browse supports multi-select and removes duplicates.</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>Application language</value>

@@ -45,7 +45,7 @@
                        FontSize="12"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             <TextBox x:Name="MatchTextBox"
-                     PlaceholderText="youtube.com 或 geosite:cn"
+                     PlaceholderText="每行一个域名或规则，例如 youtube.com 或 geosite:cn"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      MinHeight="84"
@@ -73,7 +73,7 @@
             </StackPanel>
 
             <TextBlock x:Name="HintTextBlock"
-                       Text="支持精确匹配、regexp:、geosite: 前缀"
+                       Text="支持精确匹配及 regexp:、geosite: 前缀；每行填写一个值。"
                        FontSize="11"
                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                        MaxLines="2"

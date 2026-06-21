@@ -914,22 +914,22 @@
     <value>浏览文件夹...</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>youtube.com、geosite:cn，或每行一个</value>
+    <value>每行一个域名或规则，例如 youtube.com 或 geosite:cn</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>192.168.0.0/16、geoip:cn，或每行一个</value>
+    <value>每行一个 IP 规则，例如 192.168.0.0/16 或 geoip:cn</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
     <value>每行输入一个进程名、完整路径或文件夹</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>支持精确匹配、regexp:、geosite: 前缀。多个值可用逗号、分号或换行分隔。</value>
+    <value>支持精确匹配及 regexp:、geosite: 前缀；每行填写一个值。</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>支持 CIDR 与 geoip: 前缀。多个值可用逗号、分号或换行分隔。</value>
+    <value>支持 CIDR 与 geoip: 前缀；每行填写一个值。</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>每行一个；支持多选并自动去重。</value>
+    <value>每行填写一个值；浏览支持多选，并会自动去重。</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>应用语言</value>

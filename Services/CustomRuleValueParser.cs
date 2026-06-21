@@ -14,7 +14,9 @@ namespace XrayUI.Services
 
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var values = new List<string>();
-            foreach (var part in text.Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            // Commas and semicolons are valid inside match values (for example,
+            // regexp quantifiers and Windows paths), so only line breaks delimit values.
+            foreach (var part in text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 if (part.Length == 0 || !seen.Add(part))
                 {
