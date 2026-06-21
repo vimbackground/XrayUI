@@ -908,7 +908,7 @@
     <value>请填写匹配内容</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>浏览 exe...</value>
+    <value>选择 exe（可多选）...</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
     <value>浏览文件夹...</value>
@@ -920,7 +920,7 @@
     <value>192.168.0.0/16、geoip:cn，或每行一个</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>进程名、路径或文件夹；可用逗号或换行分隔</value>
+    <value>每行输入一个进程名、完整路径或文件夹</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
     <value>支持精确匹配、regexp:、geosite: 前缀。多个值可用逗号、分号或换行分隔。</value>
@@ -929,7 +929,7 @@
     <value>支持 CIDR 与 geoip: 前缀。多个值可用逗号、分号或换行分隔。</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>支持同名进程、完整路径或文件夹。多个值可用逗号、分号或换行分隔；浏览会追加到列表。</value>
+    <value>每行一个；支持多选并自动去重。</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>应用语言</value>

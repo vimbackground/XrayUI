@@ -115,8 +115,6 @@ namespace XrayUI.Services
             {
                 ["enabled"] = true,
                 ["destOverride"] = destOverride,
-                ["excludedOutboundTags"] = CreateStringArray(DirectOutboundTag),
-                ["routeOnly"] = true,
             };
             if (settings.FakeDnsEnabled)
             {
@@ -178,8 +176,9 @@ namespace XrayUI.Services
 
             AddNode(list, direct);
 
-            // block outbound is needed by any enabled custom rule targeting "block"
-            // (smart mode only).
+            // block outbound is needed by:
+            //   1. TUN mode's UDP:443 quench rule
+            //   2. Any enabled custom rule targeting "block" (smart mode only)
             bool customRulesUseBlock =
                 settings.RoutingMode == "smart"
                 && settings.CustomRules is { } rules
@@ -187,7 +186,7 @@ namespace XrayUI.Services
                                   && r.MatchValues.Count > 0
                                   && r.OutboundTag == BlockOutboundTag);
 
-            if (customRulesUseBlock)
+            if (settings.IsTunMode || customRulesUseBlock)
             {
                 AddNode(list, new JsonObject
                 {
@@ -612,67 +611,31 @@ namespace XrayUI.Services
                 ? (JsonObject)settings.AdvancedRouting!.DeepClone()
                 : BuildDefaultRoutingTemplate(settings, includeFallback: false);
 
-            // baseRouting is exclusively owned (fresh clone or fresh build), so mutate
-            // its rules array in place. TUN mode keeps process bypass rules before
-            // other custom rules while preserving custom rules before the base rules.
-            if (baseRouting["rules"] is not JsonArray rules)
-            {
-                rules = new JsonArray();
-                baseRouting["rules"] = rules;
-            }
-
-            var insertIdx = PrependTunLeadingRules(rules, settings);
-
-            if (settings.CustomRules is { } customRules)
-            {
-                if (settings.IsTunMode)
-                {
-                    foreach (var rule in customRules.Where(IsEnabledProcessRule))
-                    {
-                        rules.Insert(insertIdx++, CustomRuleToJsonObject(rule));
-                    }
-
-                    foreach (var rule in customRules.Where(r => !IsEnabledProcessRule(r) && IsEnabledRule(r)))
-                    {
-                        rules.Insert(insertIdx++, CustomRuleToJsonObject(rule));
-                    }
-                }
-                else
-                {
-                    foreach (var rule in customRules.Where(IsEnabledRule))
-                    {
-                        rules.Insert(insertIdx++, CustomRuleToJsonObject(rule));
-                    }
-                }
-            }
+            // baseRouting is exclusively owned (fresh clone or fresh build). Build a fresh
+            // rules array so TUN process bypass rules can sit before the UDP/443 quench rule,
+            // while ordinary domain/IP rules still remain behind it.
+            var baseRules = baseRouting["rules"] as JsonArray ?? new JsonArray();
+            var rules = BuildSmartRules(settings, baseRules);
+            baseRouting["rules"] = rules;
 
             if (!hasAdvancedRouting)
             {
                 AddDefaultProxyFallbackRule(rules);
             }
 
-            if (settings.IsTunMode)
+            if (baseRouting["domainStrategy"] is null)
             {
-                baseRouting["domainStrategy"] = RoutingDomainStrategy(settings);
-            }
-            else if (baseRouting["domainStrategy"] is null)
-            {
-                baseRouting["domainStrategy"] = RoutingDomainStrategy(settings);
+                baseRouting["domainStrategy"] = "AsIs";
             }
 
             return baseRouting;
         }
 
-        private static bool IsEnabledRule(CustomRoutingRule rule) =>
-            rule.IsEnabled && rule.MatchValues.Count > 0;
-
-        private static bool IsEnabledProcessRule(CustomRoutingRule rule) =>
-            rule.Type == "process" && IsEnabledRule(rule);
-
         private static JsonObject BuildGlobalRouting(AppSettings settings)
         {
             var rules = new JsonArray();
-            var insertIdx = PrependTunLeadingRules(rules, settings);
+            AppendTunLeadRules(rules, settings);
+            AppendTunUdp443BlockRule(rules, settings);
 
             AddNode(rules, new JsonObject
             {
@@ -683,28 +646,52 @@ namespace XrayUI.Services
 
             return new JsonObject
             {
-                ["domainStrategy"] = RoutingDomainStrategy(settings),
+                ["domainStrategy"] = "AsIs",
                 ["rules"] = rules
             };
         }
 
         /// <summary>
-        /// Inserts the fixed TUN leading rules at the head of <paramref name="rules"/> and
-        /// returns the number inserted, so callers know where the user-rule region starts.
-        /// These keep DNS and self/xray traffic out of the tunnel; never user-editable and
-        /// must precede any user/advanced rules.
+        /// Builds smart-mode rules. In TUN mode, process rules from both the UI and
+        /// AdvancedRouting are promoted before the UDP/443 quench rule so explicit
+        /// per-process bypasses for QUIC-based clients are not shadowed.
         /// </summary>
-        private static int PrependTunLeadingRules(JsonArray rules, AppSettings settings)
+        private static JsonArray BuildSmartRules(AppSettings settings, JsonArray baseRules)
         {
-            if (!settings.IsTunMode) return 0;
+            var rules = new JsonArray();
 
-            var i = 0;
+            if (settings.IsTunMode)
+            {
+                AppendTunLeadRules(rules, settings);
+                AddCustomRules(rules, settings.CustomRules, IsProcessCustomRule);
+                AddClonedRules(rules, baseRules, IsProcessRoutingRule);
+                AppendTunUdp443BlockRule(rules, settings);
+                AddCustomRules(rules, settings.CustomRules, rule => !IsProcessCustomRule(rule));
+                AddClonedRules(rules, baseRules, rule => !IsProcessRoutingRule(rule));
+            }
+            else
+            {
+                AddCustomRules(rules, settings.CustomRules, _ => true);
+                AddClonedRules(rules, baseRules, _ => true);
+            }
+
+            return rules;
+        }
+
+        /// <summary>
+        /// Adds the fixed TUN lead rules that must stay before user/advanced rules:
+        /// FakeDNS DNS capture first, then xray/self direct.
+        /// </summary>
+        private static void AppendTunLeadRules(JsonArray rules, AppSettings settings)
+        {
+            if (!settings.IsTunMode) return;
+
             if (settings.FakeDnsEnabled)
             {
                 // Must precede the self/xray direct rule so DNS queries from tun-in get
                 // intercepted by xray's internal DNS handler (and the fakedns pool) rather
                 // than being forwarded upstream.
-                rules.Insert(i++, new JsonObject
+                AddNode(rules, new JsonObject
                 {
                     ["type"] = "field",
                     ["inboundTag"] = CreateStringArray(XrayConfigConstants.TunInboundTag),
@@ -713,15 +700,61 @@ namespace XrayUI.Services
                 });
             }
 
-            rules.Insert(i++, new JsonObject
+            AddNode(rules, new JsonObject
             {
                 ["type"] = "field",
                 ["outboundTag"] = DirectOutboundTag,
                 ["process"] = CreateStringArray("self/", "xray/")
             });
-
-            return i;
         }
+
+        private static void AppendTunUdp443BlockRule(JsonArray rules, AppSettings settings)
+        {
+            if (!settings.IsTunMode) return;
+
+            AddNode(rules, new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = BlockOutboundTag,
+                ["network"] = "udp",
+                ["port"] = "443"
+            });
+        }
+
+        private static void AddCustomRules(
+            JsonArray rules,
+            IEnumerable<CustomRoutingRule>? customRules,
+            Func<CustomRoutingRule, bool> predicate)
+        {
+            if (customRules is null) return;
+
+            foreach (var rule in customRules)
+            {
+                if (!rule.IsEnabled || rule.MatchValues.Count == 0 || !predicate(rule))
+                    continue;
+
+                AddNode(rules, CustomRuleToJsonObject(rule));
+            }
+        }
+
+        private static void AddClonedRules(
+            JsonArray rules,
+            JsonArray sourceRules,
+            Func<JsonNode?, bool> predicate)
+        {
+            foreach (var rule in sourceRules)
+            {
+                if (rule is null || !predicate(rule))
+                    continue;
+
+                AddNode(rules, rule.DeepClone());
+            }
+        }
+
+        private static bool IsProcessCustomRule(CustomRoutingRule rule) => rule.Type == "process";
+
+        private static bool IsProcessRoutingRule(JsonNode? rule) =>
+            rule is JsonObject ruleObject && ruleObject["process"] is not null;
 
         /// <summary>
         /// The default smart-mode routing object — proxy Google, direct domestic geosite/geoip
@@ -759,13 +792,10 @@ namespace XrayUI.Services
 
             return new JsonObject
             {
-                ["domainStrategy"] = RoutingDomainStrategy(settings),
+                ["domainStrategy"] = "AsIs",
                 ["rules"] = rules
             };
         }
-
-        private static string RoutingDomainStrategy(AppSettings settings) =>
-            settings.IsTunMode ? "IPIfNonMatch" : "AsIs";
 
         private static void AddDefaultProxyFallbackRule(JsonArray rules)
         {

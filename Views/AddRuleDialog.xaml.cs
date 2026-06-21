@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.UI.Xaml.Controls;
@@ -153,7 +154,7 @@ namespace XrayUI.Views
 
                 // Trailing backslash makes xray treat this as a folder match for
                 // all executables under the directory.
-                AppendMatchValue(folder.Path.TrimEnd('\\') + "\\");
+                AppendMatchValues([folder.Path.TrimEnd('\\') + "\\"]);
                 return;
             }
 
@@ -164,10 +165,10 @@ namespace XrayUI.Views
             picker.FileTypeFilter.Add(".exe");
             WinRT.Interop.InitializeWithWindow.Initialize(picker, _hostHwnd);
 
-            var file = await picker.PickSingleFileAsync();
-            if (file is null) return;
+            var files = await picker.PickMultipleFilesAsync();
+            if (files.Count == 0) return;
 
-            AppendMatchValue(format == "path" ? file.Path : file.Name);
+            AppendMatchValues(files.Select(file => format == "path" ? file.Path : file.Name));
         }
 
         private void OnPrimaryClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -192,12 +193,15 @@ namespace XrayUI.Views
             };
         }
 
-        private void AppendMatchValue(string value)
+        private void AppendMatchValues(IEnumerable<string> additions)
         {
             var values = CustomRuleValueParser.Parse(MatchTextBox.Text);
-            if (!values.Contains(value, StringComparer.OrdinalIgnoreCase))
+            foreach (var addition in additions)
             {
-                values.Add(value);
+                if (!values.Contains(addition, StringComparer.OrdinalIgnoreCase))
+                {
+                    values.Add(addition);
+                }
             }
 
             MatchTextBox.Text = string.Join(Environment.NewLine, values);

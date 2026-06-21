@@ -908,7 +908,7 @@
     <value>Please enter match content</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>Browse exe...</value>
+    <value>Browse exe files...</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
     <value>Browse folder...</value>
@@ -920,7 +920,7 @@
     <value>192.168.0.0/16, geoip:cn, or one per line</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>Process names, paths, or folders; comma or newline separated</value>
+    <value>One process name, full path, or folder per line</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
     <value>Supports exact match, regexp:, geosite: prefixes. Separate multiple values with comma, semicolon, or newline.</value>
@@ -929,7 +929,7 @@
     <value>Supports CIDR and geoip: prefixes. Separate multiple values with comma, semicolon, or newline.</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>By name, full path, or folder. Separate multiple values with comma, semicolon, or newline; Browse appends to the list.</value>
+    <value>One per line; multi-select available and removes duplicates.</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>Application language</value>

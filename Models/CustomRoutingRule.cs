@@ -49,6 +49,19 @@ namespace XrayUI.Models
             _         => Domain ?? [],
         };
 
+        /// <summary>One-line list summary for the rules list (values joined by " · ").</summary>
+        [JsonIgnore]
+        public string MatchSummary => MatchValues.Count switch
+        {
+            0 => "",
+            1 => MatchValues[0],
+            _ => string.Join(" · ", MatchValues),
+        };
+
+        /// <summary>Full value list, one per line — used as the list row tooltip.</summary>
+        [JsonIgnore]
+        public string MatchDetails => string.Join(Environment.NewLine, MatchValues);
+
         /// <summary>"proxy" | "direct" | "block"</summary>
         public string OutboundTag { get; set; } = "proxy";
 
