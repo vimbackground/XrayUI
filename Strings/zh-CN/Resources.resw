@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -908,28 +908,28 @@
     <value>请填写匹配内容</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>浏览 exe...</value>
+    <value>选择 exe（可多选）...</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
     <value>浏览文件夹...</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>youtube.com 或 geosite:cn</value>
+    <value>每行一个域名或规则，例如 youtube.com 或 geosite:cn</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>192.168.0.0/16 或 geoip:cn</value>
+    <value>每行一个 IP 规则，例如 192.168.0.0/16 或 geoip:cn</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>可手填进程名 / 路径 / 文件夹，或点浏览选取</value>
+    <value>每行输入一个进程名、完整路径或文件夹</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>支持精确匹配、regexp:、geosite: 前缀</value>
+    <value>支持精确匹配及 regexp:、geosite: 前缀；每行填写一个值。</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>支持 CIDR 与 geoip: 前缀</value>
+    <value>支持 CIDR 与 geoip: 前缀；每行填写一个值。</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>同名进程：匹配任意路径下的同名 exe；完整路径：只匹配此 exe；整个目录：匹配该目录下所有 exe</value>
+    <value>每行填写一个值；浏览支持多选，并会自动去重。</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>应用语言</value>

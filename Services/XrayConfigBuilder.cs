@@ -183,7 +183,7 @@ namespace XrayUI.Services
                 settings.RoutingMode == "smart"
                 && settings.CustomRules is { } rules
                 && rules.Any(r => r.IsEnabled
-                                  && !string.IsNullOrWhiteSpace(r.Match)
+                                  && r.MatchValues.Count > 0
                                   && r.OutboundTag == BlockOutboundTag);
 
             if (settings.IsTunMode || customRulesUseBlock)
@@ -730,7 +730,7 @@ namespace XrayUI.Services
 
             foreach (var rule in customRules)
             {
-                if (!rule.IsEnabled || string.IsNullOrWhiteSpace(rule.Match) || !predicate(rule))
+                if (!rule.IsEnabled || rule.MatchValues.Count == 0 || !predicate(rule))
                     continue;
 
                 AddNode(rules, CustomRuleToJsonObject(rule));
@@ -751,7 +751,7 @@ namespace XrayUI.Services
             }
         }
 
-        private static bool IsProcessCustomRule(CustomRoutingRule rule) => rule.IsProcess;
+        private static bool IsProcessCustomRule(CustomRoutingRule rule) => rule.Type == "process";
 
         private static bool IsProcessRoutingRule(JsonNode? rule) =>
             rule is JsonObject ruleObject && ruleObject["process"] is not null;
@@ -840,9 +840,9 @@ namespace XrayUI.Services
             };
             switch (rule.Type)
             {
-                case "ip":      node["ip"]      = CreateStringArray(rule.Match); break;
-                case "process": node["process"] = CreateStringArray(rule.Match); break;
-                default:        node["domain"]  = CreateStringArray(rule.Match); break;
+                case "ip":      node["ip"]      = CreateStringArray(rule.MatchValues); break;
+                case "process": node["process"] = CreateStringArray(rule.MatchValues); break;
+                default:        node["domain"]  = CreateStringArray(rule.MatchValues); break;
             }
             return node;
         }
@@ -887,6 +887,17 @@ namespace XrayUI.Services
         }
 
         private static JsonArray CreateStringArray(params string[] values)
+        {
+            var array = new JsonArray();
+            foreach (var value in values)
+            {
+                AddValue(array, value);
+            }
+
+            return array;
+        }
+
+        private static JsonArray CreateStringArray(IEnumerable<string> values)
         {
             var array = new JsonArray();
             foreach (var value in values)

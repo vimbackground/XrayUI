@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
 using XrayUI.Helpers;
 using XrayUI.Models;
+using XrayUI.Services;
 
 namespace XrayUI.Views
 {
@@ -151,7 +154,7 @@ namespace XrayUI.Views
 
                 // Trailing backslash makes xray treat this as a folder match for
                 // all executables under the directory.
-                MatchTextBox.Text = folder.Path.TrimEnd('\\') + "\\";
+                AppendMatchValues([folder.Path.TrimEnd('\\') + "\\"]);
                 return;
             }
 
@@ -162,16 +165,16 @@ namespace XrayUI.Views
             picker.FileTypeFilter.Add(".exe");
             WinRT.Interop.InitializeWithWindow.Initialize(picker, _hostHwnd);
 
-            var file = await picker.PickSingleFileAsync();
-            if (file is null) return;
+            var files = await picker.PickMultipleFilesAsync();
+            if (files.Count == 0) return;
 
-            MatchTextBox.Text = format == "path" ? file.Path : file.Name;
+            AppendMatchValues(files.Select(file => format == "path" ? file.Path : file.Name));
         }
 
         private void OnPrimaryClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             var match = MatchTextBox.Text?.Trim() ?? "";
-            if (match.Length == 0)
+            if (CustomRuleValueParser.Parse(match).Count == 0)
             {
                 ErrorText.Visibility = Visibility.Visible;
                 args.Cancel = true;
@@ -188,6 +191,20 @@ namespace XrayUI.Views
                 OutboundTag = outboundTag,
                 IsEnabled   = true,
             };
+        }
+
+        private void AppendMatchValues(IEnumerable<string> additions)
+        {
+            var values = CustomRuleValueParser.Parse(MatchTextBox.Text);
+            foreach (var addition in additions)
+            {
+                if (!values.Contains(addition, StringComparer.OrdinalIgnoreCase))
+                {
+                    values.Add(addition);
+                }
+            }
+
+            MatchTextBox.Text = string.Join(Environment.NewLine, values);
         }
     }
 }

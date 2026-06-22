@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -908,28 +908,28 @@
     <value>Please enter match content</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>Browse exe...</value>
+    <value>Browse exe files...</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
     <value>Browse folder...</value>
   </data>
   <data name="AddRule_PlaceholderDomain" xml:space="preserve">
-    <value>youtube.com or geosite:cn</value>
+    <value>One domain or rule per line (e.g. youtube.com or geosite:cn)</value>
   </data>
   <data name="AddRule_PlaceholderIp" xml:space="preserve">
-    <value>192.168.0.0/16 or geoip:cn</value>
+    <value>One IP rule per line (e.g. 192.168.0.0/16 or geoip:cn)</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>Type a process name / path / folder, or click Browse</value>
+    <value>One process name, full path, or folder per line</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
-    <value>Supports exact match, regexp:, geosite: prefixes</value>
+    <value>Supports exact match and regexp:/geosite: prefixes. Add one value per line.</value>
   </data>
   <data name="AddRule_HintIp" xml:space="preserve">
-    <value>Supports CIDR and geoip: prefixes</value>
+    <value>Supports CIDR and geoip: prefixes. Add one value per line.</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>By name: matches any exe with this name. By full path: matches only this exe. By folder: matches all exes under the folder.</value>
+    <value>One value per line; Browse supports multi-select and removes duplicates.</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>Application language</value>

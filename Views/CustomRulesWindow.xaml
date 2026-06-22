@@ -135,9 +135,10 @@
                             </Border>
                         </Grid>
 
-                        <!-- Match text -->
+                        <!-- Match text (multi-value summary; hover for the full list) -->
                         <TextBlock Grid.Column="1"
-                                   Text="{x:Bind Match}"
+                                   Text="{x:Bind MatchSummary}"
+                                   ToolTipService.ToolTip="{x:Bind MatchDetails}"
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis" />
 
