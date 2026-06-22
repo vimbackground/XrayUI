@@ -183,7 +183,7 @@ namespace XrayUI.Services
                 settings.RoutingMode == "smart"
                 && settings.CustomRules is { } rules
                 && rules.Any(r => r.IsEnabled
-                                  && r.HasMatch
+                                  && !string.IsNullOrWhiteSpace(r.Match)
                                   && r.OutboundTag == BlockOutboundTag);
 
             if (settings.IsTunMode || customRulesUseBlock)
@@ -730,7 +730,7 @@ namespace XrayUI.Services
 
             foreach (var rule in customRules)
             {
-                if (!rule.IsEnabled || !rule.HasMatch || !predicate(rule))
+                if (!rule.IsEnabled || string.IsNullOrWhiteSpace(rule.Match) || !predicate(rule))
                     continue;
 
                 AddNode(rules, CustomRuleToJsonObject(rule));
@@ -841,7 +841,7 @@ namespace XrayUI.Services
             switch (rule.Type)
             {
                 case "ip":      node["ip"]      = CreateStringArray(rule.Match); break;
-                case "process": node["process"] = CreateStringArray(rule.EffectiveMatches.ToArray()); break;
+                case "process": node["process"] = CreateStringArray(rule.Match); break;
                 default:        node["domain"]  = CreateStringArray(rule.Match); break;
             }
             return node;

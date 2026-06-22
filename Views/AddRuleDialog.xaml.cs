@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
 using XrayUI.Helpers;
@@ -23,7 +22,6 @@ namespace XrayUI.Views
             Title             = L.AddRule_Title;
             PrimaryButtonText = L.Dialog_Add;
             CloseButtonText   = L.Dialog_Cancel;
-            ErrorText.Text    = L.AddRule_ErrorEmpty;
 
             // Wire up event handlers in code-behind (NOT via XAML markup).
             // The XAML-compiler-generated Connect path for SelectionChanged on a
@@ -44,14 +42,7 @@ namespace XrayUI.Views
                     "process" => 2,
                     _         => 0,
                 };
-                if (existing.IsProcess)
-                {
-                    ProcessMatchesTextBox.Text = string.Join(Environment.NewLine, existing.EffectiveMatches);
-                }
-                else
-                {
-                    MatchTextBox.Text = existing.Match;
-                }
+                MatchTextBox.Text              = existing.Match;
                 OutboundComboBox.SelectedIndex = existing.OutboundTag switch
                 {
                     "direct" => 1,
@@ -76,25 +67,18 @@ namespace XrayUI.Views
         private void ApplyTypeUiState()
         {
             var tag = GetSelectedType();
-            var isProcess = tag == "process";
 
             if (BrowsePanel is not null)
-                BrowsePanel.Visibility = isProcess ? Visibility.Visible : Visibility.Collapsed;
+                BrowsePanel.Visibility = tag == "process" ? Visibility.Visible : Visibility.Collapsed;
 
             if (MatchTextBox is not null)
             {
-                MatchTextBox.Visibility = isProcess ? Visibility.Collapsed : Visibility.Visible;
                 MatchTextBox.PlaceholderText = tag switch
                 {
                     "ip"      => L.AddRule_PlaceholderIp,
+                    "process" => L.AddRule_PlaceholderProcess,
                     _         => L.AddRule_PlaceholderDomain,
                 };
-            }
-
-            if (ProcessMatchesTextBox is not null)
-            {
-                ProcessMatchesTextBox.Visibility = isProcess ? Visibility.Visible : Visibility.Collapsed;
-                ProcessMatchesTextBox.PlaceholderText = L.AddRule_PlaceholderProcess;
             }
 
             if (HintTextBlock is not null)
@@ -167,7 +151,7 @@ namespace XrayUI.Views
 
                 // Trailing backslash makes xray treat this as a folder match for
                 // all executables under the directory.
-                AppendProcessMatches([folder.Path.TrimEnd('\\') + "\\"]);
+                MatchTextBox.Text = folder.Path.TrimEnd('\\') + "\\";
                 return;
             }
 
@@ -178,40 +162,15 @@ namespace XrayUI.Views
             picker.FileTypeFilter.Add(".exe");
             WinRT.Interop.InitializeWithWindow.Initialize(picker, _hostHwnd);
 
-            var files = await picker.PickMultipleFilesAsync();
-            if (files.Count == 0) return;
+            var file = await picker.PickSingleFileAsync();
+            if (file is null) return;
 
-            AppendProcessMatches(files.Select(file => format == "path" ? file.Path : file.Name));
+            MatchTextBox.Text = format == "path" ? file.Path : file.Name;
         }
-
-        private void AppendProcessMatches(IEnumerable<string> additions)
-        {
-            // Split the existing text raw and normalize once over the merged set —
-            // CustomRoutingRule.Normalize owns the trim/dedup contract.
-            var matches = CustomRoutingRule.Normalize(
-                SplitLines(ProcessMatchesTextBox.Text).Concat(additions));
-
-            ProcessMatchesTextBox.Text = string.Join(Environment.NewLine, matches);
-            ErrorText.Visibility = Visibility.Collapsed;
-        }
-
-        private static string[] ParseProcessMatches(string? text)
-            => CustomRoutingRule.Normalize(SplitLines(text));
-
-        private static string[] SplitLines(string? text) => (text ?? "").Split(
-            ["\r\n", "\n", "\r"],
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         private void OnPrimaryClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            var typeTag = GetSelectedType();
-            var processMatches = typeTag == "process"
-                ? ParseProcessMatches(ProcessMatchesTextBox.Text)
-                : [];
-            var match = typeTag == "process"
-                ? processMatches.FirstOrDefault() ?? ""
-                : MatchTextBox.Text?.Trim() ?? "";
-
+            var match = MatchTextBox.Text?.Trim() ?? "";
             if (match.Length == 0)
             {
                 ErrorText.Visibility = Visibility.Visible;
@@ -219,13 +178,13 @@ namespace XrayUI.Views
                 return;
             }
 
+            var typeTag     = GetSelectedType();
             var outboundTag = GetSelectedOutboundTag();
 
             Result = new CustomRoutingRule
             {
                 Type        = typeTag,
                 Match       = match,
-                Matches     = processMatches.Length > 1 ? processMatches.ToList() : null,
                 OutboundTag = outboundTag,
                 IsEnabled   = true,
             };

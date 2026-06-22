@@ -302,7 +302,7 @@
     <value>添加规则</value>
   </data>
   <data name="AddRule_ErrorEmpty" xml:space="preserve">
-    <value>请至少输入一个匹配项</value>
+    <value>请填写匹配内容</value>
   </data>
   <data name="Log_Title" xml:space="preserve">
     <value>代理日志</value>
@@ -905,10 +905,10 @@
     <value>block（阻断）</value>
   </data>
   <data name="AddRule_ErrorTextElem.Text" xml:space="preserve">
-    <value>请至少输入一个匹配项</value>
+    <value>请填写匹配内容</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>选择 exe（可多选）...</value>
+    <value>浏览 exe...</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
     <value>浏览文件夹...</value>
@@ -920,7 +920,7 @@
     <value>192.168.0.0/16 或 geoip:cn</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>每行输入一个进程名、完整路径或文件夹</value>
+    <value>可手填进程名 / 路径 / 文件夹，或点浏览选取</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
     <value>支持精确匹配、regexp:、geosite: 前缀</value>
@@ -929,16 +929,13 @@
     <value>支持 CIDR 与 geoip: 前缀</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>每行一个；支持多选并自动去重。</value>
+    <value>同名进程：匹配任意路径下的同名 exe；完整路径：只匹配此 exe；整个目录：匹配该目录下所有 exe</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>应用语言</value>
   </data>
   <data name="Personalize_AppLanguageDesc.Text" xml:space="preserve">
     <value>选择应用界面的显示语言</value>
-  </data>
-  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
-    <value>应用语言和区域设置</value>
   </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
     <value>重启应用以应用更改</value>
@@ -1193,6 +1190,9 @@
   </data>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>区域设置</value>
+  </data>
+  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
+    <value>应用语言和区域设置</value>
   </data>
   <data name="Personalize_Region_CN.Content" xml:space="preserve">
     <value>中国</value>

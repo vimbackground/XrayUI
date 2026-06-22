@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 using XrayUI.Helpers;
 using XrayUI.Models;
@@ -33,7 +32,6 @@ namespace XrayUI.Views
             this.SetWindowSize(620, 460);
             AppWindow.Title = L.CustomRules_Title;
             ThemeHelper.FollowAppTheme(this, WindowRoot);
-            SystemBackdrop = new MicaBackdrop();
 
             ToolTipService.SetToolTip(OpenAdvancedEditorButton, L.CustomRules_AdvancedEditorTooltip);
             ToolTipService.SetToolTip(UpdateGeoButton,          L.CustomRules_UpdateGeoTooltip);

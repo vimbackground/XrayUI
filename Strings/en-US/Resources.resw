@@ -302,7 +302,7 @@
     <value>Add Rule</value>
   </data>
   <data name="AddRule_ErrorEmpty" xml:space="preserve">
-    <value>Enter at least one match</value>
+    <value>Please enter match content</value>
   </data>
   <data name="Log_Title" xml:space="preserve">
     <value>Proxy Log</value>
@@ -905,10 +905,10 @@
     <value>block</value>
   </data>
   <data name="AddRule_ErrorTextElem.Text" xml:space="preserve">
-    <value>Enter at least one match</value>
+    <value>Please enter match content</value>
   </data>
   <data name="AddRule_BrowseExe" xml:space="preserve">
-    <value>Browse exe files...</value>
+    <value>Browse exe...</value>
   </data>
   <data name="AddRule_BrowseFolder" xml:space="preserve">
     <value>Browse folder...</value>
@@ -920,7 +920,7 @@
     <value>192.168.0.0/16 or geoip:cn</value>
   </data>
   <data name="AddRule_PlaceholderProcess" xml:space="preserve">
-    <value>One process name, full path, or folder per line</value>
+    <value>Type a process name / path / folder, or click Browse</value>
   </data>
   <data name="AddRule_HintDomain" xml:space="preserve">
     <value>Supports exact match, regexp:, geosite: prefixes</value>
@@ -929,16 +929,13 @@
     <value>Supports CIDR and geoip: prefixes</value>
   </data>
   <data name="AddRule_HintProcess" xml:space="preserve">
-    <value>One per line; multi-select available and removes duplicates.</value>
+    <value>By name: matches any exe with this name. By full path: matches only this exe. By folder: matches all exes under the folder.</value>
   </data>
   <data name="Personalize_AppLanguageTitle.Text" xml:space="preserve">
     <value>Application language</value>
   </data>
   <data name="Personalize_AppLanguageDesc.Text" xml:space="preserve">
     <value>Choose interface language</value>
-  </data>
-  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
-    <value>Application language and region settings</value>
   </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
     <value>Restart XrayUI to apply changes</value>
@@ -1193,6 +1190,9 @@ Path: {0}</value>
   </data>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>Region</value>
+  </data>
+  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
+    <value>Application language and region settings</value>
   </data>
   <data name="Personalize_Region_CN.Content" xml:space="preserve">
     <value>China</value>
