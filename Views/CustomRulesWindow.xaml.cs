@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 using XrayUI.Helpers;
 using XrayUI.Models;
@@ -32,6 +33,10 @@ namespace XrayUI.Views
             this.SetWindowSize(620, 460);
             AppWindow.Title = L.CustomRules_Title;
             ThemeHelper.FollowAppTheme(this, WindowRoot);
+            // Set the backdrop in code, AFTER FollowAppTheme has applied the correct theme.
+            // Declaring it in XAML paints Mica in the default theme first, then visibly retints
+            // when the theme switches — the unwanted transition flash. Mirrors LogWindow.
+            SystemBackdrop = new MicaBackdrop();
 
             ToolTipService.SetToolTip(OpenAdvancedEditorButton, L.CustomRules_AdvancedEditorTooltip);
             ToolTipService.SetToolTip(UpdateGeoButton,          L.CustomRules_UpdateGeoTooltip);
