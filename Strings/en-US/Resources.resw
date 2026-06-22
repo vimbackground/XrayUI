@@ -937,6 +937,9 @@
   <data name="Personalize_AppLanguageDesc.Text" xml:space="preserve">
     <value>Choose interface language</value>
   </data>
+  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
+    <value>Application language and region settings</value>
+  </data>
   <data name="Personalize_LangRestartBar.Title" xml:space="preserve">
     <value>Restart XrayUI to apply changes</value>
   </data>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -218,7 +218,19 @@ namespace XrayUI.Services
                 // Ready typically lands well under 100ms; Exited surfaces bad configs / port
                 // clashes / TUN elevation failures immediately instead of after a fixed wait.
                 // TimedOut with the process still alive counts as success, same as before.
+                var readyStopwatch = Stopwatch.StartNew();
                 var outcome = await readySignal.WaitAsync(StartupReadyCap);
+                readyStopwatch.Stop();
+
+                // Diagnostic for "occasionally slow start": logs how long the readiness wait
+                // actually took and how it resolved.
+                var readyLabel = outcome switch
+                {
+                    XrayReadySignal.Outcome.Ready => "Ready",
+                    XrayReadySignal.Outcome.Exited => "Exited",
+                    _ => "TimedOut"
+                };
+                AppendLog($"[XrayUI] core readiness: {readyLabel} in {readyStopwatch.ElapsedMilliseconds} ms");
 
                 if (outcome == XrayReadySignal.Outcome.Exited || _process.HasExited)
                 {

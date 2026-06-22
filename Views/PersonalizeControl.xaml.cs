@@ -9,14 +9,13 @@ namespace XrayUI.Views
 {
     public sealed partial class PersonalizeControl
     {
-        private const double AppLanguageHeaderReservedWidth = 114;
-
         public PersonalizeViewModel ViewModel { get; set; } = null!;
 
         public PersonalizeControl()
         {
             this.InitializeComponent();
 
+            AutomationProperties.SetName(AppLanguageExpander, L.Personalize_LanguageRegionExpanderAutomationName);
             AutomationProperties.SetName(ExportPresetButton, L.Personalize_ExportTooltip);
             AutomationProperties.SetName(ImportDropDownButton, L.Personalize_ImportTooltip);
         }
@@ -117,11 +116,6 @@ namespace XrayUI.Views
         {
             await ViewModel.ApplyPendingChangesAsync();
             App.Restart();
-        }
-
-        private void AppLanguageSettingsExpander_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            AppLanguageHeaderGrid.Width = Math.Max(0, e.NewSize.Width - AppLanguageHeaderReservedWidth);
         }
     }
 }

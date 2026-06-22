@@ -11,6 +11,14 @@
              d:DesignWidth="500"
              d:DesignHeight="600">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Styles/AppSettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="20"
                     Padding="0,0,12,24">
@@ -85,23 +93,25 @@
                            FontSize="15"
                            FontWeight="SemiBold" />
 
-                <controls:SettingsExpander HorizontalAlignment="Stretch"
-                                           HorizontalContentAlignment="Stretch"
-                                           SizeChanged="AppLanguageSettingsExpander_SizeChanged"
-                                           x:Name="AppLanguageSettingsExpander">
-                    <controls:SettingsExpander.HeaderIcon>
-                        <FontIcon Glyph="&#xF2B7;" />
-                    </controls:SettingsExpander.HeaderIcon>
-                    <controls:SettingsExpander.Header>
-                        <Grid x:Name="AppLanguageHeaderGrid"
+                <Expander x:Name="AppLanguageExpander"
+                          ExpandDirection="Down"
+                          Style="{StaticResource AppSettingsExpanderStyle}">
+                    <Expander.Header>
+                        <Grid Padding="0,16,16,16"
                               ColumnSpacing="12"
                               HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel VerticalAlignment="Center"
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xF2B7;"
+                                      VerticalAlignment="Center" />
+
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
                                         Spacing="2">
                                 <TextBlock x:Uid="Personalize_AppLanguageTitle"
                                            Text="应用语言"
@@ -109,10 +119,11 @@
                                 <TextBlock x:Uid="Personalize_AppLanguageDesc"
                                            Text="选择应用界面的显示语言"
                                            FontSize="12"
+                                           TextWrapping="Wrap"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
 
-                            <ComboBox Grid.Column="1"
+                            <ComboBox Grid.Column="2"
                                       MinWidth="130"
                                       VerticalAlignment="Center"
                                       ItemsSource="{x:Bind ViewModel.SupportedLanguages, Mode=OneTime}"
@@ -124,32 +135,45 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                         </Grid>
-                    </controls:SettingsExpander.Header>
+                    </Expander.Header>
 
-                    <!-- Expanded row: region (domestic region for smart routing) -->
-                    <controls:SettingsExpander.Items>
-                        <controls:SettingsCard>
-                            <controls:SettingsCard.Header>
+                    <!-- Expanded row: region (domestic region for smart routing).
+                         Left 58 indents the region text to line up under the header title
+                         (header style padding 16 + icon column + ColumnSpacing 12); right 44
+                         clears the chevron well so the combo box aligns with the header combo. -->
+                    <Border MinHeight="52"
+                            Padding="58,8,44,8"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="0,1,0,0">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel VerticalAlignment="Center"
+                                        Spacing="2">
                                 <TextBlock x:Uid="Personalize_RoutingRegionTitle"
                                            Text="区域设置"
                                            FontSize="14" />
-                            </controls:SettingsCard.Header>
-                            <controls:SettingsCard.Description>
                                 <TextBlock x:Uid="Personalize_RoutingRegionDesc"
                                            Text="选择智能路由的国家或地区"
                                            FontSize="12"
                                            TextWrapping="Wrap"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </controls:SettingsCard.Description>
-                            <ComboBox MinWidth="130"
+                            </StackPanel>
+
+                            <ComboBox Grid.Column="1"
+                                      MinWidth="130"
+                                      VerticalAlignment="Center"
                                       SelectedIndex="{x:Bind ViewModel.SelectedRegionIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="Personalize_Region_CN" Content="中国" />
                                 <ComboBoxItem x:Uid="Personalize_Region_RU" Content="俄罗斯" />
                                 <ComboBoxItem x:Uid="Personalize_Region_IR" Content="伊朗" />
                             </ComboBox>
-                        </controls:SettingsCard>
-                    </controls:SettingsExpander.Items>
-                </controls:SettingsExpander>
+                        </Grid>
+                    </Border>
+                </Expander>
 
                 <InfoBar x:Uid="Personalize_LangRestartBar"
                          IsOpen="{x:Bind ViewModel.ShowRestartHint, Mode=TwoWay}"
