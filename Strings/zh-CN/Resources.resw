@@ -1191,6 +1191,9 @@
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>区域设置</value>
   </data>
+  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
+    <value>应用语言和区域设置</value>
+  </data>
   <data name="Personalize_Region_CN.Content" xml:space="preserve">
     <value>中国</value>
   </data>

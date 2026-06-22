@@ -1191,6 +1191,9 @@ Path: {0}</value>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>Region</value>
   </data>
+  <data name="Personalize_LanguageRegionExpanderAutomationName" xml:space="preserve">
+    <value>Application language and region settings</value>
+  </data>
   <data name="Personalize_Region_CN.Content" xml:space="preserve">
     <value>China</value>
   </data>

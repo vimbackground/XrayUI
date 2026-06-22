@@ -15,6 +15,7 @@ namespace XrayUI.Views
         {
             this.InitializeComponent();
 
+            AutomationProperties.SetName(AppLanguageExpander, L.Personalize_LanguageRegionExpanderAutomationName);
             AutomationProperties.SetName(ExportPresetButton, L.Personalize_ExportTooltip);
             AutomationProperties.SetName(ImportDropDownButton, L.Personalize_ImportTooltip);
         }

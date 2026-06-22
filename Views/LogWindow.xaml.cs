@@ -47,6 +47,7 @@ namespace XrayUI.Views
             this.SetWindowSize(900, 600);
             AppWindow.Title = L.Log_Title;
             ThemeHelper.FollowAppTheme(this, WindowRoot);
+            SystemBackdrop = new MicaBackdrop();
 
 			ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
             MaskAddressSubMenu.Text = L.Log_IpMask;

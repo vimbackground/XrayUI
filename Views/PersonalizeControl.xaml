@@ -11,6 +11,14 @@
              d:DesignWidth="500"
              d:DesignHeight="600">
 
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Styles/AppSettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="20"
                     Padding="0,0,12,24">
@@ -85,15 +93,13 @@
                            FontSize="15"
                            FontWeight="SemiBold" />
 
-                <Expander HorizontalAlignment="Stretch"
-                          HorizontalContentAlignment="Stretch"
-                          CornerRadius="{ThemeResource OverlayCornerRadius}"
-                          Background="{ThemeResource LayerFillColorDefaultBrush}"
-                          BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
+                <Expander x:Name="AppLanguageExpander"
+                          ExpandDirection="Down"
+                          Style="{StaticResource AppSettingsExpanderStyle}">
                     <Expander.Header>
-                        <!-- Application language -->
-                        <Grid Padding="0,12"
-                              ColumnSpacing="12">
+                        <Grid Padding="0,16,16,16"
+                              ColumnSpacing="12"
+                              HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -102,9 +108,7 @@
 
                             <FontIcon Grid.Column="0"
                                       Glyph="&#xF2B7;"
-                                      FontSize="16"
-                                      VerticalAlignment="Center"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                      VerticalAlignment="Center" />
 
                             <StackPanel Grid.Column="1"
                                         VerticalAlignment="Center"
@@ -115,12 +119,12 @@
                                 <TextBlock x:Uid="Personalize_AppLanguageDesc"
                                            Text="选择应用界面的显示语言"
                                            FontSize="12"
+                                           TextWrapping="Wrap"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
 
                             <ComboBox Grid.Column="2"
                                       MinWidth="130"
-                                      Margin="0,0,-18,0"
                                       VerticalAlignment="Center"
                                       ItemsSource="{x:Bind ViewModel.SupportedLanguages, Mode=OneTime}"
                                       SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}">
@@ -133,26 +137,32 @@
                         </Grid>
                     </Expander.Header>
 
-                    <!-- Region (domestic region for smart routing) -->
-                    <StackPanel Margin="-16,-12,-16,-12">
-                        <Grid Padding="42,12,16,12"
-                              ColumnSpacing="12">
+                    <!-- Expanded row: region (domestic region for smart routing).
+                         Left 58 indents the region text to line up under the header title
+                         (header style padding 16 + icon column + ColumnSpacing 12); right 44
+                         clears the chevron well so the combo box aligns with the header combo. -->
+                    <Border MinHeight="52"
+                            Padding="58,8,44,8"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="0,1,0,0">
+                        <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0"
-                                        VerticalAlignment="Center"
+
+                            <StackPanel VerticalAlignment="Center"
                                         Spacing="2">
                                 <TextBlock x:Uid="Personalize_RoutingRegionTitle"
                                            Text="区域设置"
                                            FontSize="14" />
                                 <TextBlock x:Uid="Personalize_RoutingRegionDesc"
-                                           Text="选择直连的国家或地区"
+                                           Text="选择智能路由的国家或地区"
                                            FontSize="12"
                                            TextWrapping="Wrap"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
+
                             <ComboBox Grid.Column="1"
                                       MinWidth="130"
                                       VerticalAlignment="Center"
@@ -162,7 +172,7 @@
                                 <ComboBoxItem x:Uid="Personalize_Region_IR" Content="伊朗" />
                             </ComboBox>
                         </Grid>
-                    </StackPanel>
+                    </Border>
                 </Expander>
 
                 <InfoBar x:Uid="Personalize_LangRestartBar"
