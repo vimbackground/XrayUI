@@ -9,10 +9,6 @@
         mc:Ignorable="d"
         Title="自定义路由规则">
 
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
-
     <Grid x:Name="WindowRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
