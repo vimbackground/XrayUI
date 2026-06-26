@@ -20,8 +20,10 @@ namespace XrayUI
         private readonly FrameworkElement _rootElement;
         private readonly Border _miniDragRegion;
         private readonly Button _miniExpandButton;
-        private readonly WindowManager _windowManager;
         private readonly WindowMessageMonitor _windowMessageMonitor;
+        // We own the tray icon directly (rather than WindowManager.IsVisibleInTray) so the
+        // tooltip can track connection state; see ConfigureTray.
+        private TrayIcon? _trayIcon;
         private bool _isSessionEnding;
         private bool _allowClose;
         private bool _initialized;
@@ -41,6 +43,12 @@ namespace XrayUI
         private const int FullWindowHeight = 600;
         private const int MiniWindowWidth = 330;
         private const int MiniWindowHeight = 136;
+        // Unique id for our own tray icon, independent of WinUIEx's WindowManager tray.
+        // Must be a positive 16-bit value: the Shell_NotifyIcon v4 callback reports the icon id
+        // in HIWORD(lParam) (a signed short), so a wider id is truncated on the way back and
+        // every click would fail the id match in TrayIcon.ProcessTrayIconEvents (icon still
+        // shows, but left/right clicks do nothing).
+        private const uint TrayIconId = 0x5852;
 
         public MainViewModel ViewModel { get; }
 
@@ -67,7 +75,10 @@ namespace XrayUI
             ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
 
             // Initial size is established by ApplyWindowMode(isMini: false) below.
-            _windowManager = WindowManager.Get(this);
+            // Get attaches WinUIEx window management to this window for its side effects
+            // (min-size clamping, placement); we don't keep the reference — the tray icon is
+            // owned directly via _trayIcon so we can drive its tooltip from connection state.
+            WindowManager.Get(this);
             _windowMessageMonitor = new WindowMessageMonitor(this);
             _windowMessageMonitor.WindowMessageReceived += OnWindowMessageReceived;
 
@@ -89,7 +100,11 @@ namespace XrayUI
             _miniExpandButton.Click += MiniExpandButton_Click;
 
             var miniCloseButton = (Button)_rootElement.FindName("MinicloseButton");
-            miniCloseButton.Click += (_, _) => HideToTray();
+            miniCloseButton.Click += (_, _) =>
+            {
+                if (!HideToTray())
+                    ExitApplication();
+            };
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
@@ -119,7 +134,10 @@ namespace XrayUI
 
             await ViewModel.InitializeAsync(isBootLaunch: _startMinimized);
 
-            if (_startMinimized) HideToTray();
+            if (_startMinimized && !HideToTray())
+            {
+                RestoreFromTray();
+            }
         }
 
         private void AppTitleBar_BackRequested(object sender, RoutedEventArgs e)
@@ -141,26 +159,9 @@ namespace XrayUI
             if (File.Exists(iconPath))
             {
                 AppWindow.SetIcon(iconPath);
+                _trayIcon = TryCreateTrayIcon(iconPath);
             }
 
-            _windowManager.IsVisibleInTray = true;
-            _windowManager.TrayIconSelected += (_, _) => RestoreFromTray();
-            _windowManager.TrayIconContextMenu += (_, e) =>
-            {
-                var flyout = new MenuFlyout();
-
-				var openItem = new MenuFlyoutItem { Text = L.Tray_Open };
-                openItem.Click += (_, _) => RestoreFromTray();
-                flyout.Items.Add(openItem);
-
-                flyout.Items.Add(new MenuFlyoutSeparator());
-
-                var exitItem = new MenuFlyoutItem { Text = L.Tray_Exit };
-                exitItem.Click += (_, _) => ExitApplication();
-                flyout.Items.Add(exitItem);
-
-                e.Flyout = flyout;
-            };
             AppWindow.Closing += (_, args) =>
             {
                 if (_allowClose || _isSessionEnding)
@@ -168,16 +169,65 @@ namespace XrayUI
                     return;
                 }
 
-                args.Cancel = true;
-                HideToTray();
+                if (HideToTray())
+                {
+                    args.Cancel = true;
+                }
             };
         }
 
-        private void HideToTray()
+        // Own the tray icon directly instead of WindowManager.IsVisibleInTray: WinUIEx ties that
+        // built-in tooltip to the static window Title and never exposes it, so we create our own
+        // TrayIcon and push the tooltip via Tooltip (NIM_MODIFY) — that updates szTip only,
+        // leaving the taskbar/window icon untouched. Returns null if creation fails so the window
+        // is never stranded in a tray that isn't there (HideToTray checks for it).
+        private TrayIcon? TryCreateTrayIcon(string iconPath)
+        {
+            TrayIcon? trayIcon = null;
+            try
+            {
+                trayIcon = new TrayIcon(TrayIconId, iconPath, ViewModel.TrayTooltip);
+                trayIcon.Selected += (_, _) => RestoreFromTray();
+                trayIcon.ContextMenu += (_, e) => e.Flyout = BuildTrayContextMenu();
+                trayIcon.IsVisible = true;
+                return trayIcon;
+            }
+            catch (Exception ex)
+            {
+                trayIcon?.Dispose();
+                Debug.WriteLine($"[Tray] Failed to create tray icon: {ex.Message}");
+                return null;
+            }
+        }
+
+        private MenuFlyout BuildTrayContextMenu()
+        {
+            var flyout = new MenuFlyout();
+
+            var openItem = new MenuFlyoutItem { Text = L.Tray_Open };
+            openItem.Click += (_, _) => RestoreFromTray();
+            flyout.Items.Add(openItem);
+
+            flyout.Items.Add(new MenuFlyoutSeparator());
+
+            var exitItem = new MenuFlyoutItem { Text = L.Tray_Exit };
+            exitItem.Click += (_, _) => ExitApplication();
+            flyout.Items.Add(exitItem);
+
+            return flyout;
+        }
+
+        private bool HideToTray()
         {
             if (_isHiddenToTray)
             {
-                return;
+                return true;
+            }
+
+            if (_trayIcon is null)
+            {
+                Debug.WriteLine("[Tray] Hide requested but tray icon is unavailable.");
+                return false;
             }
 
             _isHiddenToTray = true;
@@ -193,6 +243,7 @@ namespace XrayUI
             _rootElement.Visibility = Visibility.Collapsed;
 
             ReleaseUiResources();
+            return true;
         }
 
         internal void RestoreFromTray()
@@ -231,11 +282,12 @@ namespace XrayUI
             _isHiddenToTray = false;
             try
             {
-                _windowManager.IsVisibleInTray = false;
+                _trayIcon?.Dispose();
+                _trayIcon = null;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Tray] Failed to hide tray icon during exit: {ex.Message}");
+                Debug.WriteLine($"[Tray] Failed to remove tray icon during exit: {ex.Message}");
             }
 
             _ = Task.Run(async () =>
@@ -359,6 +411,14 @@ namespace XrayUI
 
         private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(MainViewModel.TrayTooltip))
+            {
+                // Runs on the UI thread (VM raises PropertyChanged there); no dispatch needed.
+                if (_trayIcon is not null)
+                    _trayIcon.Tooltip = ViewModel.TrayTooltip;
+                return;
+            }
+
             if (_personalizeRealized) return;
             if (e.PropertyName != nameof(MainViewModel.PersonalizeVisibility)) return;
             if (ViewModel.PersonalizeVisibility != Visibility.Visible) return;
