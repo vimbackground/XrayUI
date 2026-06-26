@@ -548,21 +548,47 @@ namespace XrayUI.Services
             return $"{formatted}:{port}";
         }
 
-        /// <summary>Parses "a,b,c" into a 3-int JsonArray for xray's WireGuard reserved field; null when it isn't exactly three integers.</summary>
+        /// <summary>
+        /// Parses xray's WireGuard reserved bytes into a 3-int JsonArray. Accepts both the integer
+        /// form ("209,98,59") and the base64 scalar form ("U4An", common for Cloudflare WARP nodes);
+        /// returns null when it resolves to neither exactly three integers nor exactly three bytes.
+        /// </summary>
         private static JsonArray? ParseWireguardReserved(string reserved)
         {
             if (string.IsNullOrWhiteSpace(reserved))
                 return null;
 
-            var parts = reserved.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (parts.Length != 3)
-                return null;
+            var trimmed = reserved.Trim();
 
-            var array = new JsonArray();
-            foreach (var part in parts)
+            // Integer form: exactly three comma-separated ints.
+            var parts = trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (parts.Length == 3 && parts.All(p => int.TryParse(p, out _)))
             {
-                if (!int.TryParse(part, out var value))
-                    return null;
+                return ToReservedArray(parts.Select(int.Parse));
+            }
+
+            // Base64 form: WARP-style "U4An" decodes to the three reserved bytes. Dropping it would
+            // silently omit settings.reserved and break the handshake for those nodes.
+            try
+            {
+                var bytes = Convert.FromBase64String(trimmed);
+                if (bytes.Length == 3)
+                {
+                    return ToReservedArray(bytes.Select(b => (int)b));
+                }
+            }
+            catch (FormatException)
+            {
+            }
+
+            return null;
+        }
+
+        private static JsonArray ToReservedArray(IEnumerable<int> values)
+        {
+            var array = new JsonArray();
+            foreach (var value in values)
+            {
                 array.Add((JsonNode?)JsonValue.Create(value));
             }
             return array;
