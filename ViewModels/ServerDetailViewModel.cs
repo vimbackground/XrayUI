@@ -112,7 +112,8 @@ namespace XrayUI.ViewModels
                     return "-";
                 }
 
-                if (string.Equals(SelectedServer.Protocol, "hysteria2", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(SelectedServer.Protocol, "hysteria2", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(SelectedServer.Protocol, "wireguard", StringComparison.OrdinalIgnoreCase))
                 {
                     return "UDP";
                 }

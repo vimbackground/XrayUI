@@ -35,6 +35,11 @@ namespace XrayUI.Models
             Finalmask = string.Empty;
             ChainEntryServerId = string.Empty;
             ChainExitServerId = string.Empty;
+            WgPrivateKey = string.Empty;
+            WgPublicKey = string.Empty;
+            WgPreSharedKey = string.Empty;
+            WgLocalAddress = string.Empty;
+            WgReserved = string.Empty;
         }
 
         /// <summary>ID of the subscription this node was imported from; empty = manually added.</summary>
@@ -50,7 +55,7 @@ namespace XrayUI.Models
         [ObservableProperty]
         public partial int Port { get; set; }
 
-        /// <summary>ss | vmess | vless | hysteria2 | trojan | socks | chain</summary>
+        /// <summary>ss | vmess | vless | hysteria2 | trojan | socks | wireguard | chain</summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayProtocol))]
         [NotifyPropertyChangedFor(nameof(IsChain))]
@@ -151,6 +156,31 @@ namespace XrayUI.Models
         [ObservableProperty]
         public partial string ChainExitServerId { get; set; }
 
+        // WireGuard
+        /// <summary>WireGuard client secret (private) key, base64. Maps to xray settings.secretKey.</summary>
+        [ObservableProperty]
+        public partial string WgPrivateKey { get; set; }
+
+        /// <summary>WireGuard peer public key, base64. Maps to xray peers[0].publicKey.</summary>
+        [ObservableProperty]
+        public partial string WgPublicKey { get; set; }
+
+        /// <summary>Optional WireGuard pre-shared key, base64. Maps to xray peers[0].preSharedKey.</summary>
+        [ObservableProperty]
+        public partial string WgPreSharedKey { get; set; }
+
+        /// <summary>Comma-separated local tunnel CIDRs (e.g. "172.16.0.2/32,fd00::2/128"). Maps to xray settings.address.</summary>
+        [ObservableProperty]
+        public partial string WgLocalAddress { get; set; }
+
+        /// <summary>Optional WireGuard reserved bytes as "a,b,c". Maps to xray settings.reserved when it yields 3 ints.</summary>
+        [ObservableProperty]
+        public partial string WgReserved { get; set; }
+
+        /// <summary>WireGuard tunnel MTU. 0 = let the config builder use its default.</summary>
+        [ObservableProperty]
+        public partial int WgMtu { get; set; }
+
         public string Id
         {
             get => _id;
@@ -166,6 +196,7 @@ namespace XrayUI.Models
             "hysteria2" => "Hysteria 2",
             "trojan" => "Trojan",
             "socks" => "SOCKS",
+            "wireguard" => "WireGuard",
             "chain" => "ProxyChain",
             _ => Protocol ?? string.Empty
         };
