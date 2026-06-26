@@ -38,6 +38,14 @@ namespace XrayUI.ViewModels
         public string ActiveServerName =>
             (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? L.Main_NoSelection;
 
+        // Tray icon tooltip. Uses (IsRunning || IsReapplying) so it stays in the "running"
+        // form across a node switch — IsReapplying brackets the stop→start gap (the same
+        // masking StatusText relies on), so the tray text never flickers to "idle" mid-switch.
+        public string TrayTooltip =>
+            (ControlPanel.IsRunning || ControlPanel.IsReapplying)
+                ? Loc.Format("Tray_TooltipRunning", ActiveServerName)
+                : L.Tray_TooltipIdle;
+
         public string MiniRoutingMode => ControlPanel.RoutingModeText;
         public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
         public bool MiniIsRunning => ControlPanel.IsRunning;
@@ -248,6 +256,7 @@ namespace XrayUI.ViewModels
             {
                 ServerDetail.SelectedServer = ServerList.SelectedServer;
                 OnPropertyChanged(nameof(ActiveServerName));
+                OnPropertyChanged(nameof(TrayTooltip));
                 ControlPanel.NotifyStartStopStateChanged();
                 SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
             }
@@ -275,6 +284,7 @@ namespace XrayUI.ViewModels
                 UpdateActiveServer(null);
                 ServerList.IsProxyRunning = ControlPanel.IsRunning;
                 OnPropertyChanged(nameof(ActiveServerName));
+                OnPropertyChanged(nameof(TrayTooltip));
             }
             catch (System.Exception ex)
             {
@@ -310,6 +320,7 @@ namespace XrayUI.ViewModels
             if (e.PropertyName == nameof(ControlPanelViewModel.IsReapplying))
             {
                 SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(TrayTooltip));
                 return;
             }
 
@@ -325,6 +336,7 @@ namespace XrayUI.ViewModels
             UpdateActiveServer(isRunning ? ServerList.SelectedServer : null);
             ServerList.IsProxyRunning = isRunning;
             OnPropertyChanged(nameof(ActiveServerName));
+            OnPropertyChanged(nameof(TrayTooltip));
             OnPropertyChanged(nameof(MiniIsRunning));
             OnPropertyChanged(nameof(MiniStatusText));
             OnPropertyChanged(nameof(MiniDotVisibility));

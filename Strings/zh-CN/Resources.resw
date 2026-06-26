@@ -135,6 +135,13 @@
   <data name="Tray_Exit" xml:space="preserve">
     <value>退出</value>
   </data>
+  <data name="Tray_TooltipRunning" xml:space="preserve">
+    <value>XrayUI - {0}</value>
+    <comment>{0} = active node name. Shown as the tray icon tooltip while running.</comment>
+  </data>
+  <data name="Tray_TooltipIdle" xml:space="preserve">
+    <value>XrayUI - 未运行</value>
+  </data>
   <data name="ServerList_Edit" xml:space="preserve">
     <value>编辑</value>
   </data>
