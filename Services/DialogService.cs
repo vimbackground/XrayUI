@@ -119,7 +119,7 @@ namespace XrayUI.Services
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
             };
             var cmbProtocol = new ComboBox { Header = L.EditServer_Protocol, MinWidth = 200 };
-            foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks" })
+            foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks", "wireguard" })
                 cmbProtocol.Items.Add(p);
             cmbProtocol.SelectedItem = existing?.Protocol?.ToLower() ?? "ss";
 
@@ -193,6 +193,27 @@ namespace XrayUI.Services
                 Text = (existing?.Finalmask ?? string.Empty).Replace("\r\n", "\r").Replace("\n", "\r"),
             };
 
+            // WireGuard. Literal English headers, matching the other technical fields above
+            // (SNI / UUID / PublicKey (Reality) / Flow (VLESS)).
+            var txtWgPrivateKey = new TextBox { Header = "Private Key", Text = existing?.WgPrivateKey ?? string.Empty };
+            var txtWgPublicKey = new TextBox { Header = "Peer Public Key", Text = existing?.WgPublicKey ?? string.Empty };
+            var txtWgPreSharedKey = new TextBox { Header = "Pre-shared Key", Text = existing?.WgPreSharedKey ?? string.Empty };
+            var txtWgLocalAddress = new TextBox
+            {
+                Header = "Local Address",
+                PlaceholderText = "172.16.0.2/32, fd00::2/128",
+                Text = existing?.WgLocalAddress ?? string.Empty
+            };
+            var numWgMtu = new NumberBox
+            {
+                Header = "MTU",
+                Value = existing is { WgMtu: > 0 } ? existing.WgMtu : 1420,
+                Minimum = 0,
+                Maximum = 65535,
+                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
+            };
+            var txtWgReserved = new TextBox { Header = "Reserved", PlaceholderText = "0,0,0", Text = existing?.WgReserved ?? string.Empty };
+
             // Row containers for conditional visibility
             var rowEncryption = Wrap(cmbEncryption);
             var rowUsername = Wrap(txtUsername);
@@ -212,6 +233,12 @@ namespace XrayUI.Services
             var rowFlow = Wrap(txtFlow);
             var rowVlessEncryption = Wrap(txtVlessEncryption);
             var rowFinalmask = Wrap(txtFinalmask);
+            var rowWgPrivateKey = Wrap(txtWgPrivateKey);
+            var rowWgPublicKey = Wrap(txtWgPublicKey);
+            var rowWgPreSharedKey = Wrap(txtWgPreSharedKey);
+            var rowWgLocalAddress = Wrap(txtWgLocalAddress);
+            var rowWgMtu = Wrap(numWgMtu);
+            var rowWgReserved = Wrap(txtWgReserved);
 
             void UpdateVisibility()
             {
@@ -225,7 +252,8 @@ namespace XrayUI.Services
                 bool isHysteria2 = proto == "hysteria2";
                 bool isTrojan = proto == "trojan";
                 bool isSocks = proto == "socks";
-                bool isStandardTransport = !isHysteria2 && !isSocks;
+                bool isWireguard = proto == "wireguard";
+                bool isStandardTransport = !isHysteria2 && !isSocks && !isWireguard;
                 bool hasWs = isStandardTransport && net == "ws";
                 bool hasXhttp = isStandardTransport && net == "xhttp";
                 bool hasGrpc = isStandardTransport && net == "grpc";
@@ -255,6 +283,14 @@ namespace XrayUI.Services
                 rowSpx.Visibility = hasReality ? Visibility.Visible : Visibility.Collapsed;
                 rowFlow.Visibility = isVless ? Visibility.Visible : Visibility.Collapsed;
                 rowVlessEncryption.Visibility = isVless ? Visibility.Visible : Visibility.Collapsed;
+
+                var wg = isWireguard ? Visibility.Visible : Visibility.Collapsed;
+                rowWgPrivateKey.Visibility = wg;
+                rowWgPublicKey.Visibility = wg;
+                rowWgPreSharedKey.Visibility = wg;
+                rowWgLocalAddress.Visibility = wg;
+                rowWgMtu.Visibility = wg;
+                rowWgReserved.Visibility = wg;
             }
 
             cmbProtocol.SelectionChanged += (_, _) =>
@@ -282,6 +318,7 @@ namespace XrayUI.Services
                     cmbNetwork, rowPath, rowWsHost,
                     cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowEchConfigList, rowEchForceQuery,
                     rowPk, rowSid, rowSpx, rowFlow, rowVlessEncryption,
+                    rowWgPrivateKey, rowWgPublicKey, rowWgPreSharedKey, rowWgLocalAddress, rowWgMtu, rowWgReserved,
                     rowFinalmask
                 }
             };
@@ -290,7 +327,13 @@ namespace XrayUI.Services
             {
                 Content = form,
                 MaxHeight = 520,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                // Padding gives the scrollbar its own gutter so it doesn't crowd the
+                // form; the matching negative margin lets that gutter overlap the
+                // dialog's existing right padding, so the form content stays centered
+                // (left/right whitespace symmetric) and aligned with the title.
+                Padding = new Thickness(0, 0, 14, 0),
+                Margin = new Thickness(0, 0, -14, 0)
             };
 
             var dialog = CreateDialog();
@@ -328,10 +371,39 @@ namespace XrayUI.Services
             entry.Flow = txtFlow.Text.Trim();
             entry.VlessEncryption = txtVlessEncryption.Text.Trim();
             entry.Finalmask = FinalmaskJson.NormalizeForStorage(txtFinalmask.Text);
+            entry.WgPrivateKey = txtWgPrivateKey.Text.Trim();
+            entry.WgPublicKey = txtWgPublicKey.Text.Trim();
+            entry.WgPreSharedKey = txtWgPreSharedKey.Text.Trim();
+            entry.WgLocalAddress = txtWgLocalAddress.Text.Trim();
+            entry.WgReserved = txtWgReserved.Text.Trim();
+            entry.WgMtu = double.IsNaN(numWgMtu.Value) ? 0 : (int)numWgMtu.Value;
 
             if (entry.Protocol == "hysteria2")
             {
                 entry.Security = "tls";
+            }
+            else if (entry.Protocol == "wireguard")
+            {
+                entry.Network = string.Empty;
+                entry.Security = string.Empty;
+                entry.Encryption = "WireGuard";
+                entry.Username = string.Empty;
+                entry.Password = string.Empty;
+                entry.Uuid = string.Empty;
+                entry.AlterId = 0;
+                entry.Path = string.Empty;
+                entry.WsHost = string.Empty;
+                entry.Sni = string.Empty;
+                entry.Fingerprint = string.Empty;
+                entry.AllowInsecure = false;
+                entry.EchConfigList = string.Empty;
+                entry.EchForceQuery = string.Empty;
+                entry.PublicKey = string.Empty;
+                entry.ShortId = string.Empty;
+                entry.SpiderX = string.Empty;
+                entry.Flow = string.Empty;
+                entry.VlessEncryption = string.Empty;
+                entry.Finalmask = string.Empty;
             }
             else if (entry.Protocol == "socks")
             {
@@ -359,6 +431,17 @@ namespace XrayUI.Services
                 entry.Username = string.Empty;
             }
 
+            // Switching away from WireGuard must not leave stale tunnel keys/addresses behind.
+            if (entry.Protocol != "wireguard")
+            {
+                entry.WgPrivateKey = string.Empty;
+                entry.WgPublicKey = string.Empty;
+                entry.WgPreSharedKey = string.Empty;
+                entry.WgLocalAddress = string.Empty;
+                entry.WgReserved = string.Empty;
+                entry.WgMtu = 0;
+            }
+
             if (!string.Equals(entry.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
                 || !string.Equals(entry.Security, "tls", StringComparison.OrdinalIgnoreCase)
                 || string.IsNullOrWhiteSpace(entry.EchConfigList))
@@ -367,7 +450,7 @@ namespace XrayUI.Services
                 entry.EchForceQuery = string.Empty;
             }
 
-            if (entry.Protocol != "ss" && entry.Protocol != "socks")
+            if (entry.Protocol != "ss" && entry.Protocol != "socks" && entry.Protocol != "wireguard")
             {
                 entry.Encryption = entry.Security == "reality" ? "Reality"
                     : entry.Security == "tls" ? "TLS"

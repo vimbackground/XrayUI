@@ -211,8 +211,12 @@ namespace XrayUI.Services
                 foreach (var outbound in list.OfType<JsonObject>())
                 {
                     var tag = outbound["tag"]?.GetValue<string>();
-                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag)
+                    var protocol = outbound["protocol"]?.GetValue<string>();
+                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag
+                        && !string.Equals(protocol, "wireguard", StringComparison.OrdinalIgnoreCase))
+                    {
                         ApplyOutboundInterface(outbound, outboundInterface);
+                    }
                 }
             }
 
@@ -298,6 +302,7 @@ namespace XrayUI.Services
                 "hysteria2" => BuildHysteria2Outbound(server, tag),
                 "trojan" => BuildTrojanOutbound(server, tag),
                 "socks" => BuildSocksOutbound(server, tag),
+                "wireguard" => BuildWireguardOutbound(server, tag),
                 _ => BuildSsOutbound(server, tag)
             };
         }
@@ -480,6 +485,87 @@ namespace XrayUI.Services
                     ["servers"] = servers
                 }
             };
+        }
+
+        private static JsonObject BuildWireguardOutbound(ServerEntry server, string tag)
+        {
+            var address = CreateStringArray(
+                server.WgLocalAddress.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+
+            var peer = new JsonObject
+            {
+                ["publicKey"] = server.WgPublicKey,
+                ["endpoint"] = FormatEndpoint(server.Host, server.Port),
+                ["allowedIPs"] = CreateStringArray("0.0.0.0/0", "::/0"),
+                ["keepAlive"] = 0
+            };
+            if (!string.IsNullOrWhiteSpace(server.WgPreSharedKey))
+            {
+                peer["preSharedKey"] = server.WgPreSharedKey;
+            }
+
+            var peers = new JsonArray();
+            AddNode(peers, peer);
+
+            var settings = new JsonObject
+            {
+                ["secretKey"] = server.WgPrivateKey,
+                ["peers"] = peers,
+                ["domainStrategy"] = "ForceIP"
+            };
+
+            // Omit address entirely when no CIDR was configured: an explicit "address": [] reads as
+            // "the user set zero local addresses", whereas omitting it lets xray fall back to its
+            // built-in default. Mirrors the omit-when-empty handling of mtu/reserved/preSharedKey.
+            if (address.Count > 0)
+            {
+                settings["address"] = address;
+            }
+
+            if (server.WgMtu > 0)
+            {
+                settings["mtu"] = server.WgMtu;
+            }
+
+            var reserved = ParseWireguardReserved(server.WgReserved);
+            if (reserved is not null)
+            {
+                settings["reserved"] = reserved;
+            }
+
+            return new JsonObject
+            {
+                ["tag"] = tag,
+                ["protocol"] = "wireguard",
+                ["settings"] = settings
+            };
+        }
+
+        /// <summary>Wraps a bare IPv6 literal in brackets so "host:port" stays unambiguous.</summary>
+        private static string FormatEndpoint(string host, int port)
+        {
+            var formatted = host.Contains(':') && !host.StartsWith('[') ? $"[{host}]" : host;
+            return $"{formatted}:{port}";
+        }
+
+        /// <summary>Parses "a,b,c" into a 3-int JsonArray for xray's WireGuard reserved field; null when it isn't exactly three integers.</summary>
+        private static JsonArray? ParseWireguardReserved(string reserved)
+        {
+            if (string.IsNullOrWhiteSpace(reserved))
+                return null;
+
+            var parts = reserved.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (parts.Length != 3)
+                return null;
+
+            var array = new JsonArray();
+            foreach (var part in parts)
+            {
+                if (!int.TryParse(part, out var value))
+                    return null;
+                array.Add((JsonNode?)JsonValue.Create(value));
+            }
+            return array;
         }
 
         private static JsonObject BuildStreamSettings(ServerEntry server)

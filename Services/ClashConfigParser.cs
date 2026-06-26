@@ -14,7 +14,7 @@ namespace XrayUI.Services
     ///
     /// Routing rules and proxy-groups are ignored by design — this is node-only import.
     /// Only protocols the Xray core supports are mapped (ss / vmess / vless / trojan /
-    /// hysteria2); everything else (tuic, anytls, wireguard, hysteria v1, ssr, snell, …)
+    /// hysteria2 / wireguard); everything else (tuic, anytls, hysteria v1, ssr, snell, …)
     /// is counted as skipped.
     ///
     /// AOT-safe: uses YamlDotNet's reflection-free <see cref="YamlStream"/> DOM, never the
@@ -66,6 +66,7 @@ namespace XrayUI.Services
                 "vless"     => MapVless(p),
                 "trojan"    => MapTrojan(p),
                 "hysteria2" => MapHysteria2(p),
+                "wireguard" => MapWireguard(p),
                 _           => null,
             };
 
@@ -193,6 +194,65 @@ namespace XrayUI.Services
                 return finalmask;
 
             return FinalmaskJson.AddHysteria2SalamanderMask(finalmask, obfsPassword);
+        }
+
+        // WireGuard: single-peer form (top-level public-key / server / port). Returns null when a
+        // required field is missing so the newer multi-peer `peers:` form and malformed rows skip.
+        private static ServerEntry? MapWireguard(YamlMappingNode p)
+        {
+            var privateKey = Str(p, "private-key");
+            var publicKey  = Str(p, "public-key");
+            var server     = Str(p, "server");
+            if (string.IsNullOrWhiteSpace(privateKey)
+                || string.IsNullOrWhiteSpace(publicKey)
+                || string.IsNullOrWhiteSpace(server))
+                return null;
+
+            return new ServerEntry
+            {
+                Name           = Str(p, "name"),
+                Protocol       = "wireguard",
+                Host           = server,
+                Port           = Int(p, "port"),
+                WgPrivateKey   = privateKey,
+                WgPublicKey    = publicKey,
+                WgPreSharedKey = Str(p, "pre-shared-key", Str(p, "preshared-key")),
+                WgLocalAddress = WireguardLocalAddress(p),
+                WgReserved     = Reserved(p),
+                WgMtu          = Int(p, "mtu"),
+                Encryption     = "WireGuard",
+            };
+        }
+
+        // Clash gives local tunnel IPs as bare `ip` / `ipv6`; xray's settings.address wants CIDRs.
+        private static string WireguardLocalAddress(YamlMappingNode p)
+        {
+            var parts = new List<string>(2);
+            AddCidr(parts, Str(p, "ip"), "/32");
+            AddCidr(parts, Str(p, "ipv6"), "/128");
+            return string.Join(",", parts);
+        }
+
+        private static void AddCidr(List<string> into, string address, string suffix)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+                return;
+            into.Add(address.Contains('/') ? address : address + suffix);
+        }
+
+        // reserved is usually a 3-int sequence ([a,b,c]); some configs use a scalar (base64 / "a,b,c").
+        private static string Reserved(YamlMappingNode p) => Child(p, "reserved") switch
+        {
+            YamlSequenceNode seq => string.Join(",", ScalarValues(seq)),
+            YamlScalarNode { Value: { } v } => v,
+            _ => string.Empty,
+        };
+
+        private static IEnumerable<string> ScalarValues(YamlSequenceNode seq)
+        {
+            foreach (var item in seq.Children)
+                if (item is YamlScalarNode { Value: { } v })
+                    yield return v;
         }
 
         // Resolves the transport into the (network, path, wsHost) triple XrayConfigBuilder
