@@ -17,7 +17,9 @@ A native Windows GUI client for the Xray core, built with <a style="text-decorat
 ## UI Preview
 <img width="1465" height="982" alt="image" src="https://github.com/user-attachments/assets/ff288102-d874-4ecb-87dd-0a9d880cc1cf" />
 
+## Download
 
+Download the latest release [here](https://github.com/PhoenixNil/XrayUI-dev/releases/latest).
 
 ## Build
 
