@@ -46,6 +46,13 @@ namespace XrayUI.ViewModels
                 ? Loc.Format("Tray_TooltipRunning", ActiveServerName)
                 : L.Tray_TooltipIdle;
 
+        // True while the tray + taskbar icon should show the "connected" (green-dot) variant.
+        // Mirrors TrayTooltip's condition exactly so icon and tooltip flip together — including
+        // staying "running" across a node switch (IsReapplying brackets the stop→start gap).
+        // Read by MainWindow inside the TrayTooltip PropertyChanged handler, so it does not need
+        // to raise its own change notification.
+        public bool TrayShowsRunning => ControlPanel.IsRunning || ControlPanel.IsReapplying;
+
         public string MiniRoutingMode => ControlPanel.RoutingModeText;
         public IAsyncRelayCommand MiniStartStopCommand => ControlPanel.StartStopCommand;
         public bool MiniIsRunning => ControlPanel.IsRunning;

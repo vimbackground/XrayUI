@@ -24,6 +24,13 @@ namespace XrayUI
         // We own the tray icon directly (rather than WindowManager.IsVisibleInTray) so the
         // tooltip can track connection state; see ConfigureTray.
         private TrayIcon? _trayIcon;
+        // Connection-state icon variants (idle = blue, running = green). Both the tray icon
+        // and the taskbar/window icon swap between them; see ApplyConnectionIcon.
+        private string? _idleIconPath;
+        private string? _runningIconPath;
+        // Last running-state we pushed to the icon, so we only issue a Shell_NotifyIcon icon
+        // modify on an actual transition (see OnViewModelPropertyChanged for why that matters).
+        private bool _trayShowsRunning;
         private bool _isSessionEnding;
         private bool _allowClose;
         private bool _initialized;
@@ -155,7 +162,15 @@ namespace XrayUI
 
         private void ConfigureTray()
         {
-            var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "icons", "output.ico");
+            var iconsDir = Path.Combine(AppContext.BaseDirectory, "Assets", "icons");
+            _idleIconPath = Path.Combine(iconsDir, "output.ico");
+            var runningPath = Path.Combine(iconsDir, "output_running.ico");
+            // Fall back to the idle icon if the running variant is missing, so a bad deploy
+            // degrades to "icon never changes" rather than no icon at all.
+            _runningIconPath = File.Exists(runningPath) ? runningPath : _idleIconPath;
+
+            _trayShowsRunning = ViewModel.TrayShowsRunning;
+            var iconPath = _trayShowsRunning ? _runningIconPath : _idleIconPath;
             if (File.Exists(iconPath))
             {
                 AppWindow.SetIcon(iconPath);
@@ -198,6 +213,17 @@ namespace XrayUI
                 Debug.WriteLine($"[Tray] Failed to create tray icon: {ex.Message}");
                 return null;
             }
+        }
+
+        // Swap both the tray icon and the taskbar/window icon to reflect connection state.
+        // Called on the UI thread from the TrayTooltip PropertyChanged handler. SetIcon updates
+        // the existing tray icon in place (NIM_MODIFY) — no dispose/recreate needed.
+        private void ApplyConnectionIcon(bool running)
+        {
+            var path = running ? _runningIconPath : _idleIconPath;
+            if (path is null || !File.Exists(path)) return;
+            AppWindow.SetIcon(path);
+            _trayIcon?.SetIcon(path);
         }
 
         private MenuFlyout BuildTrayContextMenu()
@@ -414,6 +440,18 @@ namespace XrayUI
             if (e.PropertyName == nameof(MainViewModel.TrayTooltip))
             {
                 // Runs on the UI thread (VM raises PropertyChanged there); no dispatch needed.
+                // Order matters: swap the icon FIRST, write the tooltip LAST. WinUIEx's SetIcon
+                // issues a NIM_MODIFY carrying only the icon (no NIF_SHOWTIP); under
+                // NOTIFYICON_VERSION_4 that suppresses the standard tooltip. The Tooltip setter
+                // re-sends NIF_TIP|NIF_SHOWTIP, so it has to be the last modify we issue. We also
+                // only swap on an actual running-state transition, so a tooltip-text change while
+                // already running (e.g. a node switch) never drops the tooltip.
+                var running = ViewModel.TrayShowsRunning;
+                if (running != _trayShowsRunning)
+                {
+                    _trayShowsRunning = running;
+                    ApplyConnectionIcon(running);
+                }
                 if (_trayIcon is not null)
                     _trayIcon.Tooltip = ViewModel.TrayTooltip;
                 return;

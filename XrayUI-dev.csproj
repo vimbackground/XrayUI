@@ -132,6 +132,9 @@
     <Content Update="Assets\Icons\output.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\Icons\output_running.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Auto-build the standalone (Rust) Updater alongside the main app on local
