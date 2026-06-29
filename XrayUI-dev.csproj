@@ -132,7 +132,7 @@
     <Content Update="Assets\Icons\output.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\Icons\output_running.ico">
+    <Content Update="Assets\Icons\running.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

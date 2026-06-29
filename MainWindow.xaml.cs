@@ -164,7 +164,7 @@ namespace XrayUI
         {
             var iconsDir = Path.Combine(AppContext.BaseDirectory, "Assets", "icons");
             _idleIconPath = Path.Combine(iconsDir, "output.ico");
-            var runningPath = Path.Combine(iconsDir, "output_running.ico");
+            var runningPath = Path.Combine(iconsDir, "running.ico");
             // Fall back to the idle icon if the running variant is missing, so a bad deploy
             // degrades to "icon never changes" rather than no icon at all.
             _runningIconPath = File.Exists(runningPath) ? runningPath : _idleIconPath;
