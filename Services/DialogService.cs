@@ -119,7 +119,7 @@ namespace XrayUI.Services
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
             };
             var cmbProtocol = new ComboBox { Header = L.EditServer_Protocol, MinWidth = 200 };
-            foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks", "wireguard" })
+            foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks", "http", "wireguard" })
                 cmbProtocol.Items.Add(p);
             cmbProtocol.SelectedItem = existing?.Protocol?.ToLower() ?? "ss";
 
@@ -252,8 +252,9 @@ namespace XrayUI.Services
                 bool isHysteria2 = proto == "hysteria2";
                 bool isTrojan = proto == "trojan";
                 bool isSocks = proto == "socks";
+                bool isHttp = proto == "http";
                 bool isWireguard = proto == "wireguard";
-                bool isStandardTransport = !isHysteria2 && !isSocks && !isWireguard;
+                bool isStandardTransport = !isHysteria2 && !isSocks && !isHttp && !isWireguard;
                 bool hasWs = isStandardTransport && net == "ws";
                 bool hasXhttp = isStandardTransport && net == "xhttp";
                 bool hasGrpc = isStandardTransport && net == "grpc";
@@ -265,8 +266,8 @@ namespace XrayUI.Services
                 cmbSecurity.Visibility = isStandardTransport ? Visibility.Visible : Visibility.Collapsed;
 
                 rowEncryption.Visibility = isSs ? Visibility.Visible : Visibility.Collapsed;
-                rowUsername.Visibility = isSocks ? Visibility.Visible : Visibility.Collapsed;
-                rowPassword.Visibility = (isSs || isHysteria2 || isTrojan || isSocks)
+                rowUsername.Visibility = (isSocks || isHttp) ? Visibility.Visible : Visibility.Collapsed;
+                rowPassword.Visibility = (isSs || isHysteria2 || isTrojan || isSocks || isHttp)
                     ? Visibility.Visible
                     : Visibility.Collapsed;
                 rowUuid.Visibility = (isVmess || isVless) ? Visibility.Visible : Visibility.Collapsed;
@@ -405,7 +406,7 @@ namespace XrayUI.Services
                 entry.VlessEncryption = string.Empty;
                 entry.Finalmask = string.Empty;
             }
-            else if (entry.Protocol == "socks")
+            else if (entry.Protocol == "socks" || entry.Protocol == "http")
             {
                 entry.Network = "tcp";
                 entry.Security = "none";
@@ -450,7 +451,7 @@ namespace XrayUI.Services
                 entry.EchForceQuery = string.Empty;
             }
 
-            if (entry.Protocol != "ss" && entry.Protocol != "socks" && entry.Protocol != "wireguard")
+            if (entry.Protocol != "ss" && entry.Protocol != "socks" && entry.Protocol != "http" && entry.Protocol != "wireguard")
             {
                 entry.Encryption = entry.Security == "reality" ? "Reality"
                     : entry.Security == "tls" ? "TLS"
