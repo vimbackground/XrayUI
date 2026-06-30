@@ -489,7 +489,7 @@
     <value>此操作将覆盖您当前的全部节点和路由规则,强烈建议先导出备份。是否继续?</value>
   </data>
   <data name="EditServer_SocksUsername" xml:space="preserve">
-    <value>用户名 (SOCKS)</value>
+    <value>用户名</value>
   </data>
   <data name="EditServer_EchPlaceholder" xml:space="preserve">
     <value>例如 udp://1.1.1.1 或服务端生成的 ECHConfig</value>

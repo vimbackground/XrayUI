@@ -489,7 +489,7 @@
     <value>This will overwrite all current servers and routing rules. We strongly recommend exporting a backup first. Continue?</value>
   </data>
   <data name="EditServer_SocksUsername" xml:space="preserve">
-    <value>Username (SOCKS)</value>
+    <value>Username</value>
   </data>
   <data name="EditServer_EchPlaceholder" xml:space="preserve">
     <value>e.g. udp://1.1.1.1 or server-generated ECHConfig</value>

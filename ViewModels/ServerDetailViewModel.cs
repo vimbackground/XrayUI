@@ -74,6 +74,7 @@ namespace XrayUI.ViewModels
             {
                 "ss"    => L.ServerDetail_Encryption,
                 "socks" => L.ServerDetail_AuthLabel,
+                "http"  => L.ServerDetail_AuthLabel,
                 "chain" => L.ServerDetail_ChainLabel,
                 _       => L.ServerDetail_Security
             };
@@ -86,6 +87,7 @@ namespace XrayUI.ViewModels
                 switch (SelectedServer.Protocol?.ToLowerInvariant())
                 {
                     case "socks":
+                    case "http":
                         return string.IsNullOrWhiteSpace(SelectedServer.Username)
                                && string.IsNullOrWhiteSpace(SelectedServer.Password)
                             ? L.ServerDetail_NoAuth

@@ -302,6 +302,7 @@ namespace XrayUI.Services
                 "hysteria2" => BuildHysteria2Outbound(server, tag),
                 "trojan" => BuildTrojanOutbound(server, tag),
                 "socks" => BuildSocksOutbound(server, tag),
+                "http" => BuildHttpOutbound(server, tag),
                 "wireguard" => BuildWireguardOutbound(server, tag),
                 _ => BuildSsOutbound(server, tag)
             };
@@ -480,6 +481,40 @@ namespace XrayUI.Services
             {
                 ["tag"] = tag,
                 ["protocol"] = "socks",
+                ["settings"] = new JsonObject
+                {
+                    ["servers"] = servers
+                }
+            };
+        }
+
+        private static JsonObject BuildHttpOutbound(ServerEntry server, string tag)
+        {
+            var serverObject = new JsonObject
+            {
+                ["address"] = server.Host,
+                ["port"] = server.Port,
+            };
+
+            if (!string.IsNullOrWhiteSpace(server.Username)
+                || !string.IsNullOrWhiteSpace(server.Password))
+            {
+                var users = new JsonArray();
+                AddNode(users, new JsonObject
+                {
+                    ["user"] = server.Username,
+                    ["pass"] = server.Password,
+                });
+                serverObject["users"] = users;
+            }
+
+            var servers = new JsonArray();
+            AddNode(servers, serverObject);
+
+            return new JsonObject
+            {
+                ["tag"] = tag,
+                ["protocol"] = "http",
                 ["settings"] = new JsonObject
                 {
                     ["servers"] = servers

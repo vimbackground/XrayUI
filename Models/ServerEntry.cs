@@ -196,6 +196,7 @@ namespace XrayUI.Models
             "hysteria2" => "Hysteria 2",
             "trojan" => "Trojan",
             "socks" => "SOCKS",
+            "http" => "HTTP",
             "wireguard" => "WireGuard",
             "chain" => "ProxyChain",
             _ => Protocol ?? string.Empty
