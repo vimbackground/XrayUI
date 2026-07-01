@@ -120,8 +120,8 @@ namespace XrayUI.Services
             };
             var cmbProtocol = new ComboBox { Header = L.EditServer_Protocol, MinWidth = 200 };
             foreach (var p in new[] { "ss", "vmess", "vless", "hysteria2", "trojan", "socks", "http", "wireguard" })
-                cmbProtocol.Items.Add(p);
-            cmbProtocol.SelectedItem = existing?.Protocol?.ToLower() ?? "ss";
+                cmbProtocol.Items.Add(new ComboBoxItem { Content = ServerEntry.GetDisplayProtocol(p), Tag = p });
+            SetProtocolCode(cmbProtocol, existing?.Protocol?.ToLower() ?? "ss");
 
             var cmbEncryption = new ComboBox { Header = L.EditServer_Encryption, MinWidth = 200 };
             foreach (var m in new[]
@@ -242,7 +242,7 @@ namespace XrayUI.Services
 
             void UpdateVisibility()
             {
-                var proto = cmbProtocol.SelectedItem?.ToString() ?? "ss";
+                var proto = GetProtocolCode(cmbProtocol) ?? "ss";
                 var net = cmbNetwork.SelectedItem?.ToString() ?? "tcp";
                 var sec = cmbSecurity.SelectedItem?.ToString() ?? "none";
 
@@ -296,7 +296,7 @@ namespace XrayUI.Services
 
             cmbProtocol.SelectionChanged += (_, _) =>
             {
-                var proto = cmbProtocol.SelectedItem?.ToString();
+                var proto = GetProtocolCode(cmbProtocol);
                 if ((proto == "trojan" || proto == "hysteria2")
                     && cmbSecurity.SelectedItem?.ToString() == "none")
                 {
@@ -351,7 +351,7 @@ namespace XrayUI.Services
             entry.Name = txtName.Text.Trim();
             entry.Host = txtHost.Text.Trim();
             entry.Port = (int)numPort.Value;
-            entry.Protocol = cmbProtocol.SelectedItem?.ToString() ?? "ss";
+            entry.Protocol = GetProtocolCode(cmbProtocol) ?? "ss";
             entry.Encryption = cmbEncryption.SelectedItem?.ToString() ?? string.Empty;
             entry.Username = txtUsername.Text.Trim();
             entry.Password = txtPassword.Password.Trim();
@@ -1147,6 +1147,26 @@ namespace XrayUI.Services
 
         private static Border Wrap(FrameworkElement child) =>
             new Border { Child = child };
+
+        /// <summary>
+        /// The protocol ComboBox shows display names (e.g. "Shadowsocks") but stores the
+        /// stable business code (e.g. "ss") on each item's Tag, per the code-vs-display-string
+        /// convention used for persisted/compared state elsewhere in the app.
+        /// </summary>
+        private static string? GetProtocolCode(ComboBox combo) =>
+            (combo.SelectedItem as ComboBoxItem)?.Tag as string;
+
+        private static void SetProtocolCode(ComboBox combo, string code)
+        {
+            foreach (var item in combo.Items)
+            {
+                if (item is ComboBoxItem { Tag: string tag } cbi && string.Equals(tag, code, StringComparison.OrdinalIgnoreCase))
+                {
+                    combo.SelectedItem = cbi;
+                    return;
+                }
+            }
+        }
 
         /// <summary>
         /// Two-column row: stretchable label on the left, fixed-size control on the right.

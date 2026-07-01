@@ -188,7 +188,10 @@ namespace XrayUI.Models
         }
 
         [JsonIgnore]
-        public string DisplayProtocol => Protocol.ToLowerInvariant() switch
+        public string DisplayProtocol => GetDisplayProtocol(Protocol);
+
+        /// <summary>Maps a protocol code (as stored on <see cref="Protocol"/>) to its display name.</summary>
+        public static string GetDisplayProtocol(string? protocol) => protocol?.ToLowerInvariant() switch
         {
             "ss" => "Shadowsocks",
             "vmess" => "VMess",
@@ -199,7 +202,7 @@ namespace XrayUI.Models
             "http" => "HTTP",
             "wireguard" => "WireGuard",
             "chain" => "ProxyChain",
-            _ => Protocol ?? string.Empty
+            _ => protocol ?? string.Empty
         };
 
         [JsonIgnore]
