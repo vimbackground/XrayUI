@@ -27,7 +27,7 @@ namespace XrayUI.ViewModels
         private const string AllChipKey            = "__all__";
         private const string UngroupedChipKey      = "__ungrouped__";
         private const string FavoritesChipKey      = "__favorites__";
-        private const string SubscriptionUserAgent = "v2rayN/7.0";
+        private const string SubscriptionUserAgent = "v2rayN/7.22";
 
         // Localized labels — looked up lazily so language changes apply at startup.
         private static string AllChipName     => L.ServerList_AllServers;
