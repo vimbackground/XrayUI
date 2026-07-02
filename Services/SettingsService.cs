@@ -81,7 +81,7 @@ namespace XrayUI.Services
         {
             _cachedSettings = settings;
             var json = JsonSerializer.Serialize(settings, AppJsonSerializerContext.Readable<AppSettings>());
-            await File.WriteAllTextAsync(SettingsFile, json).ConfigureAwait(false);
+            await WriteAtomicAsync(SettingsFile, json).ConfigureAwait(false);
         }
 
         // ── Server list ───────────────────────────────────────────────────────
@@ -115,7 +115,21 @@ namespace XrayUI.Services
         {
             var serverList = servers as List<ServerEntry> ?? servers.ToList();
             var json = JsonSerializer.Serialize(serverList, AppJsonSerializerContext.Readable<List<ServerEntry>>());
-            await File.WriteAllTextAsync(ServersFile, json).ConfigureAwait(false);
+            await WriteAtomicAsync(ServersFile, json).ConfigureAwait(false);
+        }
+
+        // Write-to-temp + atomic swap: a crash or power cut mid-save can never leave a
+        // truncated settings/servers file — the previous complete file survives until the
+        // replace commits.
+        private static async Task WriteAtomicAsync(string path, string contents)
+        {
+            var tmp = path + ".tmp";
+            await File.WriteAllTextAsync(tmp, contents).ConfigureAwait(false);
+
+            if (File.Exists(path))
+                File.Replace(tmp, path, destinationBackupFileName: null, ignoreMetadataErrors: true);
+            else
+                File.Move(tmp, path);
         }
     }
 }

@@ -512,7 +512,6 @@ namespace XrayUI.ViewModels
         private void RebuildGroupedView()
         {
             var previousSelection = SelectedServer;
-            VisibleServers.Clear();
 
             var query = (SearchQuery ?? string.Empty).Trim();
             bool MatchesSearch(ServerEntry s) =>
@@ -547,13 +546,12 @@ namespace XrayUI.ViewModels
                 _ => filtered,
             };
 
-            foreach (var server in ordered)
-                VisibleServers.Add(server);
+            SyncVisibleServers(ordered.ToList());
 
-            // Clearing VisibleServers nulls SelectedServer through the ListView's TwoWay
-            // selection binding; put it back whenever the entry is still visible so no
-            // rebuild (search, chip switch, subscription edit/refresh) silently drops
-            // the selection.
+            // Diff sync keeps the selected row alive unless it actually left the view, but
+            // the ListView's TwoWay selection binding can still null SelectedServer on a
+            // Remove/Move touching the selected row; put it back whenever the entry is
+            // still visible so no rebuild silently drops the selection.
             if (previousSelection != null && SelectedServer == null &&
                 VisibleServers.Contains(previousSelection))
             {
@@ -561,6 +559,42 @@ namespace XrayUI.ViewModels
             }
 
             OnPropertyChanged(nameof(CanReorderInCurrentChip));
+        }
+
+        // Reshapes VisibleServers into the target sequence with per-item Remove/Move/Insert
+        // deltas instead of Clear + re-Add. Rows that didn't change position produce no
+        // collection notification at all, so the ListView keeps their containers (and the
+        // selection) — a latency restream or a search keystroke only pays for the entries
+        // that actually moved. Entries are unique instances, so reference identity is the key.
+        private void SyncVisibleServers(List<ServerEntry> target)
+        {
+            if (target.Count == 0)
+            {
+                VisibleServers.Clear();
+                return;
+            }
+
+            var targetSet = new HashSet<ServerEntry>(target);
+            for (int i = VisibleServers.Count - 1; i >= 0; i--)
+            {
+                if (!targetSet.Contains(VisibleServers[i]))
+                    VisibleServers.RemoveAt(i);
+            }
+
+            // Invariant: after step i, VisibleServers[0..i] == target[0..i]; any survivor
+            // of the removal pass that is out of place is therefore always found at an
+            // index > i, so Move never disturbs the already-synced prefix.
+            for (int i = 0; i < target.Count; i++)
+            {
+                if (i < VisibleServers.Count && ReferenceEquals(VisibleServers[i], target[i]))
+                    continue;
+
+                var currentIdx = VisibleServers.IndexOf(target[i]);
+                if (currentIdx >= 0)
+                    VisibleServers.Move(currentIdx, i);
+                else
+                    VisibleServers.Insert(i, target[i]);
+            }
         }
 
         // Latency sort ordering buckets: 0 = a real measurement (sorted by ms),
