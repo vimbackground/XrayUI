@@ -284,14 +284,14 @@
   <data name="Subscription_DeleteTooltip" xml:space="preserve">
     <value>Delete Subscription</value>
   </data>
+  <data name="Subscription_EditTooltip" xml:space="preserve">
+    <value>Edit Subscription</value>
+  </data>
   <data name="Subscription_FetchFailed" xml:space="preserve">
     <value>Subscription fetch failed</value>
   </data>
   <data name="Subscription_NoParsed" xml:space="preserve">
     <value>No valid nodes could be parsed from the subscription.</value>
-  </data>
-  <data name="Subscription_StopFirst_Refresh" xml:space="preserve">
-    <value>Please stop the proxy before refreshing</value>
   </data>
   <data name="Subscription_UpdateFailed" xml:space="preserve">
     <value>Update failed: {0}</value>
@@ -1114,6 +1114,9 @@
   </data>
   <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="Subscription_SaveBtn.Content" xml:space="preserve">
+    <value>Save</value>
   </data>
   <data name="Xray_ExeNotFound" xml:space="preserve">
     <value>Could not find xray.exe

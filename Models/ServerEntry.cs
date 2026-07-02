@@ -225,5 +225,50 @@ namespace XrayUI.Models
         public bool HasLatency => LatencyMs.HasValue;
 
         public void RefreshProtocolColor() => OnPropertyChanged(nameof(Protocol));
+
+        /// <summary>
+        /// Copies every persisted connection-config field (including display name) from
+        /// <paramref name="source"/>, leaving identity and runtime state (Id, SubscriptionId,
+        /// IsFavorite, IsActive, LatencyMs) untouched. Used when a subscription refresh keeps
+        /// the live instance of the connected node: identity-key fields are equal by
+        /// construction, but fields outside the key (fingerprint, ECH, finalmask, WireGuard
+        /// keys, ...) may have changed and must not be silently dropped.
+        /// When adding a new persisted config property, add it here as well.
+        /// </summary>
+        public void CopyConfigFrom(ServerEntry source)
+        {
+            Name               = source.Name;
+            Host               = source.Host;
+            Port               = source.Port;
+            Protocol           = source.Protocol;
+            Encryption         = source.Encryption;
+            Username           = source.Username;
+            Password           = source.Password;
+            Uuid               = source.Uuid;
+            Network            = source.Network;
+            Path               = source.Path;
+            WsHost             = source.WsHost;
+            AlterId            = source.AlterId;
+            Security           = source.Security;
+            Sni                = source.Sni;
+            Fingerprint        = source.Fingerprint;
+            AllowInsecure      = source.AllowInsecure;
+            EchConfigList      = source.EchConfigList;
+            EchForceQuery      = source.EchForceQuery;
+            PublicKey          = source.PublicKey;
+            ShortId            = source.ShortId;
+            SpiderX            = source.SpiderX;
+            Flow               = source.Flow;
+            VlessEncryption    = source.VlessEncryption;
+            Finalmask          = source.Finalmask;
+            ChainEntryServerId = source.ChainEntryServerId;
+            ChainExitServerId  = source.ChainExitServerId;
+            WgPrivateKey       = source.WgPrivateKey;
+            WgPublicKey        = source.WgPublicKey;
+            WgPreSharedKey     = source.WgPreSharedKey;
+            WgLocalAddress     = source.WgLocalAddress;
+            WgReserved         = source.WgReserved;
+            WgMtu              = source.WgMtu;
+        }
     }
 }

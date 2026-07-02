@@ -12,16 +12,19 @@ namespace XrayUI.ViewModels
     {
         private readonly Func<SubscriptionEntry, Task> _onRefresh;
         private readonly Func<SubscriptionEntry, Task<bool>> _onDelete;
+        private readonly Func<SubscriptionEntry, Task> _onEdit;
 
         public ObservableCollection<SubscriptionEntry> Subscriptions { get; }
 
         public ManageSubscriptionsViewModel(
             IEnumerable<SubscriptionEntry> source,
             Func<SubscriptionEntry, Task> onRefresh,
-            Func<SubscriptionEntry, Task<bool>> onDelete)
+            Func<SubscriptionEntry, Task<bool>> onDelete,
+            Func<SubscriptionEntry, Task> onEdit)
         {
             _onRefresh = onRefresh;
             _onDelete  = onDelete;
+            _onEdit    = onEdit;
 
             Subscriptions = new ObservableCollection<SubscriptionEntry>(source);
             Subscriptions.CollectionChanged += OnCollectionChanged;
@@ -69,15 +72,43 @@ namespace XrayUI.ViewModels
             var url = SubscriptionUrl.Trim();
             if (string.IsNullOrEmpty(url)) return null;
 
-            var name = string.IsNullOrWhiteSpace(SubscriptionName)
-                ? TryGetHost(url)
-                : SubscriptionName.Trim();
-
-            return new SubscriptionEntry { Url = url, Name = name };
+            return new SubscriptionEntry { Url = url, Name = ResolveName(SubscriptionName, url) };
         }
 
         [RelayCommand]
         private Task RefreshSubscription(SubscriptionEntry sub) => _onRefresh(sub);
+
+        public async Task CommitEditAsync(SubscriptionEntry sub, string url, string name)
+        {
+            var oldUrl  = sub.Url;
+            var oldName = sub.Name;
+            var urlChanged = !string.Equals(sub.Url, url, StringComparison.Ordinal);
+            var editSaved = false;
+
+            sub.Url  = url;
+            sub.Name = ResolveName(name, url);
+            if (urlChanged) sub.LastError = null;
+
+            try
+            {
+                await _onEdit(sub);
+                editSaved = true;
+                if (urlChanged) await _onRefresh(sub);
+            }
+            catch (Exception ex)
+            {
+                if (!editSaved)
+                {
+                    sub.Url  = oldUrl;
+                    sub.Name = oldName;
+                }
+
+                // Fetch failures are handled inside the refresh callback and land in
+                // LastError there; what escapes to here is persistence I/O (settings /
+                // server-list writes). Surface it on the card instead of losing it.
+                sub.LastError = Loc.Format("Subscription_UpdateFailed", ex.Message);
+            }
+        }
 
         [RelayCommand]
         private async Task DeleteSubscription(SubscriptionEntry sub)
@@ -85,6 +116,10 @@ namespace XrayUI.ViewModels
             var ok = await _onDelete(sub);
             if (ok) Subscriptions.Remove(sub);
         }
+
+        /// <summary>Empty name falls back to the link's host, mirroring the add page.</summary>
+        private static string ResolveName(string name, string url) =>
+            string.IsNullOrWhiteSpace(name) ? TryGetHost(url) : name.Trim();
 
         private static string TryGetHost(string url)
         {

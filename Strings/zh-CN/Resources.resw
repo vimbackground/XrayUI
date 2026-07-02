@@ -284,14 +284,14 @@
   <data name="Subscription_DeleteTooltip" xml:space="preserve">
     <value>删除订阅</value>
   </data>
+  <data name="Subscription_EditTooltip" xml:space="preserve">
+    <value>编辑订阅</value>
+  </data>
   <data name="Subscription_FetchFailed" xml:space="preserve">
     <value>订阅拉取失败</value>
   </data>
   <data name="Subscription_NoParsed" xml:space="preserve">
     <value>未能从订阅中解析出任何有效节点。</value>
-  </data>
-  <data name="Subscription_StopFirst_Refresh" xml:space="preserve">
-    <value>请先停止代理后再刷新</value>
   </data>
   <data name="Subscription_UpdateFailed" xml:space="preserve">
     <value>更新失败: {0}</value>
@@ -1114,6 +1114,9 @@
   </data>
   <data name="Subscription_DeleteConfirmBtn.Content" xml:space="preserve">
     <value>删除</value>
+  </data>
+  <data name="Subscription_SaveBtn.Content" xml:space="preserve">
+    <value>保存</value>
   </data>
   <data name="Xray_ExeNotFound" xml:space="preserve">
     <value>找不到 xray.exe
