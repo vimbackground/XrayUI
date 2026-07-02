@@ -1007,6 +1007,12 @@
   <data name="Personalize_ClashImportFailed" xml:space="preserve">
     <value>Clash import failed</value>
   </data>
+  <data name="Personalize_ImportBlockedTitle" xml:space="preserve">
+    <value>Stop the proxy first</value>
+  </data>
+  <data name="Personalize_ImportBlockedMsg" xml:space="preserve">
+    <value>Importing reloads the server list. Please disconnect before importing.</value>
+  </data>
   <data name="Personalize_ExportTooltip" xml:space="preserve">
     <value>Export preset configuration</value>
   </data>

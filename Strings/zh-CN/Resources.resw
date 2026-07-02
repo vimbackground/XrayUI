@@ -1007,6 +1007,12 @@
   <data name="Personalize_ClashImportFailed" xml:space="preserve">
     <value>Clash 配置导入失败</value>
   </data>
+  <data name="Personalize_ImportBlockedTitle" xml:space="preserve">
+    <value>请先停止代理</value>
+  </data>
+  <data name="Personalize_ImportBlockedMsg" xml:space="preserve">
+    <value>导入会重新加载节点列表,请先断开当前连接后再导入。</value>
+  </data>
   <data name="Personalize_ExportTooltip" xml:space="preserve">
     <value>导出预置配置</value>
   </data>

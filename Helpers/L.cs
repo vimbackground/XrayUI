@@ -139,6 +139,8 @@ public static class L
     public static string Personalize_ClashImportNoNodesTitle   => Loc.GetString("Personalize_ClashImportNoNodesTitle");
     public static string Personalize_ClashImportNoNodesMsg     => Loc.GetString("Personalize_ClashImportNoNodesMsg");
     public static string Personalize_ClashImportFailed         => Loc.GetString("Personalize_ClashImportFailed");
+    public static string Personalize_ImportBlockedTitle        => Loc.GetString("Personalize_ImportBlockedTitle");
+    public static string Personalize_ImportBlockedMsg          => Loc.GetString("Personalize_ImportBlockedMsg");
     public static string Error_ExportFailed                => Loc.GetString("Error_ExportFailed");
 
     // ── CustomRules / AddRule ──────────────────────────────────────────────

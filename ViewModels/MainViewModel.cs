@@ -93,6 +93,7 @@ namespace XrayUI.ViewModels
             ControlPanel.CanStartSelectedServer = () => ServerList.CanRunSelectedServer;
             ServerDetail.GetAllServers = () => ServerList.Servers;
             ServerList.RequestSwitchToSelectedServer = ControlPanel.SwitchToSelectedServerAsync;
+            Personalize.IsProxyRunning = () => ControlPanel.IsRunning;
 
             ServerList.PropertyChanged   += OnServerListPropertyChanged;
             ControlPanel.PropertyChanged += OnControlPanelPropertyChanged;

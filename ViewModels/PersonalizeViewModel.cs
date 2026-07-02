@@ -20,6 +20,13 @@ namespace XrayUI.ViewModels
         public event EventHandler? CloseRequested;
         public event EventHandler? PresetImported;
 
+        /// <summary>Set by MainViewModel (ControlPanel.IsRunning). A preset/Clash import
+        /// reloads the server list from disk, which orphans the live connection's node
+        /// reference without touching the running xray process — the caller checks this
+        /// before importing and blocks with a message to disconnect first, rather than
+        /// silently leaving the UI showing a "running" state with no active node.</summary>
+        public Func<bool>? IsProxyRunning { get; set; }
+
         public PersonalizeViewModel(IDialogService dialogs, SettingsService settings)
         {
             _dialogs = dialogs;
@@ -188,6 +195,7 @@ namespace XrayUI.ViewModels
         /// (pure append, no dedupe — same semantics as "import from link"). Reuses the
         /// <see cref="PresetImported"/> reload path so the live list refreshes from disk.
         /// Returns (imported, skipped). Throws on invalid YAML — the caller surfaces it.
+        /// Caller is expected to check <see cref="IsProxyRunning"/> and block before calling.
         /// </summary>
         public async Task<(int Imported, int Skipped)> ImportClashConfigAsync(string yamlText)
         {

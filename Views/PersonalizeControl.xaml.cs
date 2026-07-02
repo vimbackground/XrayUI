@@ -47,6 +47,14 @@ namespace XrayUI.Views
                     return;
                 }
 
+                if (ViewModel.IsProxyRunning?.Invoke() == true)
+                {
+                    ShowInfo(InfoBarSeverity.Warning,
+                        L.Personalize_ImportBlockedTitle,
+                        L.Personalize_ImportBlockedMsg);
+                    return;
+                }
+
                 var result = await ViewModel.ConfirmAndImportPresetAsync();
                 if (result is null) return;
 
@@ -69,6 +77,14 @@ namespace XrayUI.Views
         {
             try
             {
+                if (ViewModel.IsProxyRunning?.Invoke() == true)
+                {
+                    ShowInfo(InfoBarSeverity.Warning,
+                        L.Personalize_ImportBlockedTitle,
+                        L.Personalize_ImportBlockedMsg);
+                    return;
+                }
+
                 var picker = new FileOpenPicker
                 {
                     SuggestedStartLocation = PickerLocationId.ComputerFolder,
