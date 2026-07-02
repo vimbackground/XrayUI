@@ -849,6 +849,7 @@ namespace XrayUI.ViewModels
 
                 var removed = Servers.Where(s => s.SubscriptionId == sub.Id).ToList();
                 var wasSelectedId = SelectedServer?.Id;
+                var hadActiveNode = removed.Any(s => s.IsActive);
 
                 // Preserve Ids for nodes that survived the refresh so LastAutoConnectServerId
                 // (and any other Id-based reference) keeps pointing at the same logical node.
@@ -915,10 +916,14 @@ namespace XrayUI.ViewModels
 
                 await SaveAsync();
 
-                // Connected to a node of this subscription that did not survive the refresh:
+                // Connected to a node of THIS subscription that did not survive the refresh:
                 // hand the session over to the first fresh node instead of leaving a ghost
-                // tunnel whose node no longer exists in the list.
-                if (IsProxyRunning && !Servers.Any(s => s.IsActive) &&
+                // tunnel whose node no longer exists in the list. Gated on hadActiveNode
+                // (captured before the mutation) rather than "no server is active anywhere"
+                // — the latter is also true after a preset import leaves the proxy running
+                // with no active marker, which would otherwise hijack the session on the
+                // next unrelated subscription refresh.
+                if (hadActiveNode && IsProxyRunning && !Servers.Any(s => s.IsActive) &&
                     RequestSwitchToSelectedServer != null)
                 {
                     var fallback = newEntries.FirstOrDefault();
