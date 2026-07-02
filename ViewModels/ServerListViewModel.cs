@@ -222,6 +222,11 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial bool IsProxyRunning { get; set; }
 
+        /// <summary>Set by MainViewModel: hands the running session over to the currently
+        /// selected server (ControlPanel.SwitchToSelectedServerAsync). Used when a
+        /// subscription refresh replaces the node that carries the live connection.</summary>
+        public Func<Task>? RequestSwitchToSelectedServer { get; set; }
+
         partial void OnIsProxyRunningChanged(bool value)
         {
             NotifyServerActionStateChanged();
@@ -506,6 +511,7 @@ namespace XrayUI.ViewModels
 
         private void RebuildGroupedView()
         {
+            var previousSelection = SelectedServer;
             VisibleServers.Clear();
 
             var query = (SearchQuery ?? string.Empty).Trim();
@@ -543,6 +549,16 @@ namespace XrayUI.ViewModels
 
             foreach (var server in ordered)
                 VisibleServers.Add(server);
+
+            // Clearing VisibleServers nulls SelectedServer through the ListView's TwoWay
+            // selection binding; put it back whenever the entry is still visible so no
+            // rebuild (search, chip switch, subscription edit/refresh) silently drops
+            // the selection.
+            if (previousSelection != null && SelectedServer == null &&
+                VisibleServers.Contains(previousSelection))
+            {
+                SelectedServer = previousSelection;
+            }
 
             OnPropertyChanged(nameof(CanReorderInCurrentChip));
         }
@@ -744,7 +760,8 @@ namespace XrayUI.ViewModels
             var vm = new ManageSubscriptionsViewModel(
                 settings.Subscriptions ?? new List<SubscriptionEntry>(),
                 RefreshSubscriptionAsync,
-                DeleteSubscriptionAsync);
+                DeleteSubscriptionAsync,
+                EditSubscriptionAsync);
 
             var sub = await _dialogs.ShowSubscriptionsDialogAsync(vm);
             if (sub == null) return;
@@ -820,12 +837,6 @@ namespace XrayUI.ViewModels
 
         private async Task RefreshSubscriptionAsync(SubscriptionEntry sub)
         {
-            if (IsSubscriptionLocked(sub.Id))
-            {
-                sub.LastError = L.Subscription_StopFirst_Refresh;
-                return;
-            }
-
             sub.IsBusy = true;
             try
             {
@@ -854,16 +865,34 @@ namespace XrayUI.ViewModels
                 }
 
                 var reusedIds = new HashSet<string>(StringComparer.Ordinal);
-                foreach (var e in newEntries)
+                for (int i = 0; i < newEntries.Count; i++)
                 {
-                    if (oldByIdentity.TryGetValue(BuildNodeIdentityKey(e), out var matches)
-                        && matches.Count > 0)
+                    var e = newEntries[i];
+                    if (!oldByIdentity.TryGetValue(BuildNodeIdentityKey(e), out var matches)
+                        || matches.Count == 0)
+                        continue;
+
+                    var match = matches.Dequeue();
+                    if (match.IsActive)
                     {
-                        var match = matches.Dequeue();
-                        if (!string.IsNullOrWhiteSpace(match.Id) && reusedIds.Add(match.Id))
-                            e.Id = match.Id;
-                        e.IsFavorite = match.IsFavorite;
+                        // The node carrying the live connection survived the refresh: keep
+                        // the existing instance (it is removed and re-added in the batch
+                        // below) so _activeServer, the detail panel and the IsActive marker
+                        // stay valid — the tunnel is never touched. Identity-key fields are
+                        // equal by construction, but config outside the key (fingerprint,
+                        // ECH, finalmask, WireGuard keys, ...) may have changed, so carry
+                        // the full fresh config onto the live instance; the running session
+                        // keeps its old parameters until the next (re)connect.
+                        match.CopyConfigFrom(e);
+                        newEntries[i] = match;
+                        if (!string.IsNullOrWhiteSpace(match.Id))
+                            reusedIds.Add(match.Id);
+                        continue;
                     }
+
+                    if (!string.IsNullOrWhiteSpace(match.Id) && reusedIds.Add(match.Id))
+                        e.Id = match.Id;
+                    e.IsFavorite = match.IsFavorite;
                 }
 
                 MutateServersInBatch(() =>
@@ -872,13 +901,33 @@ namespace XrayUI.ViewModels
                     foreach (var e in newEntries) Servers.Add(e);
                 });
 
-                if (wasSelectedId != null && Servers.All(s => s.Id != wasSelectedId))
-                    SelectedServer = newEntries.FirstOrDefault() ?? Servers.FirstOrDefault();
+                if (wasSelectedId != null)
+                {
+                    // The rebuild clears the ListView selection; put it back on the surviving
+                    // node, or move it to the first fresh node when it was replaced.
+                    SelectedServer = Servers.FirstOrDefault(s => s.Id == wasSelectedId)
+                                     ?? newEntries.FirstOrDefault()
+                                     ?? Servers.FirstOrDefault();
+                }
 
                 sub.LastUpdated = DateTimeOffset.Now;
                 sub.LastError   = null;
 
                 await SaveAsync();
+
+                // Connected to a node of this subscription that did not survive the refresh:
+                // hand the session over to the first fresh node instead of leaving a ghost
+                // tunnel whose node no longer exists in the list.
+                if (IsProxyRunning && !Servers.Any(s => s.IsActive) &&
+                    RequestSwitchToSelectedServer != null)
+                {
+                    var fallback = newEntries.FirstOrDefault();
+                    if (fallback != null)
+                    {
+                        SelectedServer = fallback;
+                        await RequestSwitchToSelectedServer();
+                    }
+                }
             }
             finally
             {
@@ -912,6 +961,13 @@ namespace XrayUI.ViewModels
 
         private static string NormalizeIdentityPart(string? value) =>
             value?.Trim().ToLowerInvariant() ?? string.Empty;
+
+        private async Task EditSubscriptionAsync(SubscriptionEntry sub)
+        {
+            await UpsertSubscriptionAsync(sub);
+            await ReloadKnownSubscriptionsAsync();
+            RebuildAll();
+        }
 
         private async Task<bool> DeleteSubscriptionAsync(SubscriptionEntry sub)
         {

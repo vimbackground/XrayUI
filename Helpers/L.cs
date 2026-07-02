@@ -121,6 +121,7 @@ public static class L
     public static string Subscription_ManageTooltip      => Loc.GetString("Subscription_ManageTooltip");
     public static string Subscription_Refresh            => Loc.GetString("Subscription_Refresh");
     public static string Subscription_DeleteTooltip      => Loc.GetString("Subscription_DeleteTooltip");
+    public static string Subscription_EditTooltip        => Loc.GetString("Subscription_EditTooltip");
     public static string Subscription_NeverUpdated       => Loc.GetString("Subscription_NeverUpdated");
     public static string Subscription_JustNow            => Loc.GetString("Subscription_JustNow");
 
@@ -237,7 +238,6 @@ public static class L
     // ── Subscription ──────────────────────────────────────────────────────
     public static string Subscription_FetchFailed       => Loc.GetString("Subscription_FetchFailed");
     public static string Subscription_NoParsed          => Loc.GetString("Subscription_NoParsed");
-    public static string Subscription_StopFirst_Refresh => Loc.GetString("Subscription_StopFirst_Refresh");
     public static string Subscription_StopFirst_Delete  => Loc.GetString("Subscription_StopFirst_Delete");
     public static string Subscription_UnknownError      => Loc.GetString("Subscription_UnknownError");
 

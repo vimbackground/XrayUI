@@ -81,7 +81,7 @@
                                     BorderThickness="1"
                                     Padding="12,10"
                                     Margin="0,0,0,8">
-                                <Grid ColumnDefinitions="*,Auto,Auto"
+                                <Grid ColumnDefinitions="*,Auto,Auto,Auto"
                                       ColumnSpacing="4">
                                     <StackPanel Grid.Column="0"
                                                 Spacing="2"
@@ -110,6 +110,36 @@
                                             Background="Transparent"
                                             BorderThickness="0"
                                             IsEnabled="{x:Bind IsNotBusy, Mode=OneWay}"
+                                            Loaded="EditButton_Loaded">
+                                        <FontIcon Glyph="&#xE70F;" FontSize="14" />
+                                        <Button.Flyout>
+                                            <Flyout Placement="Bottom"
+                                                    Opening="EditFlyout_Opening">
+                                                <StackPanel Spacing="12" Width="280">
+                                                    <TextBox x:Uid="Subscription_UrlBox"
+                                                             Header="订阅链接"
+                                                             PlaceholderText="https://..."
+                                                             TextWrapping="Wrap"
+                                                             MaxHeight="120"
+                                                             TextChanged="EditUrlBox_TextChanged" />
+                                                    <TextBox x:Uid="Subscription_NameBox"
+                                                             Header="备注名称（可选）"
+                                                             PlaceholderText="留空则使用链接域名" />
+                                                    <Button x:Uid="Subscription_SaveBtn"
+                                                            Click="ConfirmEdit_Click"
+                                                            Style="{StaticResource AccentButtonStyle}"
+                                                            HorizontalAlignment="Right"
+                                                            Content="保存" />
+                                                </StackPanel>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
+
+                                    <Button Grid.Column="2"
+                                            Padding="6"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            IsEnabled="{x:Bind IsNotBusy, Mode=OneWay}"
                                             Loaded="RefreshButton_Loaded"
                                             Click="RefreshButton_Click">
                                         <Grid Width="16" Height="16">
@@ -123,7 +153,7 @@
                                         </Grid>
                                     </Button>
 
-                                    <Button Grid.Column="2"
+                                    <Button Grid.Column="3"
                                             Padding="6"
                                             Background="Transparent"
                                             BorderThickness="0"
