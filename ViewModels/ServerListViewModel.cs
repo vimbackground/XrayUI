@@ -22,7 +22,7 @@ namespace XrayUI.ViewModels
         Latency,
     }
 
-    public partial class ServerListViewModel : ObservableObject, IDisposable
+    public sealed partial class ServerListViewModel : ObservableObject, IDisposable
     {
         private const string AllChipKey            = "__all__";
         private const string UngroupedChipKey      = "__ungrouped__";
@@ -90,6 +90,7 @@ namespace XrayUI.ViewModels
             {
                 server.PropertyChanged -= OnSelectedItemPropertyChanged;
             }
+            _settingsWriteLock.Dispose();
         }
 
         [ObservableProperty]

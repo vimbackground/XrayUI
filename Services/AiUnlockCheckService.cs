@@ -76,8 +76,8 @@ namespace XrayUI.Services
                 using var client = CreateProxiedClient(httpProxyPort);
 
                 // Use GET like the bash curl -sI approach (HEAD may be blocked)
-                var request = new HttpRequestMessage(HttpMethod.Get, "https://api.anthropic.com/v1/messages");
-                var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+                using var request = new HttpRequestMessage(HttpMethod.Get, "https://api.anthropic.com/v1/messages");
+                using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
 
                 var code = (int)response.StatusCode;
 
@@ -118,14 +118,14 @@ namespace XrayUI.Services
 
                 // RPC K4WWud is Gemini's geo preflight: the response carries the visitor's
                 // resolved location plus Gemini's own "unsupported region" flag.
-                var request = new HttpRequestMessage(HttpMethod.Post, "https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=K4WWud");
+                using var request = new HttpRequestMessage(HttpMethod.Post, "https://gemini.google.com/_/BardChatUi/data/batchexecute?rpcids=K4WWud");
                 request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
                 request.Content = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("f.req", "[[[\"K4WWud\",\"[[1],[\\\"en-US\\\"]]\",null,\"generic\"]]]")
                 });
 
-                var response = await client.SendAsync(request, ct);
+                using var response = await client.SendAsync(request, ct);
                 if (!response.IsSuccessStatusCode)
                     return AiUnlockStatus.Blocked;
 

@@ -255,16 +255,9 @@ namespace XrayUI.Services
         /// </summary>
         private static int GetFreeLoopbackPort()
         {
-            var listener = new TcpListener(IPAddress.Loopback, 0);
+            using var listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start();
-            try
-            {
-                return ((IPEndPoint)listener.LocalEndpoint).Port;
-            }
-            finally
-            {
-                listener.Stop();
-            }
+            return ((IPEndPoint)listener.LocalEndpoint).Port;
         }
     }
 }
