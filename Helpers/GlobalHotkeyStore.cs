@@ -21,6 +21,12 @@ namespace XrayUI.Helpers
         public const uint ModShift = 0x0004;
         public const uint ModWin = 0x0008;
 
+        /// <summary>Win32 MOD_NOREPEAT — suppresses repeated WM_HOTKEY messages from keyboard
+        /// auto-repeat while the combo is held. Applied at RegisterHotKey call sites only, never
+        /// stored/persisted alongside the user-facing modifiers above (it isn't part of the combo
+        /// the user picked, just a registration-time flag).</summary>
+        public const uint ModNoRepeat = 0x4000;
+
         public static uint ToggleModifiers { get; set; }
         public static uint ToggleVirtualKey { get; set; }
 

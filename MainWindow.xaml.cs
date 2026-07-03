@@ -325,7 +325,7 @@ namespace XrayUI
 
         private static bool TryRegisterGlobalHotkey(IntPtr hWnd, int id, uint modifiers, uint virtualKey)
         {
-            if (HotkeyInterop.RegisterHotKey(hWnd, id, modifiers, virtualKey))
+            if (HotkeyInterop.RegisterHotKey(hWnd, id, modifiers | GlobalHotkeyStore.ModNoRepeat, virtualKey))
                 return true;
 
             Debug.WriteLine($"[Hotkey] Failed to register hotkey id={id} ({modifiers}:{virtualKey}). LastWin32Error={Marshal.GetLastWin32Error()}");

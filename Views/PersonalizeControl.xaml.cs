@@ -164,7 +164,7 @@ namespace XrayUI.Views
             }
 
             HotkeyInterop.UnregisterHotKey(hWnd, id);
-            if (!HotkeyInterop.RegisterHotKey(hWnd, id, result.Value.mods, result.Value.vk))
+            if (!HotkeyInterop.RegisterHotKey(hWnd, id, result.Value.mods | GlobalHotkeyStore.ModNoRepeat, result.Value.vk))
             {
                 await ViewModel.Dialogs.ShowErrorAsync(L.Personalize_HotkeyConflictTitle, L.Personalize_HotkeyConflictMsg);
                 // Store wasn't mutated — re-assert whatever was previously registered for this id.
