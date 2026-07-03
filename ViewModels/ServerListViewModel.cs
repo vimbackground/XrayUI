@@ -823,15 +823,34 @@ namespace XrayUI.ViewModels
             foreach (var line in lines)
             {
                 var entry = NodeLinkParser.Parse(line.Trim());
-                if (entry == null) continue;
-                if (string.IsNullOrEmpty(entry.Name))
-                    entry.Name = $"{sub.Name} #{entries.Count + 1}";
-                entry.SubscriptionId = sub.Id;
-                entries.Add(entry);
+                if (entry != null) entries.Add(entry);
+            }
+
+            if (entries.Count == 0)
+            {
+                // Some providers ("universal" subscriptions) serve a Clash/Clash.Meta YAML config
+                // instead of a plain link list. Only attempted when no line parsed as a share link,
+                // so a normal link-list subscription never pays for a YAML parse attempt.
+                try
+                {
+                    entries.AddRange(ClashConfigParser.Parse(text).Nodes);
+                }
+                catch
+                {
+                    // Not valid YAML either - falls through to the NoParsed error below.
+                }
             }
 
             if (entries.Count == 0)
                 return (null, L.Subscription_NoParsed);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                if (string.IsNullOrEmpty(entry.Name))
+                    entry.Name = $"{sub.Name} #{i + 1}";
+                entry.SubscriptionId = sub.Id;
+            }
 
             return (entries, null);
         }
