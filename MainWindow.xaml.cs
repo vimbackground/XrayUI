@@ -317,9 +317,14 @@ namespace XrayUI
             {
                 HotkeyInterop.UnregisterHotKey(hWnd, id);
 
+                // On failure, the combo is left in the store as-is (not cleared) — a conflict may
+                // be temporary (another app releases it, or the system state changes), and the
+                // next call to this method retries with the same combo. Nothing else reads a
+                // "successfully registered" flag: the UI only reflects whether a combo is assigned,
+                // and WM_HOTKEY simply never arrives for an id Windows didn't actually register.
                 var (mods, vk) = GlobalHotkeyStore.GetCombo(id);
-                if (vk != 0 && !TryRegisterGlobalHotkey(hWnd, id, mods, vk))
-                    GlobalHotkeyStore.SetCombo(id, 0, 0);
+                if (vk != 0)
+                    TryRegisterGlobalHotkey(hWnd, id, mods, vk);
             }
         }
 
