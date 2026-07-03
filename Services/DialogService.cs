@@ -575,6 +575,31 @@ namespace XrayUI.Services
             return true;
         }
 
+        public async Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(string title, uint currentMods, uint currentVk)
+        {
+            var content = new HotkeyRecorderControl(currentMods, currentVk);
+
+            var dialog = CreateDialog();
+            dialog.Title = title;
+            dialog.Content = content;
+            dialog.PrimaryButtonText = L.Dialog_Save;
+            dialog.SecondaryButtonText = L.Personalize_HotkeyDialogClear;
+            dialog.CloseButtonText = L.Dialog_Cancel;
+            dialog.IsPrimaryButtonEnabled = currentVk != 0;
+            dialog.IsSecondaryButtonEnabled = currentVk != 0;
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            content.ComboCaptured += (_, _) => dialog.IsPrimaryButtonEnabled = true;
+
+            var result = await dialog.ShowAsync();
+            return result switch
+            {
+                ContentDialogResult.Primary   => (false, content.Mods, content.Vk),
+                ContentDialogResult.Secondary => (true, 0u, 0u),
+                _                              => null,
+            };
+        }
+
         public async Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null)
         {
             var dialog = CreateDialog(xamlRoot);

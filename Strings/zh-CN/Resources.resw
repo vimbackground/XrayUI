@@ -974,6 +974,57 @@
   <data name="Personalize_DetailAiUnlockDesc.Text" xml:space="preserve">
     <value>节点卡片上展示AI的解锁状态</value>
   </data>
+  <data name="Personalize_Hotkeys.Text" xml:space="preserve">
+    <value>快捷键</value>
+  </data>
+  <data name="Personalize_HotkeysHeader.Text" xml:space="preserve">
+    <value>激活快捷键</value>
+  </data>
+  <data name="Personalize_HotkeysDialogTitle" xml:space="preserve">
+    <value>激活快捷键</value>
+    <comment>Same text as Personalize_HotkeysHeader.Text above — separate key because a resw entry
+    can't be both a plain value and a scope. This one is the shared dialog title for both hotkey
+    recorder dialogs (read from C#); the .Text one is the section header (read from XAML).</comment>
+  </data>
+  <data name="Personalize_HotkeysDesc.Text" xml:space="preserve">
+    <value>配置快捷键操作触发常用功能</value>
+  </data>
+  <data name="Personalize_HotkeyToggleTitle.Text" xml:space="preserve">
+    <value>启动/停止代理</value>
+  </data>
+  <data name="Personalize_HotkeyRestoreTitle.Text" xml:space="preserve">
+    <value>从托盘恢复窗口</value>
+  </data>
+  <data name="Personalize_HotkeyNotSet" xml:space="preserve">
+    <value>分配快捷方式</value>
+  </data>
+  <data name="Personalize_HotkeyConflictTitle" xml:space="preserve">
+    <value>快捷键设置失败</value>
+  </data>
+  <data name="Personalize_HotkeyConflictMsg" xml:space="preserve">
+    <value>该组合键已被系统或其他程序占用，请更换一个组合。</value>
+  </data>
+  <data name="Personalize_HotkeySavedMsg" xml:space="preserve">
+    <value>快捷键已生效，记得点击下方「完成」保存</value>
+  </data>
+  <data name="Personalize_HotkeyClearedMsg" xml:space="preserve">
+    <value>快捷键已清除，记得点击下方「完成」保存</value>
+  </data>
+  <data name="Personalize_HotkeyInvalidTitle" xml:space="preserve">
+    <value>组合键无效</value>
+  </data>
+  <data name="Personalize_HotkeyInvalidMsg" xml:space="preserve">
+    <value>请至少包含一个 Ctrl、Alt、Shift 或 Win 键。</value>
+  </data>
+  <data name="Personalize_HotkeyRecordTooltip" xml:space="preserve">
+    <value>点击设置快捷键</value>
+  </data>
+  <data name="Personalize_HotkeyToggleAutomationName" xml:space="preserve">
+    <value>启动/停止代理快捷键</value>
+  </data>
+  <data name="Personalize_HotkeyRestoreAutomationName" xml:space="preserve">
+    <value>从托盘恢复窗口快捷键</value>
+  </data>
   <data name="Personalize_ImportExportTitle.Text" xml:space="preserve">
     <value>配置导入与导出</value>
   </data>
@@ -1221,5 +1272,14 @@
   </data>
   <data name="Personalize_RoutingRegionDesc.Text" xml:space="preserve">
     <value>选择智能路由的国家或地区</value>
+  </data>
+  <data name="Personalize_HotkeyDialogClear" xml:space="preserve">
+    <value>清除快捷键</value>
+  </data>
+  <data name="Personalize_HotkeyRecorderPlaceholder" xml:space="preserve">
+    <value>请按下组合键…</value>
+  </data>
+  <data name="HotkeyRecorder_Instruction.Text" xml:space="preserve">
+    <value>点击下方区域，然后按下想要绑定的组合键</value>
   </data>
 </root>

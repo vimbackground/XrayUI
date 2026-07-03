@@ -46,5 +46,14 @@ namespace XrayUI.Services
         /// the persisted runtime state and lags behind the UI toggle until the next connect).
         /// Used to gate FakeDNS availability in the dialog.</param>
         Task<bool> ShowDnsSettingsDialogAsync(AppSettings settings, bool isTunMode);
+
+        /// <summary>
+        /// Shows the hotkey recorder dialog for setting/editing a global hotkey. Returns null if
+        /// cancelled. Otherwise <c>cleared: true</c> means the user chose to remove the hotkey
+        /// entirely; <c>cleared: false</c> carries the captured (or unchanged) combo. This dialog
+        /// has no Win32 knowledge — the caller is responsible for probing/registering with
+        /// user32 and only persisting on success.
+        /// </summary>
+        Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(string title, uint currentMods, uint currentVk);
     }
 }

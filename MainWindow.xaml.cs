@@ -43,6 +43,7 @@ namespace XrayUI
 
         private const uint WmQueryEndSession = 0x0011;
         private const uint WmEndSession = 0x0016;
+        private const uint WmHotkey = 0x0312;
         private const uint WmNclButtonDown   = 0x00A1;
         private const uint WmNclButtonDblClk = 0x00A3;
         private const int HtCaption = 0x0002;
@@ -88,6 +89,7 @@ namespace XrayUI
             WindowManager.Get(this);
             _windowMessageMonitor = new WindowMessageMonitor(this);
             _windowMessageMonitor.WindowMessageReceived += OnWindowMessageReceived;
+            GlobalHotkeyStore.HotkeysChanged += OnGlobalHotkeysChanged;
 
             _rootElement = (FrameworkElement)Content;
             ThemeHelper.RootElement = _rootElement;
@@ -140,6 +142,7 @@ namespace XrayUI
             }
 
             await ViewModel.InitializeAsync(isBootLaunch: _startMinimized);
+            RegisterGlobalHotkeys();
 
             if (_startMinimized && !HideToTray())
             {
@@ -287,6 +290,48 @@ namespace XrayUI
             Activate();
         }
 
+        private void HandleHotkeyMessage(int id)
+        {
+            if (id == GlobalHotkeyStore.ToggleId)
+            {
+                var cmd = ViewModel.ControlPanel.StartStopCommand;
+                if (cmd.CanExecute(null))
+                    _ = cmd.ExecuteAsync(null);
+            }
+            else if (id == GlobalHotkeyStore.RestoreId)
+            {
+                RestoreFromTray();
+            }
+        }
+
+        private void OnGlobalHotkeysChanged(object? sender, EventArgs e) => RegisterGlobalHotkeys();
+
+        // Idempotent: always unregisters both ids first, then re-registers whichever have a
+        // combo assigned (no separate enabled flag — presence of a combo means active). Safe to
+        // call at startup and any time the Personalize page commits a hotkey change.
+        private void RegisterGlobalHotkeys()
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+            foreach (var id in new[] { GlobalHotkeyStore.ToggleId, GlobalHotkeyStore.RestoreId })
+            {
+                HotkeyInterop.UnregisterHotKey(hWnd, id);
+
+                var (mods, vk) = GlobalHotkeyStore.GetCombo(id);
+                if (vk != 0 && !TryRegisterGlobalHotkey(hWnd, id, mods, vk))
+                    GlobalHotkeyStore.SetCombo(id, 0, 0);
+            }
+        }
+
+        private static bool TryRegisterGlobalHotkey(IntPtr hWnd, int id, uint modifiers, uint virtualKey)
+        {
+            if (HotkeyInterop.RegisterHotKey(hWnd, id, modifiers, virtualKey))
+                return true;
+
+            Debug.WriteLine($"[Hotkey] Failed to register hotkey id={id} ({modifiers}:{virtualKey}). LastWin32Error={Marshal.GetLastWin32Error()}");
+            return false;
+        }
+
         private void CenterOnPrimaryDisplay()
         {
             var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary);
@@ -432,6 +477,10 @@ namespace XrayUI
             _rootElement.ActualThemeChanged -= OnRootElementActualThemeChanged;
             _windowMessageMonitor.WindowMessageReceived -= OnWindowMessageReceived;
             _windowMessageMonitor.Dispose();
+            GlobalHotkeyStore.HotkeysChanged -= OnGlobalHotkeysChanged;
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            HotkeyInterop.UnregisterHotKey(hWnd, GlobalHotkeyStore.ToggleId);
+            HotkeyInterop.UnregisterHotKey(hWnd, GlobalHotkeyStore.RestoreId);
             AppWindow.IsShownInSwitchers = true;
         }
 
@@ -475,6 +524,13 @@ namespace XrayUI
         {
             if (e.Message.MessageId == WmNclButtonDblClk && ViewModel.IsMiniMode)
             {
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Message.MessageId == WmHotkey)
+            {
+                HandleHotkeyMessage(unchecked((int)e.Message.WParam));
                 e.Handled = true;
                 return;
             }

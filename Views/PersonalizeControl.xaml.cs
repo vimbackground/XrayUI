@@ -18,6 +18,11 @@ namespace XrayUI.Views
             AutomationProperties.SetName(AppLanguageExpander, L.Personalize_LanguageRegionExpanderAutomationName);
             AutomationProperties.SetName(ExportPresetButton, L.Personalize_ExportTooltip);
             AutomationProperties.SetName(ImportDropDownButton, L.Personalize_ImportTooltip);
+
+            AutomationProperties.SetName(ToggleHotkeyButton, L.Personalize_HotkeyToggleAutomationName);
+            AutomationProperties.SetName(RestoreHotkeyButton, L.Personalize_HotkeyRestoreAutomationName);
+            ToolTipService.SetToolTip(ToggleHotkeyButton, L.Personalize_HotkeyRecordTooltip);
+            ToolTipService.SetToolTip(RestoreHotkeyButton, L.Personalize_HotkeyRecordTooltip);
         }
 
         private async void ExportPresetButton_Click(object sender, RoutedEventArgs e)
@@ -132,6 +137,53 @@ namespace XrayUI.Views
         {
             await ViewModel.ApplyPendingChangesAsync();
             App.Restart();
+        }
+
+        // ── Hotkeys ───────────────────────────────────────────────────────────
+        // Capture happens in a dialog (HotkeyRecorderControl, shown via IDialogService) rather
+        // than inline on the row — easier to discover than "click then press keys" for users
+        // unfamiliar with the pattern. The dialog itself has no Win32 knowledge; the actual
+        // RegisterHotKey probe happens here, after it closes, so a conflict can be reported and
+        // the previous (unchanged) binding re-asserted without the dialog needing to know about it.
+
+        private async void HotkeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            var id = ReferenceEquals(sender, ToggleHotkeyButton) ? GlobalHotkeyStore.ToggleId : GlobalHotkeyStore.RestoreId;
+            var (mods, vk) = GlobalHotkeyStore.GetCombo(id);
+            var result = await ViewModel.Dialogs.ShowHotkeyRecorderDialogAsync(L.Personalize_HotkeysDialogTitle, mods, vk);
+            if (result is null) return; // cancelled — nothing touched
+
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(ThemeHelper.MainWindow);
+
+            if (result.Value.cleared)
+            {
+                HotkeyInterop.UnregisterHotKey(hWnd, id);
+                ViewModel.ClearHotkey(id);
+                ShowHotkeySaved(L.Personalize_HotkeyClearedMsg);
+                return;
+            }
+
+            HotkeyInterop.UnregisterHotKey(hWnd, id);
+            if (!HotkeyInterop.RegisterHotKey(hWnd, id, result.Value.mods, result.Value.vk))
+            {
+                await ViewModel.Dialogs.ShowErrorAsync(L.Personalize_HotkeyConflictTitle, L.Personalize_HotkeyConflictMsg);
+                // Store wasn't mutated — re-assert whatever was previously registered for this id.
+                GlobalHotkeyStore.NotifyHotkeysChanged();
+                return;
+            }
+
+            ViewModel.SetHotkey(id, result.Value.mods, result.Value.vk);
+            ShowHotkeySaved(L.Personalize_HotkeySavedMsg);
+        }
+
+        // The hotkey is live the moment this fires (RegisterHotKey already succeeded above) —
+        // independent of the page's "完成" button, which only persists it to disk for next
+        // launch. This confirms that to the user instead of leaving the button's silent text
+        // change as the only feedback.
+        private void ShowHotkeySaved(string message)
+        {
+            HotkeySavedInfoBar.Message = message;
+            HotkeySavedInfoBar.IsOpen = true;
         }
     }
 }

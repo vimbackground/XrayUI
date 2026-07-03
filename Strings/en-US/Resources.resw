@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -974,6 +974,54 @@
   <data name="Personalize_DetailAiUnlockDesc.Text" xml:space="preserve">
     <value>Show AI unlock status on the node card</value>
   </data>
+  <data name="Personalize_Hotkeys.Text" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="Personalize_HotkeysHeader.Text" xml:space="preserve">
+    <value>Activation Hotkeys</value>
+  </data>
+  <data name="Personalize_HotkeysDialogTitle" xml:space="preserve">
+    <value>Activation Hotkeys</value>
+  </data>
+  <data name="Personalize_HotkeysDesc.Text" xml:space="preserve">
+    <value>Quickly trigger common functions using hotkeys</value>
+  </data>
+  <data name="Personalize_HotkeyToggleTitle.Text" xml:space="preserve">
+    <value>Start/Stop Proxy</value>
+  </data>
+  <data name="Personalize_HotkeyRestoreTitle.Text" xml:space="preserve">
+    <value>Restore Window from Tray</value>
+  </data>
+  <data name="Personalize_HotkeyNotSet" xml:space="preserve">
+    <value>Assign shortcut</value>
+  </data>
+  <data name="Personalize_HotkeyConflictTitle" xml:space="preserve">
+    <value>Failed to Set Hotkey</value>
+  </data>
+  <data name="Personalize_HotkeyConflictMsg" xml:space="preserve">
+    <value>This combination is already in use by the system or another app — try a different one.</value>
+  </data>
+  <data name="Personalize_HotkeySavedMsg" xml:space="preserve">
+    <value>Hotkey is active — click "Done" below to save it</value>
+  </data>
+  <data name="Personalize_HotkeyClearedMsg" xml:space="preserve">
+    <value>Hotkey cleared — click "Done" below to save it</value>
+  </data>
+  <data name="Personalize_HotkeyInvalidTitle" xml:space="preserve">
+    <value>Invalid Combination</value>
+  </data>
+  <data name="Personalize_HotkeyInvalidMsg" xml:space="preserve">
+    <value>Include at least one of Ctrl, Alt, Shift, or Win.</value>
+  </data>
+  <data name="Personalize_HotkeyRecordTooltip" xml:space="preserve">
+    <value>Click to set a shortcut</value>
+  </data>
+  <data name="Personalize_HotkeyToggleAutomationName" xml:space="preserve">
+    <value>Start/stop proxy hotkey</value>
+  </data>
+  <data name="Personalize_HotkeyRestoreAutomationName" xml:space="preserve">
+    <value>Restore window from tray hotkey</value>
+  </data>
   <data name="Personalize_ImportExportTitle.Text" xml:space="preserve">
     <value>Import and Export your data</value>
   </data>
@@ -1221,5 +1269,14 @@ Path: {0}</value>
   </data>
   <data name="Personalize_RoutingRegionDesc.Text" xml:space="preserve">
     <value>Region routed setting</value>
+  </data>
+  <data name="Personalize_HotkeyDialogClear" xml:space="preserve">
+    <value>Clear shortcut</value>
+  </data>
+  <data name="Personalize_HotkeyRecorderPlaceholder" xml:space="preserve">
+    <value>Press a key combination…</value>
+  </data>
+  <data name="HotkeyRecorder_Instruction.Text" xml:space="preserve">
+    <value>Click the box below, then press the combination you want</value>
   </data>
 </root>

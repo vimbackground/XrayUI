@@ -12,6 +12,11 @@ namespace XrayUI.ViewModels
         private readonly SettingsService _settings;
         private readonly IDialogService _dialogs;
 
+        /// <summary>Exposed so PersonalizeControl code-behind can show the hotkey recorder
+        /// dialog — the actual Win32 register/unregister probe stays in code-behind (needs the
+        /// Window handle), so this VM doesn't own that flow end-to-end.</summary>
+        public IDialogService Dialogs => _dialogs;
+
         private int _initialLanguageIndex = -1;
         private bool _suppressLanguageRestartHint;
         private int _initialRegionIndex = -1;
@@ -173,6 +178,57 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial bool ShowAiUnlockInDetails { get; set; }
 
+        // ── Global hotkeys ────────────────────────────────────────────────────
+        // No separate enabled flag — a hotkey is active whenever it has a combo assigned,
+        // matching PowerToys' shortcut behavior. Assign via the recorder button (which auto-sets
+        // on capture); clear via its right-click "清除快捷键" menu item (PersonalizeControl.xaml.cs).
+
+        [ObservableProperty]
+        public partial string HotkeyToggleDisplay { get; set; } = "";
+
+        [ObservableProperty]
+        public partial string HotkeyRestoreDisplay { get; set; } = "";
+
+        /// <summary>True once a combo is recorded — drives the "+" assign-shortcut icon shown
+        /// only in the unset state (PowerToys-style), hidden once a real combo is displayed.</summary>
+        [ObservableProperty]
+        public partial bool HotkeyToggleIsSet { get; set; }
+
+        [ObservableProperty]
+        public partial bool HotkeyRestoreIsSet { get; set; }
+
+        /// <summary>Assigns the combo for <see cref="GlobalHotkeyStore.ToggleId"/> or
+        /// <see cref="GlobalHotkeyStore.RestoreId"/> and notifies MainWindow to re-register.
+        /// Caller (code-behind) is responsible for the actual user32 register/unregister probe.</summary>
+        public void SetHotkey(int id, uint mods, uint vk)
+        {
+            GlobalHotkeyStore.SetCombo(id, mods, vk);
+            RefreshDisplay(id);
+            GlobalHotkeyStore.NotifyHotkeysChanged();
+        }
+
+        /// <summary>Resets the given hotkey back to unset. See <see cref="SetHotkey"/>.</summary>
+        public void ClearHotkey(int id) => SetHotkey(id, 0, 0);
+
+        private void RefreshDisplay(int id)
+        {
+            var (mods, vk) = GlobalHotkeyStore.GetCombo(id);
+            var text = GlobalHotkeyStore.FormatDisplay(mods, vk);
+            var isSet = !string.IsNullOrEmpty(text);
+            var display = isSet ? text : L.Personalize_HotkeyNotSet;
+
+            if (id == GlobalHotkeyStore.ToggleId)
+            {
+                HotkeyToggleIsSet = isSet;
+                HotkeyToggleDisplay = display;
+            }
+            else
+            {
+                HotkeyRestoreIsSet = isSet;
+                HotkeyRestoreDisplay = display;
+            }
+        }
+
         // ── Commands ──────────────────────────────────────────────────────────
 
         [RelayCommand]
@@ -234,6 +290,7 @@ namespace XrayUI.ViewModels
         {
             var s = await _settings.LoadSettingsAsync();
             ProtocolColorStore.SaveTo(s);
+            GlobalHotkeyStore.SaveTo(s);
             s.ThemeSetting = ThemeHelper.CurrentTheme switch
             {
                 ElementTheme.Light   => "Light",
@@ -270,6 +327,9 @@ namespace XrayUI.ViewModels
             };
 
             SelectedBackdropIndex = ThemeHelper.CurrentBackdrop == "Acrylic" ? 1 : 0;
+
+            RefreshDisplay(GlobalHotkeyStore.ToggleId);
+            RefreshDisplay(GlobalHotkeyStore.RestoreId);
         }
 
         public void LoadDisplayOptions(AppSettings settings)

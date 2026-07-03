@@ -584,6 +584,122 @@
                 </Expander>
             </StackPanel>
 
+            <!-- Hotkeys -->
+            <StackPanel Spacing="10">
+                <TextBlock x:Uid="Personalize_Hotkeys"
+                           Text="快捷键"
+                           FontSize="15"
+                           FontWeight="SemiBold" />
+
+                <Expander HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          CornerRadius="{ThemeResource OverlayCornerRadius}"
+                          Background="{ThemeResource LayerFillColorDefaultBrush}"
+                          BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
+                    <Expander.Header>
+                        <Grid Padding="0,12" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xE92E;"
+                                      FontSize="16"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                                <TextBlock x:Uid="Personalize_HotkeysHeader"
+                                           Text="激活快捷键"
+                                           FontSize="14" />
+                                <TextBlock x:Uid="Personalize_HotkeysDesc"
+                                           Text="自定义全局快捷键，随时随地生效"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Grid>
+                    </Expander.Header>
+
+                    <StackPanel Margin="-16,-12,-16,-12">
+                        <!-- Toggle start/stop -->
+                        <Grid Padding="42,10,16,10" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       x:Uid="Personalize_HotkeyToggleTitle"
+                                       Text="启动/停止代理"
+                                       FontSize="14"
+                                       VerticalAlignment="Center" />
+
+                            <Button Grid.Column="1"
+                                    x:Name="ToggleHotkeyButton"
+                                    MinWidth="150"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Click="HotkeyButton_Click">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="6">
+                                    <FontIcon Glyph="&#xE710;"
+                                              FontSize="12"
+                                              Visibility="{x:Bind ViewModel.HotkeyToggleIsSet, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                                    <TextBlock Text="{x:Bind ViewModel.HotkeyToggleDisplay, Mode=OneWay}" />
+                                    <FontIcon Glyph="&#xE70F;"
+                                              FontSize="12"
+                                              Visibility="{x:Bind ViewModel.HotkeyToggleIsSet, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <Rectangle Height="1"
+                                   Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                        <!-- Restore from tray -->
+                        <Grid Padding="42,10,16,10" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       x:Uid="Personalize_HotkeyRestoreTitle"
+                                       Text="从托盘恢复窗口"
+                                       FontSize="14"
+                                       VerticalAlignment="Center" />
+
+                            <Button Grid.Column="1"
+                                    x:Name="RestoreHotkeyButton"
+                                    MinWidth="150"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Click="HotkeyButton_Click">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="6">
+                                    <FontIcon Glyph="&#xE710;"
+                                              FontSize="12"
+                                              Visibility="{x:Bind ViewModel.HotkeyRestoreIsSet, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                                    <TextBlock Text="{x:Bind ViewModel.HotkeyRestoreDisplay, Mode=OneWay}" />
+                                    <FontIcon Glyph="&#xE70F;"
+                                              FontSize="12"
+                                              Visibility="{x:Bind ViewModel.HotkeyRestoreIsSet, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
+                <InfoBar x:Name="HotkeySavedInfoBar"
+                         IsOpen="False"
+                         Severity="Informational"
+                         IsClosable="True" />
+            </StackPanel>
+
             <!-- Data management -->
             <StackPanel Spacing="10">
                 <TextBlock x:Uid="Personalize_DataManagement"

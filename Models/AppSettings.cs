@@ -48,6 +48,14 @@ namespace XrayUI.Models
         public bool ShowLatencyInDetails { get; set; } = true;
         public bool ShowAiUnlockInDetails { get; set; } = true;
 
+        // ── Global hotkeys ────────────────────────────────────────────────────
+        // No separate enabled flag — a hotkey is active whenever a combo is assigned, matching
+        // PowerToys' shortcut behavior. Assign via the recorder button, clear via its right-click menu.
+        /// <summary>"mods:vk" — Win32 RegisterHotKey MOD_* flags and virtual-key code, or null if never set.</summary>
+        public string? HotkeyToggleCombo { get; set; }
+        /// <summary>"mods:vk", or null if never set.</summary>
+        public string? HotkeyRestoreCombo { get; set; }
+
         // ── DNS ───────────────────────────────────────────────────────────────
         /// <summary>Direct DNS for domestic domains (geosite:cn). null = choose the default based on TUN mode.</summary>
         public string? DirectDnsServer { get; set; }
