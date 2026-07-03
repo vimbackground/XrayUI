@@ -783,6 +783,7 @@ namespace XrayUI.ViewModels
         public void InitializePersonalize(AppSettings settings)
         {
             ProtocolColorStore.LoadFrom(settings);
+            GlobalHotkeyStore.LoadFrom(settings);
 
             var theme = settings.ThemeSetting switch
             {

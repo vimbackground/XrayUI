@@ -141,6 +141,19 @@ public static class L
     public static string Personalize_ClashImportFailed         => Loc.GetString("Personalize_ClashImportFailed");
     public static string Personalize_ImportBlockedTitle        => Loc.GetString("Personalize_ImportBlockedTitle");
     public static string Personalize_ImportBlockedMsg          => Loc.GetString("Personalize_ImportBlockedMsg");
+    public static string Personalize_HotkeyNotSet              => Loc.GetString("Personalize_HotkeyNotSet");
+    public static string Personalize_HotkeyConflictTitle       => Loc.GetString("Personalize_HotkeyConflictTitle");
+    public static string Personalize_HotkeyConflictMsg         => Loc.GetString("Personalize_HotkeyConflictMsg");
+    public static string Personalize_HotkeySavedMsg            => Loc.GetString("Personalize_HotkeySavedMsg");
+    public static string Personalize_HotkeyClearedMsg          => Loc.GetString("Personalize_HotkeyClearedMsg");
+    public static string Personalize_HotkeyInvalidTitle        => Loc.GetString("Personalize_HotkeyInvalidTitle");
+    public static string Personalize_HotkeyInvalidMsg          => Loc.GetString("Personalize_HotkeyInvalidMsg");
+    public static string Personalize_HotkeyRecordTooltip       => Loc.GetString("Personalize_HotkeyRecordTooltip");
+    public static string Personalize_HotkeyDialogClear         => Loc.GetString("Personalize_HotkeyDialogClear");
+    public static string Personalize_HotkeyRecorderPlaceholder => Loc.GetString("Personalize_HotkeyRecorderPlaceholder");
+    public static string Personalize_HotkeyToggleAutomationName  => Loc.GetString("Personalize_HotkeyToggleAutomationName");
+    public static string Personalize_HotkeyRestoreAutomationName => Loc.GetString("Personalize_HotkeyRestoreAutomationName");
+    public static string Personalize_HotkeysDialogTitle         => Loc.GetString("Personalize_HotkeysDialogTitle");
     public static string Error_ExportFailed                => Loc.GetString("Error_ExportFailed");
 
     // ── CustomRules / AddRule ──────────────────────────────────────────────
