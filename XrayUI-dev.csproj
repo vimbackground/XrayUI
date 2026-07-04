@@ -42,17 +42,6 @@
     <ApplicationDefinition Remove="updater-rs\**" />
   </ItemGroup>
 
-  <!-- artifacts\ is a local stash of past build outputs (gitignored). The WinUI
-       single-project default Content glob would otherwise sweep all of it into
-       every publish output. -->
-  <ItemGroup>
-    <Compile Remove="artifacts\**" />
-    <Content Remove="artifacts\**" />
-    <None Remove="artifacts\**" />
-    <Page Remove="artifacts\**" />
-    <ApplicationDefinition Remove="artifacts\**" />
-  </ItemGroup>
-
   <ItemGroup>
     <!-- Default engine binaries (x64). Used for empty RID (`dotnet build` / BuildAndRun.ps1)
          and explicit -r win-x64 publishes. Explicit form avoids silently matching
