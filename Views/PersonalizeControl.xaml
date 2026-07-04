@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl x:Class="XrayUI.Views.PersonalizeControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -593,11 +593,9 @@
 
                 <Expander HorizontalAlignment="Stretch"
                           HorizontalContentAlignment="Stretch"
-                          CornerRadius="{ThemeResource OverlayCornerRadius}"
-                          Background="{ThemeResource LayerFillColorDefaultBrush}"
-                          BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
+                          Style="{StaticResource AppSettingsExpanderStyle}">
                     <Expander.Header>
-                        <Grid Padding="0,12" ColumnSpacing="12">
+                        <Grid Padding="0,16,16,16" ColumnSpacing="12" HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -624,9 +622,9 @@
                         </Grid>
                     </Expander.Header>
 
-                    <StackPanel Margin="-16,-12,-16,-12">
+                    <StackPanel>
                         <!-- Toggle start/stop -->
-                        <Grid Padding="42,10,16,10" ColumnSpacing="12">
+                        <Grid MinHeight="52" Padding="58,10,16,10" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -650,18 +648,14 @@
                                               FontSize="12"
                                               Visibility="{x:Bind ViewModel.HotkeyToggleIsSet, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                     <TextBlock Text="{x:Bind ViewModel.HotkeyToggleDisplay, Mode=OneWay}" />
-                                    <FontIcon Glyph="&#xE70F;"
-                                              FontSize="12"
-                                              Visibility="{x:Bind ViewModel.HotkeyToggleIsSet, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </StackPanel>
                             </Button>
                         </Grid>
 
-                        <Rectangle Height="1"
-                                   Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
                         <!-- Restore from tray -->
-                        <Grid Padding="42,10,16,10" ColumnSpacing="12">
+                        <Grid MinHeight="52" Padding="58,10,16,10" ColumnSpacing="12"
+                              BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                              BorderThickness="0,1,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -685,9 +679,6 @@
                                               FontSize="12"
                                               Visibility="{x:Bind ViewModel.HotkeyRestoreIsSet, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                     <TextBlock Text="{x:Bind ViewModel.HotkeyRestoreDisplay, Mode=OneWay}" />
-                                    <FontIcon Glyph="&#xE70F;"
-                                              FontSize="12"
-                                              Visibility="{x:Bind ViewModel.HotkeyRestoreIsSet, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </StackPanel>
                             </Button>
                         </Grid>
