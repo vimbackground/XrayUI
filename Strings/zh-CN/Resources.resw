@@ -324,13 +324,16 @@
     <value>({0} 行)</value>
   </data>
   <data name="Log_PrivacyTooltip" xml:space="preserve">
-    <value>日志隐私设置</value>
+    <value>日志设置</value>
   </data>
   <data name="Log_IpMask" xml:space="preserve">
     <value>IP地址遮罩</value>
   </data>
   <data name="Log_MaskOff" xml:space="preserve">
     <value>关闭</value>
+  </data>
+  <data name="Log_Verbose" xml:space="preserve">
+    <value>详细日志</value>
   </data>
   <data name="Log_AutoScroll" xml:space="preserve">
     <value>自动滚动</value>

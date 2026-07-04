@@ -324,13 +324,16 @@
     <value>({0} lines)</value>
   </data>
   <data name="Log_PrivacyTooltip" xml:space="preserve">
-    <value>Log privacy settings</value>
+    <value>Log settings</value>
   </data>
   <data name="Log_IpMask" xml:space="preserve">
     <value>IP Address Mask</value>
   </data>
   <data name="Log_MaskOff" xml:space="preserve">
     <value>Off</value>
+  </data>
+  <data name="Log_Verbose" xml:space="preserve">
+    <value>Verbose logging</value>
   </data>
   <data name="Log_AutoScroll" xml:space="preserve">
     <value>Auto Scroll</value>

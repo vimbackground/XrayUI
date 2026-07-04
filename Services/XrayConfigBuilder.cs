@@ -14,10 +14,11 @@ namespace XrayUI.Services
     /// </summary>
     public static class XrayConfigBuilder
     {
-        // Must stay at debug/info/warning: XrayReadySignal detects core readiness via the
+        // Both must stay at debug/info/warning: XrayReadySignal detects core readiness via the
         // Warning-level "core: Xray x.y.z started" log line, which "error"/"none" would
         // suppress — degrading every connect/switch/reapply to the 3s timeout fallback.
-        private const string DefaultLogLevel = "info";
+        private const string DefaultLogLevel = "warning";
+        private const string VerboseLogLevel = "info";
         private const string ProxyOutboundTag = "proxy";
         private const string DirectOutboundTag = "direct";
         private const string BlockOutboundTag = "block";
@@ -69,7 +70,10 @@ namespace XrayUI.Services
         {
             var log = new JsonObject
             {
-                ["loglevel"] = DefaultLogLevel
+                // loglevel governs the error log only. The access log ("access" unset = stdout)
+                // keeps printing one [inbound -> outbound] verdict line per connection either way,
+                // so proxy/direct visibility survives the quiet default.
+                ["loglevel"] = settings.VerboseXrayLog ? VerboseLogLevel : DefaultLogLevel
             };
 
             if (LogMaskAddress.IsEnabled(settings.LogMaskAddress))
