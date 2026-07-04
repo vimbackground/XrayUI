@@ -52,6 +52,7 @@ namespace XrayUI.Views
 			ToolTipService.SetToolTip(LogPrivacyButton, L.Log_PrivacyTooltip);
             MaskAddressSubMenu.Text = L.Log_IpMask;
             MaskOffMenuItem.Text    = L.Log_MaskOff;
+            VerboseLogMenuItem.Text = L.Log_Verbose;
             AutoScrollToggle.Content = L.Log_AutoScroll;
             CopyButton.Content       = L.Log_CopyAll;
             ClearButton.Content      = L.Log_Clear;
@@ -61,7 +62,7 @@ namespace XrayUI.Views
 
             RenderLog();
             UpdateStatus();
-            _ = InitializeMaskAddressMenuAsync();
+            _ = InitializeLogSettingsMenuAsync();
 
             _flushTimer = _queue.CreateTimer();
             _flushTimer.Interval = FlushInterval;
@@ -137,16 +138,18 @@ namespace XrayUI.Views
             _prevBufferCount = lines.Count;
         }
 
-        private async Task InitializeMaskAddressMenuAsync()
+        private async Task InitializeLogSettingsMenuAsync()
         {
             try
             {
                 var settings = await _settings.LoadSettingsAsync();
                 SetMaskAddressSelection(LogMaskAddress.Normalize(settings.LogMaskAddress));
+                VerboseLogMenuItem.IsChecked = settings.VerboseXrayLog;
             }
             catch
             {
                 SetMaskAddressSelection(LogMaskAddress.Off);
+                VerboseLogMenuItem.IsChecked = false;
             }
         }
 
@@ -218,6 +221,41 @@ namespace XrayUI.Views
             catch (Exception ex)
             {
                 await ShowInfoAsync(L.Log_PrivacyTitle, Loc.Format("Log_PrivacyFailed", ex.Message));
+            }
+        }
+
+        private async void VerboseLogMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            // ToggleMenuFlyoutItem has already flipped IsChecked by the time Click fires.
+            var value = VerboseLogMenuItem.IsChecked;
+
+            try
+            {
+                var settings = await _settings.LoadSettingsAsync();
+                if (settings.VerboseXrayLog == value)
+                {
+                    return;
+                }
+
+                settings.VerboseXrayLog = value;
+                await _settings.SaveSettingsAsync(settings);
+
+                if (!_xray.IsRunning)
+                {
+                    return;
+                }
+
+                if (settings.IsTunMode)
+                {
+                    await ShowInfoAsync(L.Log_Verbose, L.Log_PrivacySaved);
+                    return;
+                }
+
+                await _reapplyConfigAsync();
+            }
+            catch (Exception ex)
+            {
+                await ShowInfoAsync(L.Log_Verbose, Loc.Format("Log_PrivacyFailed", ex.Message));
             }
         }
 

@@ -85,6 +85,8 @@
                                                          Tag="full"
                                                          Click="MaskAddressMenuItem_Click" />
                                 </MenuFlyoutSubItem>
+                                <ToggleMenuFlyoutItem x:Name="VerboseLogMenuItem"
+                                                      Click="VerboseLogMenuItem_Click" />
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>

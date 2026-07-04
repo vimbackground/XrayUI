@@ -30,6 +30,10 @@ namespace XrayUI.Models
         public string? LastAutoConnectServerName { get; set; }
         /// <summary>"" | "quarter" | "half" | "full"; controls Xray log IP masking.</summary>
         public string LogMaskAddress { get; set; } = string.Empty;
+        /// <summary>Verbose xray error log: true = loglevel "info" (per-connection sniffing/routing/
+        /// transport detail), false (default) = "warning". Independent of the access log, which
+        /// always prints one [inbound -> outbound] verdict line per connection.</summary>
+        public bool VerboseXrayLog { get; set; } = false;
 
         // ── Internationalization ──────────────────────────────────────────────
         /// <summary>BCP-47 tag from <see cref="XrayUI.Helpers.LanguageHelper.SupportedLanguages"/>, or null to follow system.</summary>
