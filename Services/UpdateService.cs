@@ -32,6 +32,20 @@ namespace XrayUI.Services
         private const string AppExeName     = "XrayUI-dev.exe";
         private const string UpdaterExeName = "XrayUI.Updater.exe";
 
+        // Which release-asset variant this build updates from. "-wasdk" zips bundle
+        // the Windows App SDK runtime in the app folder; plain zips rely on the
+        // machine-wide Windows App Runtime. The two must never cross-grade: the
+        // updater only overwrites, so a wasdk install fed a plain zip keeps the old
+        // runtime DLLs but gets an exe that ignores them and asks the bootstrapper
+        // for an installed runtime — instant startup failure on machines without
+        // one. WASDK_SELF_CONTAINED is defined in the csproj whenever the publish
+        // runs with -p:WindowsAppSDKSelfContained=true (see release.yml).
+#if WASDK_SELF_CONTAINED
+        private const string AssetVariantSuffix = "-wasdk";
+#else
+        private const string AssetVariantSuffix = "";
+#endif
+
         public async Task<UpdateInfo?> CheckAsync(string? proxyUrl, CancellationToken ct)
         {
             // Local builds carry the csproj default <Version>0.0.0-dev</Version>;
@@ -62,7 +76,7 @@ namespace XrayUI.Services
             var rid = CurrentRid();
             if (rid is null) return null;
 
-            var zipName    = $"XrayUI-{rid}.zip";
+            var zipName    = $"XrayUI-{rid}{AssetVariantSuffix}.zip";
             var sha256Name = $"{zipName}.sha256";
 
             string? zipUrl = null, shaUrl = null;
@@ -76,7 +90,7 @@ namespace XrayUI.Services
                 }
             }
 
-            // Both must be present. Missing zip = no asset for this arch; missing
+            // Both must be present. Missing zip = no asset for this arch/variant; missing
             // .sha256 = release mid-deploy or pre-feature build. Either way: silent skip.
             if (zipUrl is null || shaUrl is null) return null;
 

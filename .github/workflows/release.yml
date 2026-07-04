@@ -11,25 +11,36 @@ permissions:
 
 jobs:
   publish:
-    name: publish ${{ matrix.rid }} (AOT)
+    name: publish ${{ matrix.rid }}${{ matrix.wasdk_sc && '-wasdk' || '' }} (AOT)
     runs-on: windows-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
+        rid: [win-x64, win-arm64]
+        # false = framework-dependent WinAppSDK (needs Windows App Runtime installed,
+        # smaller zip; the auto-update channel tracks these). true = runtime bundled
+        # into the app folder ("-wasdk" zips, no installer needed, much larger).
+        wasdk_sc: [false, true]
+        # The include entries below attach per-rid build parameters to every
+        # rid × wasdk_sc combination. Keep rid/platform/rust_target here and the
+        # variant flags as axes above — flat include entries would overwrite each
+        # other instead of forming a cross product.
         include:
+          # arm64 cross-compiles on the x64 windows-latest runner: NativeAOT and
+          # rustc both use the ARM64 MSVC cross tools preinstalled on the image
+          # (no windows-11-arm runner needed). win-x86 would follow the same
+          # pattern (platform: x86, rust_target: i686-pc-windows-msvc).
           - rid: win-x64
             platform: x64
             rust_target: x86_64-pc-windows-msvc
-          # Only win-x64 ships. To add a platform, append a matrix entry, e.g.
-          #   - rid: win-x86
-          #     platform: x86
-          #     rust_target: i686-pc-windows-msvc
-          #   - rid: win-arm64
-          #     platform: ARM64
-          #     rust_target: aarch64-pc-windows-msvc
-          # Note: AOT cross-compile to arm64 may require a windows-11-arm runner;
-          # the Rust updater also needs the ARM64 MSVC tools on that runner.
+          - rid: win-arm64
+            platform: ARM64
+            rust_target: aarch64-pc-windows-msvc
+
+    env:
+      # Suffix for zip/artifact names: "" or "-wasdk".
+      VARIANT: ${{ matrix.wasdk_sc && '-wasdk' || '' }}
 
     steps:
       - name: Checkout
@@ -52,7 +63,7 @@ jobs:
 
       # No separate `dotnet restore` step: PublishAot must be set at restore time
       # for ILCompiler to be pulled in. See build.yml for details.
-      - name: Publish (${{ matrix.rid }}, AOT)
+      - name: Publish (${{ matrix.rid }}${{ env.VARIANT }}, AOT)
         run: >
           dotnet publish XrayUI-dev.csproj
           -c Release
@@ -63,7 +74,7 @@ jobs:
           -p:PublishTrimmed=true
           -p:PublishSingleFile=false
           -p:PublishReadyToRun=false
-          -p:WindowsAppSDKSelfContained=false
+          -p:WindowsAppSDKSelfContained=${{ matrix.wasdk_sc }}
           -p:CopyOutputSymbolsToPublishDirectory=false
           -p:Version=${{ steps.ver.outputs.version }}
           -p:BuildingForCI=true
@@ -115,14 +126,14 @@ jobs:
         shell: pwsh
         run: |
           $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
-          $zipName = "XrayUI-${{ matrix.rid }}.zip"
+          $zipName = "XrayUI-${{ matrix.rid }}${{ env.VARIANT }}.zip"
           Compress-Archive -Path "$publishDir/*" -DestinationPath $zipName -CompressionLevel Optimal
           Write-Host "Created $zipName ($((Get-Item $zipName).Length) bytes)"
 
       - name: Generate SHA256
         shell: pwsh
         run: |
-          $zip = "XrayUI-${{ matrix.rid }}.zip"
+          $zip = "XrayUI-${{ matrix.rid }}${{ env.VARIANT }}.zip"
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
           # Standard sha256sum format: "<hash>  <filename>" (two spaces, no newline).
           [System.IO.File]::WriteAllText("$zip.sha256", "$hash  $zip", [System.Text.Encoding]::ASCII)
@@ -131,8 +142,8 @@ jobs:
       - name: Upload zip artifact
         uses: actions/upload-artifact@v4
         with:
-          name: XrayUI-${{ matrix.rid }}
-          path: XrayUI-${{ matrix.rid }}.zip*
+          name: XrayUI-${{ matrix.rid }}${{ env.VARIANT }}
+          path: XrayUI-${{ matrix.rid }}${{ env.VARIANT }}.zip*
           retention-days: 14
           if-no-files-found: error
 

@@ -11,6 +11,10 @@ ARM64/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+# The ARM64/ build-output rule above also matches Assets/engine/arm64/
+# (gitignore is case-insensitive on Windows). Those are shipped engine
+# binaries, not build output — un-ignore them.
+!Assets/engine/arm64/
 
 # Visual Studio
 .vs/

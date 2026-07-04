@@ -42,6 +42,17 @@
     <ApplicationDefinition Remove="updater-rs\**" />
   </ItemGroup>
 
+  <!-- artifacts\ is a local stash of past build outputs (gitignored). The WinUI
+       single-project default Content glob would otherwise sweep all of it into
+       every publish output. -->
+  <ItemGroup>
+    <Compile Remove="artifacts\**" />
+    <Content Remove="artifacts\**" />
+    <None Remove="artifacts\**" />
+    <Page Remove="artifacts\**" />
+    <ApplicationDefinition Remove="artifacts\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Default engine binaries (x64). Used for empty RID (`dotnet build` / BuildAndRun.ps1)
          and explicit -r win-x64 publishes. Explicit form avoids silently matching
@@ -126,6 +137,18 @@
   <!-- Version: defaults for local builds; CI overrides via -p:Version=<tag> -->
   <PropertyGroup>
     <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
+  </PropertyGroup>
+
+  <!-- Auto-update channel marker. release.yml publishes two variants per RID:
+       plain zips (WindowsAppSDKSelfContained=false, Windows App Runtime must be
+       installed) and "-wasdk" zips (=true, runtime bundled into the app folder).
+       Derived from the same -p:WindowsAppSDKSelfContained the publish already
+       passes, so the binary and the zip it was packed into can never disagree.
+       UpdateService.cs uses this to request the matching release asset — the
+       updater only overwrites files, so a cross-variant update would leave a
+       framework-dependent exe stranded on machines without the runtime. -->
+  <PropertyGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
+    <DefineConstants>$(DefineConstants);WASDK_SELF_CONTAINED</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
