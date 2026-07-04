@@ -128,6 +128,18 @@
     <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
   </PropertyGroup>
 
+  <!-- Auto-update channel marker. release.yml publishes two variants per RID:
+       plain zips (WindowsAppSDKSelfContained=false, Windows App Runtime must be
+       installed) and "-wasdk" zips (=true, runtime bundled into the app folder).
+       Derived from the same -p:WindowsAppSDKSelfContained the publish already
+       passes, so the binary and the zip it was packed into can never disagree.
+       UpdateService.cs uses this to request the matching release asset — the
+       updater only overwrites files, so a cross-variant update would leave a
+       framework-dependent exe stranded on machines without the runtime. -->
+  <PropertyGroup Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
+    <DefineConstants>$(DefineConstants);WASDK_SELF_CONTAINED</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Update="Assets\Icons\output.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
