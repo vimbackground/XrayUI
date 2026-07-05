@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using Microsoft.UI.Xaml.Automation;
@@ -22,7 +22,9 @@ namespace XrayUI.Views
 
             // Localize attached properties that x:Uid does not address cleanly.
             AutomationProperties.SetName(FilterToggle, L.ServerList_FilterTooltip);
+            AutomationProperties.SetName(TestLatencyButton, L.ServerList_TestLatencyTooltip);
             AutomationProperties.SetName(SortButton,   L.ServerList_SortTooltip);
+            ToolTipService.SetToolTip(TestLatencyButton, L.ServerList_TestLatencyTooltip);
             ToolTipService.SetToolTip(SortActiveItem,  L.ServerList_SortActiveHint);
         }
 

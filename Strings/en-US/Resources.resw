@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1250,10 +1250,10 @@ Path: {0}</value>
     <value>Downloading {0} … {1:0.0} MB</value>
   </data>
   <data name="ServerList_TestModeConnect.Text" xml:space="preserve">
-    <value>Connection latency</value>
+    <value>Tcping Latency</value>
   </data>
   <data name="ServerList_TestModeReal.Text" xml:space="preserve">
-    <value>Test real delay</value>
+    <value>Real Connection Latency</value>
   </data>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>Region</value>
@@ -1283,3 +1283,4 @@ Path: {0}</value>
     <value>Click the box below, then press the combination you want</value>
   </data>
 </root>
+
