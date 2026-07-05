@@ -786,7 +786,7 @@
     <value>Remove from Favorites</value>
   </data>
   <data name="ServerList_FilterTooltip" xml:space="preserve">
-    <value>Filter</value>
+    <value>Group and sort</value>
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
     <value>Sort</value>
@@ -1250,10 +1250,10 @@ Path: {0}</value>
     <value>Downloading {0} … {1:0.0} MB</value>
   </data>
   <data name="ServerList_TestModeConnect.Text" xml:space="preserve">
-    <value>Connection latency</value>
+    <value>Tcping Latency</value>
   </data>
   <data name="ServerList_TestModeReal.Text" xml:space="preserve">
-    <value>Test real delay</value>
+    <value>Real Connection Latency</value>
   </data>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>Region</value>

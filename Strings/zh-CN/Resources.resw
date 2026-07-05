@@ -786,7 +786,7 @@
     <value>取消收藏</value>
   </data>
   <data name="ServerList_FilterTooltip" xml:space="preserve">
-    <value>筛选</value>
+    <value>分组和排序</value>
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
     <value>排序</value>
@@ -1253,10 +1253,10 @@
     <value>正在下载 {0} … {1:0.0} MB</value>
   </data>
   <data name="ServerList_TestModeConnect.Text" xml:space="preserve">
-    <value>一键测试延迟</value>
+    <value>Tcping延迟</value>
   </data>
   <data name="ServerList_TestModeReal.Text" xml:space="preserve">
-    <value>真连接测试</value>
+    <value>真连接延迟</value>
   </data>
   <data name="Personalize_RoutingRegionTitle.Text" xml:space="preserve">
     <value>区域设置</value>
