@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl x:Class="XrayUI.Views.ServerListControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -98,10 +98,9 @@
         </StackPanel>
         <Grid Grid.Row="1"
               Margin="0,16,0,0"
-              ColumnSpacing="8"
-              HorizontalAlignment="Left">
+              ColumnSpacing="8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
@@ -109,9 +108,7 @@
             <AutoSuggestBox x:Name="ServerSearchBox"
                             x:Uid="ServerList_SearchBox"
                             Grid.Column="0"
-                            Width="300"
                             PlaceholderText="搜索服务器"
-                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             UpdateTextOnSelect="False"
                             QueryIcon="Find"
@@ -125,13 +122,25 @@
                 </AutoSuggestBox.ItemTemplate>
             </AutoSuggestBox>
 
+            <ToggleButton x:Name="FilterToggle"
+                          Grid.Column="1"
+                          Background="Transparent"
+                          BorderBrush="Transparent"
+                          Padding="6"
+                          IsChecked="{x:Bind ViewModel.IsFilterPanelOpen, Mode=TwoWay}"
+                          Visibility="{x:Bind ViewModel.IsChipBarVisible, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          VerticalAlignment="Center">
+                <FontIcon Glyph="&#xE8A9;"
+                          FontSize="16" />
+            </ToggleButton>
+
             <Button x:Name="TestLatencyButton"
-                    Grid.Column="1"
+                    Grid.Column="2"
                     VerticalAlignment="Center"
                     Command="{x:Bind ViewModel.TestAllLatenciesCommand}"
                     Background="Transparent"
                     BorderBrush="Transparent"
-                    Padding="8">
+                    Padding="6">
                 <Grid>
                     <Grid Visibility="{x:Bind ViewModel.IsTestingLatencies, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <FontIcon Glyph="&#xEC4A;"
@@ -164,18 +173,6 @@
                     </MenuFlyout>
                 </Button.ContextFlyout>
             </Button>
-
-            <ToggleButton x:Name="FilterToggle"
-                          Grid.Column="2"
-                          Background="Transparent"
-                          BorderBrush="Transparent"
-                          Padding="6"
-                          IsChecked="{x:Bind ViewModel.IsFilterPanelOpen, Mode=TwoWay}"
-                          Visibility="{x:Bind ViewModel.IsChipBarVisible, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                          VerticalAlignment="Center">
-                <FontIcon Glyph="&#xE8A9;"
-                          FontSize="16" />
-            </ToggleButton>
         </Grid>
         <Grid Grid.Row="2"
               Margin="0,12,0,0"
@@ -202,6 +199,7 @@
             </StackPanel>
 
             <ComboBox Grid.Column="1"
+                      MaxWidth="180"
                       ItemsSource="{x:Bind ViewModel.GroupChips, Mode=OneWay}"
                       SelectedItem="{x:Bind ViewModel.SelectedChip, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>

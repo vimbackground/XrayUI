@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -786,7 +786,7 @@
     <value>Remove from Favorites</value>
   </data>
   <data name="ServerList_FilterTooltip" xml:space="preserve">
-    <value>Filter</value>
+    <value>Group and sort</value>
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
     <value>Sort</value>
@@ -1283,4 +1283,3 @@ Path: {0}</value>
     <value>Click the box below, then press the combination you want</value>
   </data>
 </root>
-

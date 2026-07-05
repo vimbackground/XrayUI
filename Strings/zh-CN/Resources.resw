@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -786,7 +786,7 @@
     <value>取消收藏</value>
   </data>
   <data name="ServerList_FilterTooltip" xml:space="preserve">
-    <value>筛选</value>
+    <value>分组和排序</value>
   </data>
   <data name="ServerList_SortTooltip" xml:space="preserve">
     <value>排序</value>
@@ -1286,4 +1286,3 @@
     <value>点击下方区域，然后按下想要绑定的组合键</value>
   </data>
 </root>
-
