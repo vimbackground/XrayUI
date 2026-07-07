@@ -20,7 +20,6 @@ namespace XrayUI
         private readonly FrameworkElement _rootElement;
         private readonly Border _miniDragRegion;
         private readonly Button _miniExpandButton;
-        private readonly WindowManager _windowManager;
         private readonly WindowMessageMonitor _windowMessageMonitor;
         // We own the tray icon directly (rather than WindowManager.IsVisibleInTray) so the
         // tooltip can track connection state; see ConfigureTray.
@@ -85,11 +84,11 @@ namespace XrayUI
             ToolTipService.SetToolTip(MiniExpandButton,  L.MainWindow_ExpandFull);
             ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
 
-            // Initial size is established by ApplyWindowMode(isMini: false) below.
-            // Get attaches WinUIEx window management to this window for its side effects
-            // (min-size clamping, placement); we don't keep the reference — the tray icon is
-            // owned directly via _trayIcon so we can drive its tooltip from connection state.
-            _windowManager = WindowManager.Get(this);
+			// Initial size is established by ApplyWindowMode(isMini: false) below.
+			// Get attaches WinUIEx window management to this window for its side effects
+			// (min-size clamping, placement); we don't keep the reference — the tray icon is
+			// owned directly via _trayIcon so we can drive its tooltip from connection state.
+			var _windowManager = WindowManager.Get(this);
             _windowManager.MinWidth = FullModeMinWidth;
             _windowManager.MinHeight = FullModeMinHeight;
             _windowMessageMonitor = new WindowMessageMonitor(this);
