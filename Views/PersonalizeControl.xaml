@@ -19,7 +19,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollView VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="20"
                     Padding="0,0,12,24">
 
@@ -774,5 +774,5 @@
                     Content="完成" />
 
         </StackPanel>
-    </ScrollViewer>
+    </ScrollView>
 </UserControl>

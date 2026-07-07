@@ -324,11 +324,11 @@ namespace XrayUI.Services
                 }
             };
 
-            var scrollViewer = new ScrollViewer
+            var scrollViewer = new ScrollView
             {
                 Content = form,
                 MaxHeight = 520,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollingScrollBarVisibility.Auto,
                 // Padding gives the scrollbar its own gutter so it doesn't crowd the
                 // form; the matching negative margin lets that gutter overlap the
                 // dialog's existing right padding, so the form content stays centered

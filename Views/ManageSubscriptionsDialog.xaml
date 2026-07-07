@@ -10,8 +10,18 @@
              mc:Ignorable="d"
              Width="360">
 
-    <StackPanel Spacing="16"
-                Margin="0,4,0,0">
+    <!-- Root must be a Grid with a star row, not a StackPanel: ContentDialog's
+         content area does not scroll (its internal ScrollViewer is Disabled) and
+         clips overflow. A StackPanel measures children with infinite height, so
+         the list's MaxHeight always wins even when the dialog can't fit it; the
+         star row passes down the real remaining height instead. -->
+    <Grid RowSpacing="16"
+          Margin="0,4,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
         <Grid ColumnDefinitions="*,Auto"
               ColumnSpacing="12">
             <TextBlock Grid.Column="0"
@@ -42,7 +52,8 @@
             </controls:Segmented>
         </Grid>
 
-        <StackPanel Spacing="14"
+        <StackPanel Grid.Row="1"
+                    Spacing="14"
                     Visibility="{x:Bind ViewModel.AddPageVisibility, Mode=OneWay}">
             <TextBox x:Uid="Subscription_UrlBox"
                      Header="订阅链接"
@@ -59,7 +70,8 @@
                        Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
         </StackPanel>
 
-        <Grid Visibility="{x:Bind ViewModel.ManagePageVisibility, Mode=OneWay}">
+        <Grid Grid.Row="1"
+              Visibility="{x:Bind ViewModel.ManagePageVisibility, Mode=OneWay}">
             <TextBlock x:Uid="Subscription_EmptyText"
                        Text="暂无订阅"
                        HorizontalAlignment="Center"
@@ -68,10 +80,10 @@
                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                        Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}" />
 
-            <ScrollViewer MaxHeight="440"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          Visibility="{x:Bind ViewModel.ListVisibility, Mode=OneWay}">
+            <ScrollView MaxHeight="440"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Hidden"
+                        Visibility="{x:Bind ViewModel.ListVisibility, Mode=OneWay}">
                 <ItemsControl ItemsSource="{x:Bind ViewModel.Subscriptions, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:SubscriptionEntry">
@@ -185,7 +197,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </ScrollViewer>
+            </ScrollView>
         </Grid>
-    </StackPanel>
+    </Grid>
 </UserControl>

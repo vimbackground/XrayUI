@@ -16,11 +16,11 @@
          MaxHeight must stay below the CustomRulesWindow host height (620x460,
          see CustomRulesWindow.xaml.cs) minus the dialog chrome, or it clips again.
          Right padding gives the scrollbar its own gutter. -->
-    <ScrollViewer MaxHeight="300"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  VerticalScrollMode="Auto"
-                  Padding="0,0,14,0">
+    <ScrollView MaxHeight="300"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Hidden"
+                VerticalScrollMode="Auto"
+                Padding="0,0,14,0">
     <!-- Fixed width so the dialog stays the same size across types; otherwise the
          process Browse row makes it wider than domain/IP. -->
     <StackPanel Spacing="16" Width="360">
@@ -102,5 +102,5 @@
                    Visibility="Collapsed" />
 
     </StackPanel>
-    </ScrollViewer>
+    </ScrollView>
 </ContentDialog>
