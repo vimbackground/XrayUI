@@ -171,7 +171,19 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        env:
+          # Direct-download base for this tag's assets; asset names below are the
+          # UpdateService.cs contract (XrayUI-{rid}[-wasdk].zip) — do not rename.
+          DL: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
         with:
+          body: |
+            ## Which one should I download
+
+            #### Normal version (Recommended)
+            - [x64 (Most common)](${{ env.DL }}/XrayUI-win-x64.zip) | [ARM64](${{ env.DL }}/XrayUI-win-arm64.zip)
+
+            #### Self-contained WinAppSDK version (larger; use only when the normal version fails to start)
+            - [x64](${{ env.DL }}/XrayUI-win-x64-wasdk.zip) | [ARM64](${{ env.DL }}/XrayUI-win-arm64-wasdk.zip)
           files: |
             release-files/*.zip
             release-files/*.sha256
