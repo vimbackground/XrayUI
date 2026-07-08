@@ -84,13 +84,12 @@ namespace XrayUI
             ToolTipService.SetToolTip(MiniExpandButton,  L.MainWindow_ExpandFull);
             ToolTipService.SetToolTip(MinicloseButton,   L.MainWindow_Close);
 
-			// Initial size is established by ApplyWindowMode(isMini: false) below.
-			// Get attaches WinUIEx window management to this window for its side effects
-			// (min-size clamping, placement); we don't keep the reference — the tray icon is
-			// owned directly via _trayIcon so we can drive its tooltip from connection state.
-			var _windowManager = WindowManager.Get(this);
-            _windowManager.MinWidth = FullModeMinWidth;
-            _windowManager.MinHeight = FullModeMinHeight;
+            // Initial size and per-mode min-size constraints are established by
+            // ApplyWindowMode(isMini: false) below. Get attaches WinUIEx window
+            // management to this window for its side effects (min-size clamping,
+            // placement); we don't keep the reference — the tray icon is owned
+            // directly via _trayIcon so we can drive its tooltip from connection state.
+            WindowManager.Get(this);
             _windowMessageMonitor = new WindowMessageMonitor(this);
             _windowMessageMonitor.WindowMessageReceived += OnWindowMessageReceived;
             GlobalHotkeyStore.HotkeysChanged += OnGlobalHotkeysChanged;
@@ -425,6 +424,12 @@ namespace XrayUI
 
             var width  = isMini ? MiniWindowWidth  : FullWindowWidth;
             var height = isMini ? MiniWindowHeight : FullWindowHeight;
+
+            // The WinUIEx min-size clamp (WM_GETMINMAXINFO) applies to SetWindowSize
+            // too, so the full-mode minimum must be relaxed before shrinking to mini.
+            var windowManager = WindowManager.Get(this);
+            windowManager.MinWidth  = isMini ? MiniWindowWidth  : FullModeMinWidth;
+            windowManager.MinHeight = isMini ? MiniWindowHeight : FullModeMinHeight;
 
             presenter.SetBorderAndTitleBar(hasBorder: true, hasTitleBar: !isMini);
             presenter.IsResizable = !isMini;
