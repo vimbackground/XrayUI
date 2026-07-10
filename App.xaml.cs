@@ -334,6 +334,7 @@ namespace XrayUI
 
         private async Task TakeOverPreviousInstanceAsync(int parentPid, bool registerSingleInstanceAfterTakeover)
         {
+            var previousInstanceExited = false;
             try
             {
                 if (parentPid <= 0 || parentPid == Environment.ProcessId)
@@ -357,14 +358,32 @@ namespace XrayUI
 
                     if (!previousInstance.WaitForExit(350))
                     {
-                        previousInstance.Kill(entireProcessTree: true);
-                        previousInstance.WaitForExit(3000);
+                        try
+                        {
+                            previousInstance.Kill(entireProcessTree: true);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // It exited in the narrow gap between WaitForExit and Kill.
+                        }
+
+                        previousInstanceExited = previousInstance.HasExited
+                            || previousInstance.WaitForExit(3000);
                     }
+                    else
+                    {
+                        previousInstanceExited = true;
+                    }
+                }
+                else
+                {
+                    previousInstanceExited = true;
                 }
             }
             catch (ArgumentException)
             {
                 // The previous instance already exited.
+                previousInstanceExited = true;
             }
             catch (Exception ex)
             {
@@ -375,6 +394,15 @@ namespace XrayUI
                 if (registerSingleInstanceAfterTakeover)
                 {
                     await RegisterCurrentAsMainInstanceAfterTakeoverAsync();
+                }
+
+                // Startup registration can race with the outgoing process, which still owns
+                // the same global hotkeys until it exits. Retry only after its handles have
+                // actually been released; otherwise RegisterHotKey returns
+                // ERROR_HOTKEY_ALREADY_REGISTERED and this process stays unbound.
+                if (previousInstanceExited && _window is MainWindow mainWindow)
+                {
+                    mainWindow.RegisterGlobalHotkeysAfterProcessTakeover();
                 }
             }
         }

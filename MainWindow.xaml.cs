@@ -309,6 +309,23 @@ namespace XrayUI
 
         private void OnGlobalHotkeysChanged(object? sender, EventArgs e) => RegisterGlobalHotkeys();
 
+        /// <summary>
+        /// Re-register after an elevation/process handoff. The outgoing process can still own
+        /// the configured combinations when this window performs its normal startup registration;
+        /// once App confirms that process has exited, retry on this window's UI thread.
+        /// </summary>
+        internal void RegisterGlobalHotkeysAfterProcessTakeover()
+        {
+            if (DispatcherQueue.HasThreadAccess)
+            {
+                RegisterGlobalHotkeys();
+                return;
+            }
+
+            if (!DispatcherQueue.TryEnqueue(RegisterGlobalHotkeys))
+                Debug.WriteLine("[Hotkey] Failed to enqueue post-takeover hotkey registration.");
+        }
+
         // Idempotent: always unregisters both ids first, then re-registers whichever have a
         // combo assigned (no separate enabled flag — presence of a combo means active). Safe to
         // call at startup and any time the Personalize page commits a hotkey change.
