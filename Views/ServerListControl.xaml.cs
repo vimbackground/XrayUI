@@ -85,8 +85,17 @@ namespace XrayUI.Views
             await ViewModel.SaveOrderAsync();
         }
 
+        private bool _initialScrollDone;
+
         private void ServersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // The selection restored from settings at startup may sit deep in a long list;
+            // bring it into view once without disturbing later user-driven selections.
+            if (!_initialScrollDone && ServersListView.SelectedItem is not null)
+            {
+                _initialScrollDone = true;
+                ServersListView.ScrollIntoView(ServersListView.SelectedItem);
+            }
             ViewModel.SetSelectedServers(ServersListView.SelectedItems.OfType<ServerEntry>().ToArray());
         }
 

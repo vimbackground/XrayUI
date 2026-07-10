@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -215,10 +216,41 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial ServerEntry? SelectedServer { get; set; }
 
-        partial void OnSelectedServerChanged(ServerEntry? value) =>
+        partial void OnSelectedServerChanged(ServerEntry? value)
+        {
             SetSelectedServers(value is null
                 ? Array.Empty<ServerEntry>()
                 : new[] { value });
+            _persistSelectionChain = PersistSelectedServerIdAsync(_persistSelectionChain, value?.Id);
+        }
+
+        private Task _persistSelectionChain = Task.CompletedTask;
+
+        /// <summary>Persists the selection Id for the next launch. Writes are chained on
+        /// <see cref="_persistSelectionChain"/> so concurrent saves can never land out of
+        /// order, and a queued value is dropped once the selection has moved past it —
+        /// e.g. the transient null every RebuildGroupedView produces through the ListView's
+        /// TwoWay binding, or all but the last entry of a rapid selection burst.</summary>
+        private async Task PersistSelectedServerIdAsync(Task previous, string? id)
+        {
+            try { await previous; } catch { }
+            try
+            {
+                // Rebuilds clear and re-select synchronously on this same callstack; yield
+                // so the supersede check below sees the settled selection, not the transient.
+                await Task.Yield();
+                if (!string.Equals(id, SelectedServer?.Id, StringComparison.Ordinal)) return;
+
+                var s = await _settings.LoadSettingsAsync();
+                if (string.Equals(s.LastSelectedServerId, id, StringComparison.Ordinal)) return;
+                s.LastSelectedServerId = id;
+                await _settings.SaveSettingsAsync(s);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ServerList] Persist selection failed: {ex.Message}");
+            }
+        }
 
         [ObservableProperty]
         public partial bool IsProxyRunning { get; set; }
@@ -326,7 +358,13 @@ namespace XrayUI.ViewModels
             });
 
             if (Servers.Count > 0 && SelectedServer == null)
-                SelectedServer = Servers[0];
+            {
+                var lastId = settingsTask.Result.LastSelectedServerId;
+                SelectedServer = (!string.IsNullOrEmpty(lastId)
+                    ? Servers.FirstOrDefault(x => string.Equals(x.Id, lastId, StringComparison.Ordinal))
+                    : null)
+                    ?? Servers[0];
+            }
         }
 
         private Task SaveAsync() => _settings.SaveServersAsync(Servers);
