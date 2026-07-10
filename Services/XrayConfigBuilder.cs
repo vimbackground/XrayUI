@@ -650,7 +650,13 @@ namespace XrayUI.Services
 
             if (security == "tls")
             {
-                var sni = string.IsNullOrWhiteSpace(server.Sni) ? server.Host : server.Sni;
+                // CDN/tunnel nodes (Host header != connect address) need the SNI to match the
+                // Host header when no explicit SNI is given, or the edge can't route the TLS
+                // handshake. Same fallback rule as v2rayN; only ws/xhttp carry a Host header.
+                var hostHeader = (network == "ws" || network == "xhttp") ? server.WsHost : null;
+                var sni = !string.IsNullOrWhiteSpace(server.Sni) ? server.Sni
+                    : !string.IsNullOrWhiteSpace(hostHeader) ? hostHeader
+                    : server.Host;
                 var fingerprint = string.IsNullOrWhiteSpace(server.Fingerprint) ? "chrome" : server.Fingerprint;
                 var tlsSettings = new JsonObject
                 {
