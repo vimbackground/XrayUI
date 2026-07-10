@@ -57,6 +57,12 @@ namespace XrayUI.ViewModels
 
         // ── Grouping state ────────────────────────────────────────────────────
         private bool _suppressRebuild;
+        // True while RebuildAll is mid-flight. RebuildGroupChips recreates every chip
+        // object, so re-asserting SelectedChip (and the latency-sort fallback) would
+        // otherwise fire RebuildGroupedView again right before RebuildAll's own final
+        // call — rebuilding the visible list twice per change, and each extra Clear()
+        // bounces SelectedServer, which cancels/restarts the detail pane's latency probe.
+        private bool _rebuildAllInProgress;
         private List<SubscriptionEntry> _knownSubscriptions = new();
 
         public ObservableCollection<ServerGroupChip> GroupChips { get; } = new();
@@ -125,7 +131,8 @@ namespace XrayUI.ViewModels
                 return;
             }
 
-            RebuildGroupedView();
+            if (!_rebuildAllInProgress)
+                RebuildGroupedView();
             OnPropertyChanged(nameof(CanReorderInCurrentChip));
         }
 
@@ -145,7 +152,8 @@ namespace XrayUI.ViewModels
             OnPropertyChanged(nameof(IsSortProtocol));
             OnPropertyChanged(nameof(IsSortLatency));
             OnPropertyChanged(nameof(CanReorderInCurrentChip));
-            RebuildGroupedView();
+            if (!_rebuildAllInProgress)
+                RebuildGroupedView();
         }
 
         // Active-server sorting is only available for chip = All; other chips should not
@@ -425,18 +433,26 @@ namespace XrayUI.ViewModels
 
         private void RebuildAll()
         {
-            // If the server set changed out from under a latency sort (e.g. a subscription
-            // refresh or preset import replaced entries with fresh, untested ones), the
-            // sort has nothing to order by — fall back to Default so the menu doesn't keep
-            // a now-disabled item checked, mirroring the Active-chip guard.
-            if (SortMode == ServerSortMode.Latency && !CanSortByLatency)
-                SortMode = ServerSortMode.Default;
+            _rebuildAllInProgress = true;
+            try
+            {
+                // If the server set changed out from under a latency sort (e.g. a subscription
+                // refresh or preset import replaced entries with fresh, untested ones), the
+                // sort has nothing to order by — fall back to Default so the menu doesn't keep
+                // a now-disabled item checked, mirroring the Active-chip guard.
+                if (SortMode == ServerSortMode.Latency && !CanSortByLatency)
+                    SortMode = ServerSortMode.Default;
 
-            OnPropertyChanged(nameof(CanSortByLatency));
-            OnPropertyChanged(nameof(IsSortDefault));
-            OnPropertyChanged(nameof(IsSortLatency));
+                OnPropertyChanged(nameof(CanSortByLatency));
+                OnPropertyChanged(nameof(IsSortDefault));
+                OnPropertyChanged(nameof(IsSortLatency));
 
-            RebuildGroupChips();
+                RebuildGroupChips();
+            }
+            finally
+            {
+                _rebuildAllInProgress = false;
+            }
             RebuildGroupedView();
         }
 
