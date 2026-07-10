@@ -133,6 +133,7 @@ namespace XrayUI.ViewModels
             Personalize.LoadRegion(s);
             ServerDetail.ShowLatencyInDetails = s.ShowLatencyInDetails;
             ServerDetail.ShowAiUnlockInDetails = s.ShowAiUnlockInDetails;
+            ServerList.IsFilterPanelOpen = s.OpenServerFilterPanelOnStartup;
 
             // Reconcile external state vs persisted setting (external is ground truth)
             var externalEnabled = await Task.Run(_startupService.IsStartupEnabled);
@@ -310,6 +311,10 @@ namespace XrayUI.ViewModels
             else if (e.PropertyName == nameof(PersonalizeViewModel.ShowAiUnlockInDetails))
             {
                 ServerDetail.ShowAiUnlockInDetails = Personalize.ShowAiUnlockInDetails;
+            }
+            else if (e.PropertyName == nameof(PersonalizeViewModel.OpenServerFilterPanelOnStartup))
+            {
+                ServerList.IsFilterPanelOpen = Personalize.OpenServerFilterPanelOnStartup;
             }
         }
 

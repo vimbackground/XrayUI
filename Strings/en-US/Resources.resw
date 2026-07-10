@@ -956,8 +956,8 @@
   <data name="Personalize_ProtocolColorsDesc.Text" xml:space="preserve">
     <value>Customize the color indicator for each protocol</value>
   </data>
-  <data name="Personalize_DetailSettings.Text" xml:space="preserve">
-    <value>Detail Settings</value>
+  <data name="Personalize_DisplaySettings.Text" xml:space="preserve">
+    <value>Display</value>
   </data>
   <data name="Personalize_DetailsHeader.Text" xml:space="preserve">
     <value>Server info display</value>
@@ -976,6 +976,15 @@
   </data>
   <data name="Personalize_DetailAiUnlockDesc.Text" xml:space="preserve">
     <value>Show AI unlock status on the node card</value>
+  </data>
+  <data name="Personalize_OpenFilterPanelOnStartup.Text" xml:space="preserve">
+    <value>Expand filter bar on startup</value>
+  </data>
+  <data name="Personalize_OpenFilterPanelOnStartupDesc.Text" xml:space="preserve">
+    <value>Show the group and sort options by default</value>
+  </data>
+  <data name="Personalize_DisplaySettingsUnsavedBar.Message" xml:space="preserve">
+    <value>Applied — click "Done" below to save it</value>
   </data>
   <data name="Personalize_Hotkeys.Text" xml:space="preserve">
     <value>Hotkeys</value>

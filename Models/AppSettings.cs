@@ -51,6 +51,8 @@ namespace XrayUI.Models
         public string? ColorFallback  { get; set; }
         public bool ShowLatencyInDetails { get; set; } = true;
         public bool ShowAiUnlockInDetails { get; set; } = true;
+        /// <summary>Expand the server-list filter bar when the app starts.</summary>
+        public bool OpenServerFilterPanelOnStartup { get; set; } = false;
 
         // ── Global hotkeys ────────────────────────────────────────────────────
         // No separate enabled flag — a hotkey is active whenever a combo is assigned, matching
