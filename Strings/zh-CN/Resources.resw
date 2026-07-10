@@ -956,8 +956,8 @@
   <data name="Personalize_ProtocolColorsDesc.Text" xml:space="preserve">
     <value>自定义不同协议的颜色标识</value>
   </data>
-  <data name="Personalize_DetailSettings.Text" xml:space="preserve">
-    <value>详情设置</value>
+  <data name="Personalize_DisplaySettings.Text" xml:space="preserve">
+    <value>显示设置</value>
   </data>
   <data name="Personalize_DetailsHeader.Text" xml:space="preserve">
     <value>服务器信息显示</value>
@@ -976,6 +976,15 @@
   </data>
   <data name="Personalize_DetailAiUnlockDesc.Text" xml:space="preserve">
     <value>节点卡片上展示AI的解锁状态</value>
+  </data>
+  <data name="Personalize_OpenFilterPanelOnStartup.Text" xml:space="preserve">
+    <value>启动时展开筛选栏</value>
+  </data>
+  <data name="Personalize_OpenFilterPanelOnStartupDesc.Text" xml:space="preserve">
+    <value>默认显示分组和排序选项</value>
+  </data>
+  <data name="Personalize_DisplaySettingsUnsavedBar.Message" xml:space="preserve">
+    <value>已生效，记得点击下方「完成」保存</value>
   </data>
   <data name="Personalize_Hotkeys.Text" xml:space="preserve">
     <value>快捷键</value>

@@ -11,6 +11,8 @@ namespace XrayUI.Views
     {
         public PersonalizeViewModel ViewModel { get; set; } = null!;
 
+        public string OnOffLabel(bool isOn) => isOn ? L.Dialog_On : L.Dialog_Off;
+
         public PersonalizeControl()
         {
             this.InitializeComponent();
