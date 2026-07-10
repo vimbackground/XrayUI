@@ -28,6 +28,9 @@ namespace XrayUI.Models
         public string? LastAutoConnectServerId { get; set; }
         /// <summary>Legacy (pre-Id) name-based setting. Read once for migration on first load after upgrade.</summary>
         public string? LastAutoConnectServerName { get; set; }
+        /// <summary>Stable ID (ServerEntry.Id) of the server selected in the list — restored on next launch
+        /// (including the TUN elevated relaunch, which is a brand-new process).</summary>
+        public string? LastSelectedServerId { get; set; }
         /// <summary>"" | "quarter" | "half" | "full"; controls Xray log IP masking.</summary>
         public string LogMaskAddress { get; set; } = string.Empty;
         /// <summary>Verbose xray error log: true = loglevel "info" (per-connection sniffing/routing/
