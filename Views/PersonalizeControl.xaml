@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl x:Class="XrayUI.Views.PersonalizeControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -510,11 +510,11 @@
 
                 <!-- Spacing="2", not the section-level 10: these two cards are one grouped
                      settings block (PowerToys-style), so they should sit near-flush. -->
-                <StackPanel Spacing="2">
+                <StackPanel Spacing="4">
                     <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="{ThemeResource OverlayCornerRadius}">
+                            >
                         <!-- Right padding 6, not 16: ToggleSwitch's template reserves a fixed 12px
                              trailing spacer, so 6+12 lines the pill up with the Expander chevrons (~18px). -->
                         <Grid Padding="16,13,6,13"
@@ -563,7 +563,7 @@
 
                     <Expander HorizontalAlignment="Stretch"
                               HorizontalContentAlignment="Stretch"
-                              CornerRadius="{ThemeResource OverlayCornerRadius}"
+                              
                               Background="{ThemeResource LayerFillColorDefaultBrush}"
                               BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
                         <Expander.Header>
