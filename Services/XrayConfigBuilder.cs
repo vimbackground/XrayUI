@@ -215,9 +215,7 @@ namespace XrayUI.Services
                 foreach (var outbound in list.OfType<JsonObject>())
                 {
                     var tag = outbound["tag"]?.GetValue<string>();
-                    var protocol = outbound["protocol"]?.GetValue<string>();
-                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag
-                        && !string.Equals(protocol, "wireguard", StringComparison.OrdinalIgnoreCase))
+                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag)
                     {
                         ApplyOutboundInterface(outbound, outboundInterface);
                     }
@@ -227,7 +225,7 @@ namespace XrayUI.Services
             return list;
         }
 
-        private static string? NormalizeTunOutboundInterface(string? interfaceName)
+        internal static string? NormalizeTunOutboundInterface(string? interfaceName)
         {
             if (string.IsNullOrWhiteSpace(interfaceName))
                 return null;
@@ -280,6 +278,13 @@ namespace XrayUI.Services
 
         private static void ApplyOutboundInterface(JsonObject outbound, string interfaceName)
         {
+            // Wireguard outbounds carry no streamSettings, so a sockopt pin cannot apply there —
+            // the process-routing rule stays their only cover. Centralized here so every caller
+            // gets the exemption without repeating it.
+            var protocol = outbound["protocol"]?.GetValue<string>();
+            if (string.Equals(protocol, "wireguard", StringComparison.OrdinalIgnoreCase))
+                return;
+
             var streamSettings = outbound["streamSettings"] as JsonObject;
             if (streamSettings is null)
             {
@@ -861,7 +866,9 @@ namespace XrayUI.Services
             {
                 ["type"] = "field",
                 ["outboundTag"] = DirectOutboundTag,
-                ["process"] = CreateStringArray("self/", "xray/")
+                // Keep the plain process-name fallback as well as Xray's path sugars. Process
+                // attribution for a second helper core can occasionally lack the full path.
+                ["process"] = CreateStringArray("self/", "xray/", "xray")
             });
         }
 
@@ -1083,8 +1090,14 @@ namespace XrayUI.Services
         /// the caller must filter them out.
         /// </summary>
         /// <param name="entries">Each server paired with the local socks port it should listen on.</param>
+        /// <param name="outboundInterface">Resolved physical interface name to pin every proxy
+        /// outbound to (see <see cref="TunService.ResolveOutboundInterface"/>), or null for no
+        /// pin. The pin is required when another Xray process owns a full-route TUN, otherwise
+        /// this helper core's node connections can be captured and proxy-looped. Taken verbatim —
+        /// callers resolve the "auto" sentinel first.</param>
         public static string BuildSpeedtestConfig(
-            IReadOnlyList<(ServerEntry server, int port)> entries)
+            IReadOnlyList<(ServerEntry server, int port)> entries,
+            string? outboundInterface)
         {
             var inbounds = new JsonArray();
             var outbounds = new JsonArray();
@@ -1109,7 +1122,12 @@ namespace XrayUI.Services
                     }
                 });
 
-                AddNode(outbounds, BuildProxyOutbound(server, outTag));
+                var outbound = BuildProxyOutbound(server, outTag);
+                if (outboundInterface is not null)
+                {
+                    ApplyOutboundInterface(outbound, outboundInterface);
+                }
+                AddNode(outbounds, outbound);
 
                 AddNode(rules, new JsonObject
                 {

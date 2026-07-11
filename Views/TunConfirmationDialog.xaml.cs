@@ -84,7 +84,7 @@ namespace XrayUI.Views
             {
                 return NetworkInterface.GetAllNetworkInterfaces()
                     .Where(ni => ni.OperationalStatus == OperationalStatus.Up
-                                 && ni.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                                 && !TunService.IsTunLikeInterface(ni))
                     .Select(ni => ni.Name)
                     .OrderBy(name => name)
                     .ToList();
