@@ -77,7 +77,7 @@ namespace XrayUI.ViewModels
             var latencyProbe = new LatencyProbeService(
                 new TcpConnectProbeService(),
                 new PingProbeService());
-            var realLatencyProbe = new RealLatencyProbeService();
+            var realLatencyProbe = new RealLatencyProbeService(settings, tunService);
             var aiUnlockCheck = new AiUnlockCheckService();
 
             Title = "Proxy Console";
@@ -94,6 +94,9 @@ namespace XrayUI.ViewModels
             ServerDetail.GetAllServers = () => ServerList.Servers;
             ServerList.RequestSwitchToSelectedServer = ControlPanel.SwitchToSelectedServerAsync;
             Personalize.IsProxyRunning = () => ControlPanel.IsRunning;
+            // Live TUN state for the speed test's egress pin — settings.IsTunMode alone lags
+            // the UI toggle and can survive a crash as a stale true (see IDialogService remarks).
+            realLatencyProbe.IsTunActive = () => ControlPanel.IsRunning && ControlPanel.IsTunMode;
 
             ServerList.PropertyChanged   += OnServerListPropertyChanged;
             ControlPanel.PropertyChanged += OnControlPanelPropertyChanged;

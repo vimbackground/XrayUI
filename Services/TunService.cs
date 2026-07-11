@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using XrayUI.Helpers;
 
@@ -37,6 +39,101 @@ public class TunService
 
     /// <summary>Gets the expected wintun.dll path for error messages.</summary>
     public string GetExpectedWintunPath() => Path.Combine(_engineDirectory, "wintun.dll");
+
+    /// <summary>
+    /// Resolves the interface that helper cores must bind to while TUN owns the default route.
+    /// An explicitly configured interface wins when it still exists, is up and is not the TUN
+    /// adapter itself; a stale name falls back to automatic selection instead of pinning every
+    /// outbound to a dead adapter. In automatic mode, choose an active non-TUN interface with a
+    /// real default gateway; virtual host-only adapters normally have none and are therefore
+    /// ignored. Returning <see langword="null"/> preserves the old process-routing fallback when
+    /// Windows exposes no usable interface.
+    /// </summary>
+    public string? ResolveOutboundInterface(string? configuredInterface)
+    {
+        var configured = XrayConfigBuilder.NormalizeTunOutboundInterface(configuredInterface);
+
+        try
+        {
+            var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            if (configured is not null)
+            {
+                var match = interfaces.FirstOrDefault(ni =>
+                    string.Equals(ni.Name, configured, StringComparison.OrdinalIgnoreCase)
+                    && ni.OperationalStatus == OperationalStatus.Up
+                    && !IsTunLikeInterface(ni));
+                if (match is not null)
+                    return match.Name;
+                Debug.WriteLine($"[TunService] 配置的测速出口网卡不可用,回退自动选择: {configured}");
+            }
+
+            var candidate = interfaces
+                .Where(IsAutomaticOutboundCandidate)
+                // Prefer an IPv4 gateway because the speed-test target and most node endpoints
+                // are IPv4-capable. Speed provides a deterministic tie-break for multi-NIC PCs.
+                .OrderByDescending(HasIPv4Gateway)
+                .ThenByDescending(ni => ni.Speed)
+                .ThenBy(ni => ni.Name, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault();
+
+            if (candidate is not null)
+                return candidate.Name;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[TunService] 自动选择测速出口网卡失败: {ex.Message}");
+            // Enumeration itself failed, so the stale-name check never ran — an explicit user
+            // choice is still the best remaining guess.
+            if (configured is not null)
+                return configured;
+        }
+
+        Debug.WriteLine("[TunService] 未找到可用于测速的物理出口网卡");
+        return null;
+    }
+
+    /// <summary>Adapters that must never carry pinned helper-core traffic: loopback, tunnels,
+    /// and the xray-tun/wintun adapter itself (pinning to it recreates the proxy loop). Also used
+    /// by <see cref="Views.TunConfirmationDialog"/> to keep the interface picker in sync with what
+    /// <see cref="ResolveOutboundInterface"/> will actually accept.</summary>
+    internal static bool IsTunLikeInterface(NetworkInterface networkInterface) =>
+        networkInterface.NetworkInterfaceType is NetworkInterfaceType.Loopback
+            or NetworkInterfaceType.Tunnel
+        || string.Equals(networkInterface.Name, TunInterfaceName, StringComparison.OrdinalIgnoreCase)
+        || networkInterface.Description.Contains("Xray Tunnel", StringComparison.OrdinalIgnoreCase)
+        || networkInterface.Description.Contains("Wintun", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsAutomaticOutboundCandidate(NetworkInterface networkInterface)
+    {
+        if (networkInterface.OperationalStatus != OperationalStatus.Up
+            || IsTunLikeInterface(networkInterface))
+        {
+            return false;
+        }
+
+        // IPv6 default routers legitimately appear as link-local (fe80::) gateways via router
+        // advertisements, so they count — but only when the adapter also holds a global IPv6
+        // address. A lone fe80 gateway without one (stale RA on an isolated segment) is no
+        // evidence of an internet path and must not beat the null fallback.
+        var ipProperties = networkInterface.GetIPProperties();
+        return ipProperties.GatewayAddresses.Any(gateway =>
+            !gateway.Address.Equals(IPAddress.Any)
+            && !gateway.Address.Equals(IPAddress.IPv6Any)
+            && !IPAddress.IsLoopback(gateway.Address)
+            && (!gateway.Address.IsIPv6LinkLocal || HasGlobalIPv6Address(ipProperties)));
+    }
+
+    private static bool HasGlobalIPv6Address(IPInterfaceProperties ipProperties) =>
+        ipProperties.UnicastAddresses.Any(address =>
+            address.Address.AddressFamily == AddressFamily.InterNetworkV6
+            && !address.Address.IsIPv6LinkLocal
+            && !IPAddress.IsLoopback(address.Address));
+
+    private static bool HasIPv4Gateway(NetworkInterface networkInterface) =>
+        networkInterface.GetIPProperties().GatewayAddresses.Any(gateway =>
+            gateway.Address.AddressFamily == AddressFamily.InterNetwork
+            && !gateway.Address.Equals(IPAddress.Any));
 
     /// <summary>
     /// Best-effort reset of stale DNS server entries that Windows can persist on the

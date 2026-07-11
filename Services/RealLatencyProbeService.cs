@@ -24,6 +24,23 @@ namespace XrayUI.Services
     /// </summary>
     public sealed class RealLatencyProbeService
     {
+        private readonly SettingsService _settings;
+        private readonly TunService _tunService;
+
+        /// <summary>
+        /// Live "a TUN session currently owns the default route" check, wired by the composition
+        /// root (same callback pattern as ControlPanelViewModel.GetSelectedServer). Preferred over
+        /// settings.IsTunMode, which is persisted runtime state that lags the UI toggle and can
+        /// survive a crash as a stale true.
+        /// </summary>
+        public Func<bool> IsTunActive { get; set; } = () => false;
+
+        public RealLatencyProbeService(SettingsService settings, TunService tunService)
+        {
+            _settings = settings;
+            _tunService = tunService;
+        }
+
         private const string TestUrl = "http://www.gstatic.com/generate_204";
 
         // Overall budget for one server's whole warm-up-then-measure cycle. 7s (vs v2rayN's 10s):
@@ -96,8 +113,17 @@ namespace XrayUI.Services
             foreach (var s in servers)
                 entries.Add((s, GetFreeLoopbackPort()));
 
-            // 2. Build + write the dedicated multi-inbound speed-test config.
-            string configJson = XrayConfigBuilder.BuildSpeedtestConfig(entries);
+            // 2. Bind the throwaway core to the physical egress while TUN owns the default
+            // route. autoOutboundsInterface belongs to the live core's TUN inbound and does not
+            // protect this second xray process, so its proxy outbounds need an explicit sockopt.
+            var settings = await _settings.LoadSettingsAsync().ConfigureAwait(false);
+            var outboundInterface = IsTunActive()
+                ? _tunService.ResolveOutboundInterface(settings.TunOutboundInterface)
+                : null;
+            Debug.WriteLine($"[RealLatencyProbe] 测速出口网卡: {outboundInterface ?? "系统默认路由"}");
+
+            // 3. Build + write the dedicated multi-inbound speed-test config.
+            string configJson = XrayConfigBuilder.BuildSpeedtestConfig(entries, outboundInterface);
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
             await File.WriteAllTextAsync(ConfigPath, configJson, ct).ConfigureAwait(false);
 
@@ -107,7 +133,7 @@ namespace XrayUI.Services
 
             try
             {
-                // 3. Launch the throwaway core.
+                // 4. Launch the throwaway core.
                 var psi = new ProcessStartInfo
                 {
                     FileName = XrayService.ExePath,
@@ -136,7 +162,7 @@ namespace XrayUI.Services
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                // 4. Wait until the core reports every inbound is up. An early exit falls
+                // 5. Wait until the core reports every inbound is up. An early exit falls
                 // through to the HasExited check below, which reads the captured log.
                 await readySignal.WaitAsync(CoreReadyCap, ct).ConfigureAwait(false);
 
@@ -152,7 +178,7 @@ namespace XrayUI.Services
                     return;
                 }
 
-                // 5. Probe each server through its own socks port (capped concurrency).
+                // 6. Probe each server through its own socks port (capped concurrency).
                 using var throttle = new SemaphoreSlim(MaxConcurrency);
                 var tasks = new List<Task>(entries.Count);
                 foreach (var (server, port) in entries)
@@ -172,7 +198,7 @@ namespace XrayUI.Services
             }
             finally
             {
-                // 6. Tear down the throwaway core and its temp config.
+                // 7. Tear down the throwaway core and its temp config.
                 try
                 {
                     if (process is not null && !process.HasExited)
