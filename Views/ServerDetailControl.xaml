@@ -160,7 +160,7 @@
                                         CornerRadius="{ThemeResource OverlayCornerRadius}"
                                         Translation="0,0,16" Loaded="ShadowRect_Loaded"
                                         Width="110"
-                                        Padding="14,12">
+                                        Padding="14,12,7,12">
                                     <Border.Shadow>
                                         <ThemeShadow x:Name="Shadow1" />
                                     </Border.Shadow>
@@ -182,7 +182,7 @@
                                                      Height="6"
                                                      Fill="{x:Bind ViewModel.OpenAiStatusBrush, Mode=OneWay}"
                                                      VerticalAlignment="Top"
-                                                     Margin="0,2,0,0" />
+                                                     Margin="0,2,7,0" />
                                         </Grid>
                                         <Grid Grid.Row="2"
                                               ColumnDefinitions="*,Auto"
@@ -223,7 +223,7 @@
                                         CornerRadius="{ThemeResource OverlayCornerRadius}"
                                         Translation="0,0,16" Loaded="ShadowRect_Loaded"
                                         Width="110"
-                                        Padding="14,12">
+                                        Padding="14,12,7,12">
                                     <Border.Shadow>
                                         <ThemeShadow x:Name="Shadow2" />
                                     </Border.Shadow>
@@ -246,7 +246,7 @@
                                                      Height="6"
                                                      Fill="{x:Bind ViewModel.ClaudeStatusBrush, Mode=OneWay}"
                                                      VerticalAlignment="Top"
-                                                     Margin="0,2,0,0" />
+                                                     Margin="0,2,7,0" />
                                         </Grid>
                                         <Grid Grid.Row="2"
                                               ColumnDefinitions="*,Auto"
@@ -287,7 +287,7 @@
                                         CornerRadius="{ThemeResource OverlayCornerRadius}"
                                         Translation="0,0,16" Loaded="ShadowRect_Loaded"
                                         Width="110"
-                                        Padding="14,12">
+                                        Padding="14,12,7,12">
                                     <Border.Shadow>
                                         <ThemeShadow x:Name="Shadow3" />
                                     </Border.Shadow>
@@ -344,7 +344,7 @@
                                                      Height="6"
                                                      Fill="{x:Bind ViewModel.GeminiStatusBrush, Mode=OneWay}"
                                                      VerticalAlignment="Top"
-                                                     Margin="0,2,0,0" />
+                                                     Margin="0,2,7,0" />
                                         </Grid>
                                         <Grid Grid.Row="2"
                                               ColumnDefinitions="*,Auto"
