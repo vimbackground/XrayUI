@@ -97,7 +97,7 @@ namespace XrayUI.Services
             {
                 ["tag"] = XrayConfigConstants.MixedInboundTag,
                 ["protocol"] = "socks",
-                ["listen"] = "127.0.0.1",
+                ["listen"] = settings.AllowLanConnections ? "0.0.0.0" : "127.0.0.1",
                 ["port"] = settings.LocalMixedPort,
                 ["settings"] = new JsonObject
                 {

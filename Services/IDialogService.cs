@@ -12,7 +12,7 @@ namespace XrayUI.Services
         Task<SubscriptionEntry?> ShowSubscriptionsDialogAsync(ManageSubscriptionsViewModel vm);
         Task<ServerEntry?> ShowEditServerDialogAsync(ServerEntry? existing);
         Task<ServerEntry?> ShowChainProxyDialogAsync(IEnumerable<ServerEntry> servers, ServerEntry? existing = null);
-        Task<int?> ShowEditPortDialogAsync(int currentPort);
+        Task<(int port, bool allowLan)?> ShowEditPortDialogAsync(int currentPort, bool currentAllowLan);
         Task ShowErrorAsync(string title, string message, XamlRoot? xamlRoot = null);
         Task<bool> ShowConfirmationAsync(string title, string message, string? confirmText = null, string? cancelText = null, bool isDanger = false);
         /// <summary>

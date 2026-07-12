@@ -51,8 +51,11 @@ public static class L
     public static string EditServer_FlowPlaceholder  => Loc.GetString("EditServer_FlowPlaceholder");
 
     // ── Edit port dialog ───────────────────────────────────────────────────
-    public static string EditPort_Title  => Loc.GetString("EditPort_Title");
-    public static string EditPort_Header => Loc.GetString("EditPort_Header");
+    public static string EditPort_Title         => Loc.GetString("EditPort_Title");
+    public static string EditPort_Header        => Loc.GetString("EditPort_Header");
+    public static string EditPort_AllowLan      => Loc.GetString("EditPort_AllowLan");
+    public static string EditPort_LanUnavailable => Loc.GetString("EditPort_LanUnavailable");
+    public static string EditPort_CopyAddress   => Loc.GetString("EditPort_CopyAddress");
 
     // ── TUN mode ───────────────────────────────────────────────────────────
     public static string Tun_EnableTitle => Loc.GetString("Tun_EnableTitle");

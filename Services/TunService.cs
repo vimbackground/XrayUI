@@ -135,6 +135,62 @@ public class TunService
             gateway.Address.AddressFamily == AddressFamily.InterNetwork
             && !gateway.Address.Equals(IPAddress.Any));
 
+    /// <summary>Best-effort LAN-facing IPv4 address for display in the edit-port dialog's LAN
+    /// sharing UI (not for outbound pinning — see <see cref="ResolveOutboundInterface"/> for that).
+    /// Reuses the same adapter filter (<see cref="IsTunLikeInterface"/>, <see cref="HasIPv4Gateway"/>)
+    /// so "what counts as a real LAN adapter" stays defined in one place. Prefers an adapter with a
+    /// real IPv4 gateway; a single gateway-less adapter is still accepted since it can be a valid
+    /// isolated LAN, but with several such adapters there is no reliable way to distinguish the
+    /// physical network from Hyper-V/VM host-only switches, so none is returned.</summary>
+    internal static string? GetLanDisplayAddress()
+    {
+        try
+        {
+            string? gatewayed = null;
+            string? soleFallback = null;
+            var fallbackCount = 0;
+
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (ni.OperationalStatus != OperationalStatus.Up || IsTunLikeInterface(ni))
+                    continue;
+
+                var address = ni.GetIPProperties().UnicastAddresses
+                    .Select(a => a.Address)
+                    .FirstOrDefault(IsUsableLanIPv4Address);
+                if (address is null)
+                    continue;
+
+                if (HasIPv4Gateway(ni))
+                    gatewayed ??= address.ToString();
+                else
+                {
+                    fallbackCount++;
+                    soleFallback = address.ToString();
+                }
+            }
+
+            return gatewayed ?? (fallbackCount == 1 ? soleFallback : null);
+        }
+        catch (NetworkInformationException)
+        {
+            return null;
+        }
+    }
+
+    private static bool IsUsableLanIPv4Address(IPAddress address)
+    {
+        if (address.AddressFamily != AddressFamily.InterNetwork
+            || address.Equals(IPAddress.Any)
+            || IPAddress.IsLoopback(address))
+        {
+            return false;
+        }
+
+        var bytes = address.GetAddressBytes();
+        return bytes[0] != 169 || bytes[1] != 254; // exclude APIPA/link-local addresses
+    }
+
     /// <summary>
     /// Best-effort reset of stale DNS server entries that Windows can persist on the
     /// xray-tun adapter between runs. Uses netsh (fast, ~10ms) so it doesn't stall

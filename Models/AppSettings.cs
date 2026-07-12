@@ -7,6 +7,9 @@ namespace XrayUI.Models
     public class AppSettings
     {
         public int LocalMixedPort { get; set; } = 16890;
+        /// <summary>When true, the local socks/http inbound listens on 0.0.0.0 instead of
+        /// 127.0.0.1 so other devices on the LAN can use this machine as a proxy.</summary>
+        public bool AllowLanConnections { get; set; } = false;
         /// <summary>"smart" | "global"</summary>
         public string RoutingMode { get; set; } = "smart";
         /// <summary>Domestic region treated as direct in smart routing: "cn" | "ru" | "ir".

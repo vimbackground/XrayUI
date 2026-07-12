@@ -128,6 +128,7 @@ namespace XrayUI.ViewModels
             // Load settings and apply to ControlPanel
             var s = await _settings.LoadSettingsAsync();
             ControlPanel.LocalPort             = s.LocalMixedPort;
+            ControlPanel.AllowLanConnections   = s.AllowLanConnections;
             ControlPanel.RoutingMode           = s.RoutingMode;
             ControlPanel.IsSystemProxyEnabled  = s.IsSystemProxyEnabled;
             ControlPanel.InitializePersonalize(s);
