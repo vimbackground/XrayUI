@@ -199,18 +199,17 @@
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Padding="0"
-                                                    Width="16"
-                                                    Height="16"
-                                                    MinWidth="16"
-                                                    MinHeight="16"
-                                                    Margin="0,0,-4,0"
-                                                    HorizontalContentAlignment="Right"
+                                                    Padding="2"
+                                                    Width="20"
+                                                    Height="20"
+                                                    MinWidth="20"
+                                                    MinHeight="20"
+                                                    Margin="0,0,0,0"
+                                                    HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Bottom">
                                                 <FontIcon Glyph="&#xE8A7;"
-                                                          Margin="0,0,-2,0"
                                                           FontSize="12" />
                                             </Button>
                                         </Grid>
@@ -264,18 +263,17 @@
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Padding="0"
-                                                    Width="16"
-                                                    Height="16"
-                                                    MinWidth="16"
-                                                    MinHeight="16"
-                                                    Margin="0,0,-4,0"
-                                                    HorizontalContentAlignment="Right"
+                                                    Padding="2"
+                                                    Width="20"
+                                                    Height="20"
+                                                    MinWidth="20"
+                                                    MinHeight="20"
+                                                    Margin="0,0,0,0"
+                                                    HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Bottom">
                                                 <FontIcon Glyph="&#xE8A7;"
-                                                          Margin="0,0,-2,0"
                                                           FontSize="12" />
                                             </Button>
                                         </Grid>
@@ -363,18 +361,17 @@
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    Padding="0"
-                                                    Width="16"
-                                                    Height="16"
-                                                    MinWidth="16"
-                                                    MinHeight="16"
-                                                    Margin="0,0,-4,0"
-                                                    HorizontalContentAlignment="Right"
+                                                    Padding="2"
+                                                    Width="20"
+                                                    Height="20"
+                                                    MinWidth="20"
+                                                    MinHeight="20"
+                                                    Margin="0,0,0,0"
+                                                    HorizontalContentAlignment="Center"
                                                     VerticalContentAlignment="Center"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Bottom">
                                                 <FontIcon Glyph="&#xE8A7;"
-                                                          Margin="0,0,-2,0"
                                                           FontSize="12" />
                                             </Button>
                                         </Grid>
