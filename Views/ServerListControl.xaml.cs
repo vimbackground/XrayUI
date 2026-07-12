@@ -89,12 +89,15 @@ namespace XrayUI.Views
 
         private void ServersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // The selection restored from settings at startup may sit deep in a long list;
-            // bring it into view once without disturbing later user-driven selections.
-            if (!_initialScrollDone && ServersListView.SelectedItem is not null)
+			// The selection restored from settings at startup may sit deep in a long list;
+			// bring it into view once without disturbing later user-driven selections.
+			// Flush layout first; otherwise ScrollIntoView no-ops before items are measured.
+			// Pin the restored entry to the top (leading) as the primary focus.
+			if (!_initialScrollDone && ServersListView.SelectedItem is not null)
             {
-                _initialScrollDone = true;
-                ServersListView.ScrollIntoView(ServersListView.SelectedItem);
+                _initialScrollDone = true;            
+                ServersListView.UpdateLayout();
+                ServersListView.ScrollIntoView(ServersListView.SelectedItem, ScrollIntoViewAlignment.Leading);
             }
             ViewModel.SetSelectedServers(ServersListView.SelectedItems.OfType<ServerEntry>().ToArray());
         }
