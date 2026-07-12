@@ -455,6 +455,18 @@
   <data name="EditPort_Range" xml:space="preserve">
     <value>Range: {0} - {1}</value>
   </data>
+  <data name="EditPort_AllowLan" xml:space="preserve">
+    <value>Allow LAN connections</value>
+  </data>
+  <data name="EditPort_LanAddress" xml:space="preserve">
+    <value>LAN address: {0}</value>
+  </data>
+  <data name="EditPort_LanUnavailable" xml:space="preserve">
+    <value>No LAN network detected</value>
+  </data>
+  <data name="EditPort_CopyAddress" xml:space="preserve">
+    <value>Copy Address</value>
+  </data>
   <data name="Share_Title" xml:space="preserve">
     <value>Share Node</value>
   </data>

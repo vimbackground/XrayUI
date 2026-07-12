@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.Generic;
 using Windows.ApplicationModel.DataTransfer;
+using XrayUI.Controls;
 using XrayUI.Helpers;
 using XrayUI.Models;
 using XrayUI.Views;
@@ -489,7 +490,7 @@ namespace XrayUI.Services
 
         // ── Edit local port ───────────────────────────────────────────────────
 
-        public async Task<int?> ShowEditPortDialogAsync(int currentPort)
+        public async Task<(int port, bool allowLan)?> ShowEditPortDialogAsync(int currentPort, bool currentAllowLan)
         {
             var numBox = new NumberBox
             {
@@ -500,6 +501,76 @@ namespace XrayUI.Services
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
             };
 
+            var lanToggle = new ToggleSwitch
+            {
+                IsOn = currentAllowLan,
+                OnContent = L.Dialog_On,
+                OffContent = L.Dialog_Off,
+                MinWidth = 0,
+                Margin = new Thickness(0),
+            };
+            var lanRow = CreateLabelRow(L.EditPort_AllowLan, lanToggle);
+
+            var lanAddressText = new TextBlock
+            {
+                Opacity = 0.65,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            var transparentBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+            var lanCopyBtn = new CopyButton
+            {
+                Content = "",
+                FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons"),
+                Width = 28,
+                Height = 28,
+                Padding = new Thickness(0),
+                FontSize = 14,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = transparentBrush,
+                BorderBrush = transparentBrush,
+            };
+            ToolTipService.SetToolTip(lanCopyBtn, L.EditPort_CopyAddress);
+
+            var lanAddressRow = new Grid { ColumnSpacing = 4 };
+            lanAddressRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            lanAddressRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            Grid.SetColumn(lanAddressText, 0);
+            Grid.SetColumn(lanCopyBtn, 1);
+            lanAddressRow.Children.Add(lanAddressText);
+            lanAddressRow.Children.Add(lanCopyBtn);
+
+            var lanAddress = TunService.GetLanDisplayAddress();
+            int CurrentPortValue() => double.IsNaN(numBox.Value) ? currentPort : (int)numBox.Value;
+
+            void UpdateLanAddressText()
+            {
+                if (!lanToggle.IsOn)
+                {
+                    lanAddressRow.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                if (lanAddress is not null)
+                {
+                    var address = $"{lanAddress}:{CurrentPortValue()}";
+                    lanAddressText.Text = Loc.Format("EditPort_LanAddress", address);
+                    lanCopyBtn.TextToCopy = address;
+                    lanCopyBtn.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    lanAddressText.Text = L.EditPort_LanUnavailable;
+                    lanCopyBtn.Visibility = Visibility.Collapsed;
+                }
+                lanAddressRow.Visibility = Visibility.Visible;
+            }
+
+            lanToggle.Toggled += (_, _) => UpdateLanAddressText();
+            numBox.ValueChanged += (_, _) => UpdateLanAddressText();
+            UpdateLanAddressText();
+
             var dialog = CreateDialog();
             dialog.Title = L.EditPort_Title;
             dialog.PrimaryButtonText = L.Dialog_OK;
@@ -508,7 +579,7 @@ namespace XrayUI.Services
             dialog.Content = new StackPanel
             {
                 Width = 260,
-                Spacing = 8,
+                Spacing = 12,
                 Children =
                 {
                     numBox,
@@ -516,14 +587,16 @@ namespace XrayUI.Services
                     {
                         Text = Loc.Format("EditPort_Range", numBox.Minimum, numBox.Maximum),
                         Opacity = 0.65,
-                    }
+                    },
+                    lanRow,
+                    lanAddressRow,
                 }
             };
 
             var result = await dialog.ShowAsync();
             if (result != ContentDialogResult.Primary) return null;
 
-            return double.IsNaN(numBox.Value) ? currentPort : (int)numBox.Value;
+            return (CurrentPortValue(), lanToggle.IsOn);
         }
 
         // ── Error ─────────────────────────────────────────────────────────────

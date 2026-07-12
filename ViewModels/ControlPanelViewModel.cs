@@ -201,9 +201,10 @@ namespace XrayUI.ViewModels
             }
 
             var appSettings = await _settings.LoadSettingsAsync();
-            appSettings.LocalMixedPort = LocalPort;
-            appSettings.RoutingMode    = RoutingMode;
-            appSettings.IsTunMode      = IsTunMode;
+            appSettings.LocalMixedPort      = LocalPort;
+            appSettings.AllowLanConnections = AllowLanConnections;
+            appSettings.RoutingMode         = RoutingMode;
+            appSettings.IsTunMode           = IsTunMode;
             if (IsAutoConnect)
                 appSettings.LastAutoConnectServerId = server.Id;
 
@@ -290,6 +291,7 @@ namespace XrayUI.ViewModels
                 {
                     var settings = await _settings.LoadSettingsAsync();
                     settings.LocalMixedPort        = LocalPort;
+                    settings.AllowLanConnections   = AllowLanConnections;
                     settings.RoutingMode           = RoutingMode;
                     settings.IsTunMode             = IsTunMode;
                     settings.IsSystemProxyEnabled  = IsSystemProxyEnabled;
@@ -601,18 +603,31 @@ namespace XrayUI.ViewModels
         [NotifyPropertyChangedFor(nameof(LocalPortText))]
         public partial int LocalPort { get; set; }
 
+        [ObservableProperty]
+        public partial bool AllowLanConnections { get; set; }
+
         public string LocalPortText => $":{LocalPort}";
 
         [RelayCommand]
         private async Task EditLocalPort()
         {
-            var newPort = await _dialogs.ShowEditPortDialogAsync(LocalPort);
-            if (newPort.HasValue)
+            var result = await _dialogs.ShowEditPortDialogAsync(LocalPort, AllowLanConnections);
+            if (result.HasValue && (result.Value.port != LocalPort || result.Value.allowLan != AllowLanConnections))
             {
-                LocalPort = newPort.Value;
+                LocalPort = result.Value.port;
+                AllowLanConnections = result.Value.allowLan;
                 var settings = await _settings.LoadSettingsAsync();
                 settings.LocalMixedPort = LocalPort;
+                settings.AllowLanConnections = AllowLanConnections;
                 await TrySaveSettingsAsync(settings, "persist local port");
+
+                // Apply live if xray is currently running (no-op in TUN mode, same as
+                // routing/DNS changes — takes effect on the next connect there).
+                if (IsRunning)
+                {
+                    try { await ReapplyRoutingAsync(); }
+                    catch (Exception ex) { Debug.WriteLine($"[ControlPanel] Reapply after port/LAN change failed: {ex.Message}"); }
+                }
             }
         }
 
