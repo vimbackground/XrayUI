@@ -24,10 +24,7 @@ Download the latest release [here](https://github.com/PhoenixNil/XrayUI-dev/rele
 ## Getting Started
 
 > [!NOTE]
-> Building XrayUI requires [Visual Studio](https://visualstudio.microsoft.com/vs/) and Windows 10 version 1809 or later.
-> Publishing the application also requires the Rust toolchain.
->
-> If this is your first time building a WinUI 3 application with the Windows App SDK, follow the [installation instructions](https://learn.microsoft.com/windows/apps/get-started/start-here).
+> Building XrayUI requires [Visual Studio](https://visualstudio.microsoft.com/vs/) and Windows 10 version 1809 or later. Publishing the application also requires the Rust toolchain. If this is your first time building a WinUI 3 application with the Windows App SDK, follow the [installation instructions](https://learn.microsoft.com/windows/apps/get-started/start-here).
 
 Choose either Visual Studio or PowerShell to build the project.
 
