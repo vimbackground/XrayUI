@@ -252,6 +252,7 @@
                   CanDragItems="{x:Bind ViewModel.CanReorderInCurrentChip, Mode=OneWay}"
                   CanReorderItems="{x:Bind ViewModel.CanReorderInCurrentChip, Mode=OneWay}"
                   AllowDrop="{x:Bind ViewModel.CanReorderInCurrentChip, Mode=OneWay}"
+                  Loaded="ServersListView_Loaded"
                   DragItemsCompleted="ServersListView_DragItemsCompleted"
                   SelectionChanged="ServersListView_SelectionChanged"
                   SelectionMode="Extended"

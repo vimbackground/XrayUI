@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -87,19 +88,44 @@ namespace XrayUI.Views
 
         private bool _initialScrollDone;
 
+        private void ServersListView_Loaded(object sender, RoutedEventArgs e)
+        {
+            QueueInitialScroll();
+        }
+
         private void ServersListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-			// The selection restored from settings at startup may sit deep in a long list;
-			// bring it into view once without disturbing later user-driven selections.
-			// Flush layout first; otherwise ScrollIntoView no-ops before items are measured.
-			// Pin the restored entry to the top (leading) as the primary focus.
-			if (!_initialScrollDone && ServersListView.SelectedItem is not null)
-            {
-                _initialScrollDone = true;            
-                ServersListView.UpdateLayout();
-                ServersListView.ScrollIntoView(ServersListView.SelectedItem, ScrollIntoViewAlignment.Leading);
-            }
+            QueueInitialScroll();
             ViewModel.SetSelectedServers(ServersListView.SelectedItems.OfType<ServerEntry>().ToArray());
+        }
+
+        private void QueueInitialScroll()
+        {
+            if (_initialScrollDone || ServersListView.SelectedItem is null)
+                return;
+
+            ServersListView.DispatcherQueue.TryEnqueue(
+                DispatcherQueuePriority.Low,
+                () =>
+                {
+                    // Startup can restore the selection before the virtualized list has
+                    // completed its first layout pass (more likely with Native AOT's
+                    // faster startup), where ScrollIntoView silently no-ops. Bail without
+                    // consuming the one-time scroll until the control is loaded and the
+                    // current item is known — the next Loaded/SelectionChanged retries.
+                    if (_initialScrollDone ||
+                        !ServersListView.IsLoaded ||
+                        ServersListView.SelectedItem is not { } selectedItem)
+                    {
+                        return;
+                    }
+
+                    ServersListView.UpdateLayout();
+                    ServersListView.ScrollIntoView(
+                        selectedItem,
+                        ScrollIntoViewAlignment.Leading);
+                    _initialScrollDone = true;
+                });
         }
 
         private void ActiveBadge_SizeChanged(object sender, SizeChangedEventArgs e)
