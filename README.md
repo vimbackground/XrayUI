@@ -1,4 +1,4 @@
-<img width="2172" height="724" alt="image" src="https://github.com/user-attachments/assets/ea4d4a40-76cd-48f5-abc5-ce3bc07d6f3c" />
+﻿<img width="2172" height="724" alt="image" src="https://github.com/user-attachments/assets/ea4d4a40-76cd-48f5-abc5-ce3bc07d6f3c" />
 
 <h1 align="center">XrayUI</h1>
 A native Windows GUI client for the Xray core, built with <a style="text-decoration:none" href="https://docs.microsoft.com/windows/apps/winui">WinUI</a>. Designed to be a fast and lightweight proxy client.
@@ -23,10 +23,14 @@ Download the latest release [here](https://github.com/PhoenixNil/XrayUI-dev/rele
 
 ## Build
 
-Requires .NET 10 SDK and Windows 10 1809 or later.
+Requires .NET 10 SDK and Windows 10 1809 or later. Publishing additionally needs  Rust toolchain (the standalone updater is built from `updater-rs/` during publish).
 
-    dotnet build -c Release
-    dotnet publish -c Release -r win-x64
+    dotnet build -c Release -p:Platform=x64
+    dotnet publish -c Release -r win-x64 -p:Platform=x64
+
+    dotnet build -c Release -p:Platform=ARM64
+    dotnet publish -c Release -r win-arm64 -p:Platform=ARM64
+
 
 ##  Thanks
 
