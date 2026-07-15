@@ -740,6 +740,28 @@ namespace XrayUI.Services
                     settings["host"] = server.WsHost;
                 }
 
+                var mode = XhttpSettings.NormalizeMode(server.XhttpMode);
+
+                if (FinalmaskJson.Parse(server.XhttpExtra) is JsonObject extra)
+                {
+                    NormalizeXhttpDownloadSettings(extra);
+                    settings["extra"] = extra;
+
+                    // xray refuses to load stream-one combined with a download split ("Can not
+                    // use "downloadSettings" in "stream-one" mode"). The split server is the
+                    // intent-bearing half of that contradiction, so keep it and omit the mode —
+                    // auto picks a split-compatible one.
+                    if (mode == XhttpSettings.StreamOne && extra["downloadSettings"] is JsonObject)
+                    {
+                        mode = string.Empty;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(mode))
+                {
+                    settings["mode"] = mode;
+                }
+
                 stream["xhttpSettings"] = settings;
             }
 
@@ -753,6 +775,52 @@ namespace XrayUI.Services
             if (finalmask is JsonObject)
             {
                 streamSettings["finalmask"] = finalmask;
+            }
+        }
+
+        // v2board panels emit v2rayN-compact downloadSettings inside extra ({"server","servername","path","port"}),
+        // but xray-core wants a StreamConfig-shaped object (address + network/security/tlsSettings/xhttpSettings).
+        // xray silently ignores the unknown compact keys, leaving address empty — the download leg never comes up
+        // even though `-test` reports Configuration OK. Translated at emit time only, so the stored/shared extra
+        // stays byte-faithful to what the subscription sent.
+        private static void NormalizeXhttpDownloadSettings(JsonObject extra)
+        {
+            if (extra["downloadSettings"] is not JsonObject download)
+                return;
+
+            var isCompact = download["server"] is not null
+                || download["servername"] is not null
+                || download["path"] is not null;
+            if (!isCompact)
+                return;
+
+            if (download["address"] is null && download["server"] is JsonNode address)
+            {
+                // Detach before re-parenting — JsonNode enforces a single parent.
+                download.Remove("server");
+                download["address"] = address;
+            }
+
+            if (download["network"] is null)
+            {
+                download["network"] = "xhttp";
+            }
+
+            if (download["xhttpSettings"] is null && download["path"] is JsonNode path)
+            {
+                download.Remove("path");
+                // The download leg carries no mode — only the upload leg negotiates it.
+                download["xhttpSettings"] = new JsonObject { ["path"] = path };
+            }
+
+            if (download["tlsSettings"] is null && download["servername"] is JsonNode serverName)
+            {
+                download.Remove("servername");
+                if (download["security"] is null)
+                {
+                    download["security"] = "tls";
+                }
+                download["tlsSettings"] = new JsonObject { ["serverName"] = serverName };
             }
         }
 

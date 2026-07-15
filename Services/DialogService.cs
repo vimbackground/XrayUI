@@ -146,6 +146,14 @@ namespace XrayUI.Services
 
             var txtPath = new TextBox { Header = L.EditServer_Path, Text = existing?.Path ?? string.Empty };
             var txtWsHost = new TextBox { Header = L.EditServer_WsHost, Text = existing?.WsHost ?? string.Empty };
+            // Literal English headers — technical fields, same convention as SNI / Finalmask (JSON).
+            // Blank first item = "not set": omitted from the config so xray defaults to auto.
+            var cmbXhttpMode = new ComboBox { Header = "XHTTP Mode", MinWidth = 200 };
+            cmbXhttpMode.Items.Add(string.Empty);
+            foreach (var m in XhttpSettings.Modes)
+                cmbXhttpMode.Items.Add(m);
+            cmbXhttpMode.SelectedItem = XhttpSettings.NormalizeMode(existing?.XhttpMode);
+            var txtXhttpExtra = CreateJsonTextBox("XHTTP Extra (JSON)", existing?.XhttpExtra);
             var cmbSecurity = new ComboBox { Header = L.EditServer_Security, MinWidth = 200 };
             foreach (var s in new[] { "none", "tls", "reality" })
                 cmbSecurity.Items.Add(s);
@@ -183,16 +191,7 @@ namespace XrayUI.Services
                 Text = existing?.VlessEncryption ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
             };
-            var txtFinalmask = new TextBox
-            {
-                Header = "Finalmask (JSON)",
-                // AcceptsReturn must be set BEFORE Text — initializer assigns properties in
-                // declared order, and Text setter in single-line mode truncates at the first \r.
-                AcceptsReturn = true,
-                Height = 104,
-                TextWrapping = TextWrapping.NoWrap,
-                Text = (existing?.Finalmask ?? string.Empty).Replace("\r\n", "\r").Replace("\n", "\r"),
-            };
+            var txtFinalmask = CreateJsonTextBox("Finalmask (JSON)", existing?.Finalmask);
 
             // WireGuard. Literal English headers, matching the other technical fields above
             // (SNI / UUID / PublicKey (Reality) / Flow (VLESS)).
@@ -223,6 +222,8 @@ namespace XrayUI.Services
             var rowAlterId = Wrap(numAlterId);
             var rowPath = Wrap(txtPath);
             var rowWsHost = Wrap(txtWsHost);
+            var rowXhttpMode = Wrap(cmbXhttpMode);
+            var rowXhttpExtra = Wrap(txtXhttpExtra);
             var rowSni = Wrap(txtSni);
             var rowFp = Wrap(txtFp);
             var rowAllowInsecure = Wrap(chkAllowInsecure);
@@ -275,6 +276,8 @@ namespace XrayUI.Services
                 rowAlterId.Visibility = isVmess ? Visibility.Visible : Visibility.Collapsed;
                 rowPath.Visibility = (hasWs || hasXhttp || hasGrpc) ? Visibility.Visible : Visibility.Collapsed;
                 rowWsHost.Visibility = (hasWs || hasXhttp) ? Visibility.Visible : Visibility.Collapsed;
+                rowXhttpMode.Visibility = hasXhttp ? Visibility.Visible : Visibility.Collapsed;
+                rowXhttpExtra.Visibility = hasXhttp ? Visibility.Visible : Visibility.Collapsed;
                 rowSni.Visibility = (hasTls || isHysteria2) ? Visibility.Visible : Visibility.Collapsed;
                 rowFp.Visibility = hasTls ? Visibility.Visible : Visibility.Collapsed;
                 rowAllowInsecure.Visibility = (hasTls || isHysteria2) ? Visibility.Visible : Visibility.Collapsed;
@@ -317,7 +320,7 @@ namespace XrayUI.Services
                 {
                     txtName, txtHost, numPort, cmbProtocol,
                     rowEncryption, rowUsername, rowPassword, rowUuid, rowAlterId,
-                    cmbNetwork, rowPath, rowWsHost,
+                    cmbNetwork, rowPath, rowWsHost, rowXhttpMode, rowXhttpExtra,
                     cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowEchConfigList, rowEchForceQuery,
                     rowPk, rowSid, rowSpx, rowFlow, rowVlessEncryption,
                     rowWgPrivateKey, rowWgPublicKey, rowWgPreSharedKey, rowWgLocalAddress, rowWgMtu, rowWgReserved,
@@ -361,6 +364,8 @@ namespace XrayUI.Services
             entry.Network = cmbNetwork.SelectedItem?.ToString() ?? "tcp";
             entry.Path = txtPath.Text.Trim();
             entry.WsHost = txtWsHost.Text.Trim();
+            entry.XhttpMode = cmbXhttpMode.SelectedItem?.ToString() ?? string.Empty;
+            entry.XhttpExtra = FinalmaskJson.NormalizeForStorage(txtXhttpExtra.Text);
             entry.Security = cmbSecurity.SelectedItem?.ToString() ?? "none";
             entry.Sni = txtSni.Text.Trim();
             entry.Fingerprint = txtFp.Text.Trim();
@@ -395,6 +400,8 @@ namespace XrayUI.Services
                 entry.AlterId = 0;
                 entry.Path = string.Empty;
                 entry.WsHost = string.Empty;
+                entry.XhttpMode = string.Empty;
+                entry.XhttpExtra = string.Empty;
                 entry.Sni = string.Empty;
                 entry.Fingerprint = string.Empty;
                 entry.AllowInsecure = false;
@@ -416,6 +423,8 @@ namespace XrayUI.Services
                 entry.AlterId = 0;
                 entry.Path = string.Empty;
                 entry.WsHost = string.Empty;
+                entry.XhttpMode = string.Empty;
+                entry.XhttpExtra = string.Empty;
                 entry.Sni = string.Empty;
                 entry.Fingerprint = string.Empty;
                 entry.AllowInsecure = false;
@@ -442,6 +451,14 @@ namespace XrayUI.Services
                 entry.WgLocalAddress = string.Empty;
                 entry.WgReserved = string.Empty;
                 entry.WgMtu = 0;
+            }
+
+            // XHTTP-only fields must not survive a transport switch (ws/grpc/tcp reuse Path/WsHost,
+            // but mode/extra are meaningless outside xhttp and would silently reappear on switch-back).
+            if (!string.Equals(entry.Network, "xhttp", StringComparison.OrdinalIgnoreCase))
+            {
+                entry.XhttpMode = string.Empty;
+                entry.XhttpExtra = string.Empty;
             }
 
             if (!string.Equals(entry.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
@@ -1245,6 +1262,18 @@ namespace XrayUI.Services
 
         private static Border Wrap(FrameworkElement child) =>
             new Border { Child = child };
+
+        /// <summary>Multi-line raw-JSON editor box (Finalmask / XHTTP extra).</summary>
+        private static TextBox CreateJsonTextBox(string header, string? value) => new()
+        {
+            Header = header,
+            // AcceptsReturn must be set BEFORE Text — initializer assigns properties in
+            // declared order, and Text setter in single-line mode truncates at the first \r.
+            AcceptsReturn = true,
+            Height = 104,
+            TextWrapping = TextWrapping.NoWrap,
+            Text = (value ?? string.Empty).Replace("\r\n", "\r").Replace("\n", "\r"),
+        };
 
         /// <summary>
         /// The protocol ComboBox shows display names (e.g. "Shadowsocks") but stores the

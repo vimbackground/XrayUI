@@ -203,6 +203,14 @@ namespace XrayUI.ViewModels
 
         private void OnSelectedServerPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (string.IsNullOrEmpty(e.PropertyName))
+            {
+                CancelPendingLatencyTest();
+                NotifySelectedServerFieldsChanged();
+                ResetLatencyDisplay();
+                return;
+            }
+
             switch (e.PropertyName)
             {
                 case nameof(ServerEntry.Name):
@@ -229,15 +237,11 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedSecurityLabel));
                     OnPropertyChanged(nameof(SelectedTransport));
                     OnPropertyChanged(nameof(SelectedTransportVisibility));
-                    OnPropertyChanged(nameof(SelectedShareLink));
-                    OnPropertyChanged(nameof(CanCopyShareLink));
                     break;
                 case nameof(ServerEntry.Encryption):
                 case nameof(ServerEntry.Username):
                 case nameof(ServerEntry.Password):
                     OnPropertyChanged(nameof(SelectedEncryption));
-                    OnPropertyChanged(nameof(SelectedShareLink));
-                    OnPropertyChanged(nameof(CanCopyShareLink));
                     break;
                 case nameof(ServerEntry.ChainEntryServerId):
                     OnPropertyChanged(nameof(SelectedHost));
@@ -247,22 +251,23 @@ namespace XrayUI.ViewModels
                     OnPropertyChanged(nameof(SelectedPort));
                     OnPropertyChanged(nameof(SelectedEncryption));
                     break;
-                case nameof(ServerEntry.Security):
-                case nameof(ServerEntry.VlessEncryption):
-                case nameof(ServerEntry.EchConfigList):
-                case nameof(ServerEntry.EchForceQuery):
-                    OnPropertyChanged(nameof(SelectedShareLink));
-                    OnPropertyChanged(nameof(CanCopyShareLink));
-                    break;
                 case nameof(ServerEntry.Network):
                     OnPropertyChanged(nameof(SelectedTransport));
                     break;
-                case null:
-                case "":
-                    CancelPendingLatencyTest();
-                    NotifySelectedServerFieldsChanged();
-                    ResetLatencyDisplay();
-                    break;
+            }
+
+            // Any persisted config field can feed NodeLinkSerializer, so refresh the share link
+            // for everything except runtime/display-only notifications — a field added to
+            // ServerEntry later then can't silently leave the copied link stale.
+            if (e.PropertyName is not (nameof(ServerEntry.IsActive)
+                or nameof(ServerEntry.LatencyMs)
+                or nameof(ServerEntry.LatencyText)
+                or nameof(ServerEntry.HasLatency)
+                or nameof(ServerEntry.DisplayProtocol)
+                or nameof(ServerEntry.IsChain)))
+            {
+                OnPropertyChanged(nameof(SelectedShareLink));
+                OnPropertyChanged(nameof(CanCopyShareLink));
             }
         }
 

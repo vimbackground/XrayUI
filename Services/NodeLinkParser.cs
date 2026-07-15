@@ -238,6 +238,16 @@ namespace XrayUI.Services
                 var finalmask = FinalmaskJson.NormalizeForStorage(Q(query, "fm"));
                 var allowInsecure = IsTruthy(Q(query, "allowInsecure")) || IsTruthy(Q(query, "insecure"));
 
+                // Gated on xhttp: grpc links reuse the "mode" key for gun/multi. Case-insensitive
+                // because network keeps the URI's original casing (only the builder lowercases).
+                var xhttpMode  = string.Empty;
+                var xhttpExtra = string.Empty;
+                if (string.Equals(network, "xhttp", StringComparison.OrdinalIgnoreCase))
+                {
+                    xhttpMode  = XhttpSettings.NormalizeMode(Q(query, "mode"));
+                    xhttpExtra = FinalmaskJson.NormalizeForStorage(Q(query, "extra"));
+                }
+
                 return new ServerEntry
                 {
                     Name        = name,
@@ -257,6 +267,8 @@ namespace XrayUI.Services
                     SpiderX     = spx,
                     Path        = path,
                     WsHost      = wsHost,
+                    XhttpMode   = xhttpMode,
+                    XhttpExtra  = xhttpExtra,
                     Flow        = flow,
                     VlessEncryption = vlessEncryption == "none" ? string.Empty : vlessEncryption,
                     Finalmask   = finalmask,
