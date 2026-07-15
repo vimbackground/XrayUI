@@ -22,6 +22,8 @@ namespace XrayUI.Models
             Network = "tcp";
             Path = string.Empty;
             WsHost = string.Empty;
+            XhttpMode = string.Empty;
+            XhttpExtra = string.Empty;
             Security = string.Empty;
             Sni = string.Empty;
             Fingerprint = string.Empty;
@@ -102,6 +104,14 @@ namespace XrayUI.Models
 
         [ObservableProperty]
         public partial string WsHost { get; set; }
+
+        /// <summary>XHTTP mode: auto | packet-up | stream-up | stream-one. Empty = xray default (auto).</summary>
+        [ObservableProperty]
+        public partial string XhttpMode { get; set; }
+
+        /// <summary>Raw xhttpSettings.extra JSON (padding/xmux settings), shared as the "extra" URI parameter.</summary>
+        [ObservableProperty]
+        public partial string XhttpExtra { get; set; }
 
         [ObservableProperty]
         public partial int AlterId { get; set; }
@@ -248,6 +258,8 @@ namespace XrayUI.Models
             Network            = source.Network;
             Path               = source.Path;
             WsHost             = source.WsHost;
+            XhttpMode          = source.XhttpMode;
+            XhttpExtra         = source.XhttpExtra;
             AlterId            = source.AlterId;
             Security           = source.Security;
             Sni                = source.Sni;
