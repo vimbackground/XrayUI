@@ -439,6 +439,11 @@ namespace XrayUI
         {
             var presenter = (OverlappedPresenter)AppWindow.Presenter;
 
+            // Un-maximize first: resizing alone keeps the zoomed flag set, and
+            // dragging a zoomed window restores it back to full-mode size.
+            if (isMini && presenter.State == OverlappedPresenterState.Maximized)
+                presenter.Restore();
+
             var width  = isMini ? MiniWindowWidth  : FullWindowWidth;
             var height = isMini ? MiniWindowHeight : FullWindowHeight;
 
