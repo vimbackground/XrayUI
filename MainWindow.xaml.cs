@@ -35,6 +35,9 @@ namespace XrayUI
         private bool _allowClose;
         private bool _initialized;
         private bool _isHiddenToTray;
+        // Set when mini mode was entered from a maximized window, so expanding
+        // returns to maximized instead of the plain windowed size.
+        private bool _restoreMaximizedOnExpand;
         private bool _personalizeRealized;
         private readonly bool _startMinimized;
         // Set when we parked the window off-screen at startup; cleared after
@@ -441,8 +444,12 @@ namespace XrayUI
 
             // Un-maximize first: resizing alone keeps the zoomed flag set, and
             // dragging a zoomed window restores it back to full-mode size.
-            if (isMini && presenter.State == OverlappedPresenterState.Maximized)
-                presenter.Restore();
+            if (isMini)
+            {
+                _restoreMaximizedOnExpand = presenter.State == OverlappedPresenterState.Maximized;
+                if (_restoreMaximizedOnExpand)
+                    presenter.Restore();
+            }
 
             var width  = isMini ? MiniWindowWidth  : FullWindowWidth;
             var height = isMini ? MiniWindowHeight : FullWindowHeight;
@@ -458,6 +465,14 @@ namespace XrayUI
             presenter.IsMaximizable = !isMini;
             AppTitleBar.Visibility = isMini ? Visibility.Collapsed : Visibility.Visible;
             this.SetWindowSize(width, height);
+
+            // Maximize only after the normal rect above is in place, so the restore
+            // rect the system captures is the windowed size, not the mini rect.
+            if (!isMini && _restoreMaximizedOnExpand)
+            {
+                _restoreMaximizedOnExpand = false;
+                presenter.Maximize();
+            }
         }
 
         private void MiniExpandButton_Click(object sender, RoutedEventArgs e)
