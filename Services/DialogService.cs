@@ -493,15 +493,8 @@ namespace XrayUI.Services
                 entry.EchForceQuery = string.Empty;
             }
 
-            // Same rule for the certificate pin, the other TLS-only field: anything that cannot
-            // produce a tlsSettings block must not keep one. Gated on protocol AND security, not
-            // Security alone: ss shows the same Security combobox as vmess/vless/trojan (it is
-            // "standard transport" for visibility purposes) but BuildSsOutbound never reads
-            // Security at all, so a "tls" selection left over from before switching to ss would
-            // otherwise survive untouched — and silently reapply itself, targeting the wrong
-            // server, if the entry is later switched to a real TLS protocol without the user
-            // re-entering the pin. hysteria2 always qualifies because its branch above forces
-            // Security to "tls"; REALITY is excluded because it has no tlsSettings at all.
+            // Same rule for the certificate pin: gated on protocol AND security, not Security
+            // alone, because ss shares the same combobox but BuildSsOutbound never reads it.
             bool pinApplies = entry.Protocol == "hysteria2"
                 || ((entry.Protocol == "vmess" || entry.Protocol == "vless" || entry.Protocol == "trojan")
                     && string.Equals(entry.Security, "tls", StringComparison.OrdinalIgnoreCase));
