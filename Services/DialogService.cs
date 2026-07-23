@@ -163,6 +163,15 @@ namespace XrayUI.Services
             var txtFp = new TextBox { Header = L.EditServer_Fingerprint, Text = existing?.Fingerprint ?? string.Empty };
             var chkAllowInsecure = new CheckBox
                 { Content = L.EditServer_AllowInsecure, IsChecked = existing?.AllowInsecure ?? false };
+            // Localized on purpose, unlike the PublicKey (Reality) / Flow (VLESS) rows below:
+            // it pairs with 指纹 (uTLS) above, of which 证书指纹 is the qualified form.
+            var txtPinnedCert = new TextBox
+            {
+                Header = L.EditServer_CertFingerprint,
+                PlaceholderText = "88b874b4cee4f3b6…",
+                Text = existing?.PinnedPeerCertSha256 ?? string.Empty,
+                TextWrapping = TextWrapping.Wrap
+            };
             var txtEchConfigList = new TextBox
             {
                 Header = "ECH ConfigList",
@@ -227,6 +236,7 @@ namespace XrayUI.Services
             var rowSni = Wrap(txtSni);
             var rowFp = Wrap(txtFp);
             var rowAllowInsecure = Wrap(chkAllowInsecure);
+            var rowPinnedCert = Wrap(txtPinnedCert);
             var rowEchConfigList = Wrap(txtEchConfigList);
             var rowEchForceQuery = Wrap(cmbEchForceQuery);
             var rowPk = Wrap(txtPk);
@@ -281,6 +291,11 @@ namespace XrayUI.Services
                 rowSni.Visibility = (hasTls || isHysteria2) ? Visibility.Visible : Visibility.Collapsed;
                 rowFp.Visibility = hasTls ? Visibility.Visible : Visibility.Collapsed;
                 rowAllowInsecure.Visibility = (hasTls || isHysteria2) ? Visibility.Visible : Visibility.Collapsed;
+                // Every TLS outbound can pin; REALITY cannot (it authenticates by public key and
+                // has no tlsSettings), so this tracks rowSni/rowAllowInsecure minus reality.
+                rowPinnedCert.Visibility = ((hasTls && !hasReality) || isHysteria2)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
                 rowEchConfigList.Visibility = hasEch ? Visibility.Visible : Visibility.Collapsed;
                 rowEchForceQuery.Visibility = hasEch ? Visibility.Visible : Visibility.Collapsed;
                 rowPk.Visibility = hasReality ? Visibility.Visible : Visibility.Collapsed;
@@ -321,7 +336,7 @@ namespace XrayUI.Services
                     txtName, txtHost, numPort, cmbProtocol,
                     rowEncryption, rowUsername, rowPassword, rowUuid, rowAlterId,
                     cmbNetwork, rowPath, rowWsHost, rowXhttpMode, rowXhttpExtra,
-                    cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowEchConfigList, rowEchForceQuery,
+                    cmbSecurity, rowSni, rowFp, rowAllowInsecure, rowPinnedCert, rowEchConfigList, rowEchForceQuery,
                     rowPk, rowSid, rowSpx, rowFlow, rowVlessEncryption,
                     rowWgPrivateKey, rowWgPublicKey, rowWgPreSharedKey, rowWgLocalAddress, rowWgMtu, rowWgReserved,
                     rowFinalmask
@@ -370,6 +385,13 @@ namespace XrayUI.Services
             entry.Sni = txtSni.Text.Trim();
             entry.Fingerprint = txtFp.Text.Trim();
             entry.AllowInsecure = chkAllowInsecure.IsChecked == true;
+            // Hand entry is the only path that needs cleaning: cert viewers copy digests with
+            // colons (openssl, Firefox) or spaces (Windows certmgr). Measured against the shipped
+            // core — it tolerates colons and either case itself, but rejects the spaced form with
+            // "incorrect pinnedPeerCertSha256 length". Links and Clash configs carry bare hex, so
+            // those paths store what they were given.
+            entry.PinnedPeerCertSha256 = txtPinnedCert.Text
+                .Trim().Replace(":", string.Empty).Replace(" ", string.Empty);
             entry.EchConfigList = txtEchConfigList.Text.Trim();
             entry.EchForceQuery = EchSettings.NormalizeForceQuery(cmbEchForceQuery.SelectedItem?.ToString());
             entry.PublicKey = txtPk.Text.Trim();
@@ -405,6 +427,7 @@ namespace XrayUI.Services
                 entry.Sni = string.Empty;
                 entry.Fingerprint = string.Empty;
                 entry.AllowInsecure = false;
+                entry.PinnedPeerCertSha256 = string.Empty;
                 entry.EchConfigList = string.Empty;
                 entry.EchForceQuery = string.Empty;
                 entry.PublicKey = string.Empty;
@@ -428,6 +451,7 @@ namespace XrayUI.Services
                 entry.Sni = string.Empty;
                 entry.Fingerprint = string.Empty;
                 entry.AllowInsecure = false;
+                entry.PinnedPeerCertSha256 = string.Empty;
                 entry.EchConfigList = string.Empty;
                 entry.EchForceQuery = string.Empty;
                 entry.PublicKey = string.Empty;
@@ -467,6 +491,16 @@ namespace XrayUI.Services
             {
                 entry.EchConfigList = string.Empty;
                 entry.EchForceQuery = string.Empty;
+            }
+
+            // Same rule for the certificate pin, the other TLS-only field: anything that cannot
+            // produce a tlsSettings block must not keep one. Covers REALITY (authenticates by
+            // public key), security=none, and the non-TLS protocols — hysteria2 passes because
+            // its branch above forces Security to "tls". Enforced here rather than only in the
+            // row's visibility, so a collapsed row cannot persist a value that revives on switch-back.
+            if (!string.Equals(entry.Security, "tls", StringComparison.OrdinalIgnoreCase))
+            {
+                entry.PinnedPeerCertSha256 = string.Empty;
             }
 
             if (entry.Protocol != "ss" && entry.Protocol != "socks" && entry.Protocol != "http" && entry.Protocol != "wireguard")

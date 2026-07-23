@@ -27,6 +27,7 @@ namespace XrayUI.Models
             Security = string.Empty;
             Sni = string.Empty;
             Fingerprint = string.Empty;
+            PinnedPeerCertSha256 = string.Empty;
             EchConfigList = string.Empty;
             EchForceQuery = string.Empty;
             PublicKey = string.Empty;
@@ -128,6 +129,16 @@ namespace XrayUI.Models
 
         [ObservableProperty]
         public partial bool AllowInsecure { get; set; }
+
+        /// <summary>
+        /// Server certificate fingerprint (SHA-256 hex) to pin instead of validating the chain.
+        /// Maps to tlsSettings.pinnedPeerCertSha256, so it applies to every TLS outbound — but
+        /// not to REALITY, which authenticates by public key and has no tlsSettings.
+        /// Only hysteria2 links carry it (as "pinSHA256"); other protocols have no share-link
+        /// convention for a pin, so their entries are set by hand in the edit dialog.
+        /// </summary>
+        [ObservableProperty]
+        public partial string PinnedPeerCertSha256 { get; set; }
 
         /// <summary>Client-side TLS ECH config list. Empty = disabled.</summary>
         [ObservableProperty]
@@ -265,6 +276,7 @@ namespace XrayUI.Models
             Sni                = source.Sni;
             Fingerprint        = source.Fingerprint;
             AllowInsecure      = source.AllowInsecure;
+            PinnedPeerCertSha256 = source.PinnedPeerCertSha256;
             EchConfigList      = source.EchConfigList;
             EchForceQuery      = source.EchForceQuery;
             PublicKey          = source.PublicKey;

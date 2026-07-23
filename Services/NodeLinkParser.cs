@@ -289,7 +289,9 @@ namespace XrayUI.Services
         {
             try
             {
-                var uri      = new Uri(link);
+                var (normalizedLink, addressPortRange) = SplitHysteria2PortRange(link);
+
+                var uri      = new Uri(normalizedLink);
                 var password = Uri.UnescapeDataString(uri.UserInfo);
                 var host     = uri.Host;
                 var port     = uri.Port;
@@ -299,7 +301,7 @@ namespace XrayUI.Services
 
                 var query = ParseQuery(uri.Query);
                 var sni   = Q(query, "sni", string.Empty) ?? string.Empty;
-                var finalmask = BuildHysteria2Finalmask(query);
+                var finalmask = BuildHysteria2Finalmask(query, addressPortRange);
                 var allowInsecure = IsTruthy(Q(query, "allowInsecure")) || IsTruthy(Q(query, "insecure"));
 
                 return new ServerEntry
@@ -313,6 +315,8 @@ namespace XrayUI.Services
                     Security   = "tls",
                     Sni        = sni,
                     AllowInsecure = allowInsecure,
+                    PinnedPeerCertSha256 =
+                        (Q(query, "pinSHA256") ?? Q(query, "pinnedPeerCertSha256") ?? string.Empty).Trim(),
                     Finalmask  = finalmask,
                     Encryption = "TLS"
                 };
@@ -323,22 +327,73 @@ namespace XrayUI.Services
             }
         }
 
-        private static string BuildHysteria2Finalmask(Dictionary<string, string> query)
+        /// <summary>
+        /// hysteria2's own URI form expresses port hopping as a range or list in the address
+        /// ("host:35000-39000", "host:35000,36000"). System.Uri rejects a non-numeric port
+        /// outright, so parsing the raw link threw and the node vanished at import. Rewrite the
+        /// address down to its first port and hand the range back for the finalmask fold-in.
+        /// </summary>
+        private static (string link, string? portRange) SplitHysteria2PortRange(string link)
+        {
+            var schemeEnd = link.IndexOf("://", StringComparison.Ordinal);
+            if (schemeEnd < 0) return (link, null);
+            schemeEnd += 3;
+
+            var authorityEnd = link.IndexOfAny(['/', '?', '#'], schemeEnd);
+            if (authorityEnd < 0) authorityEnd = link.Length;
+
+            // Auth may itself contain ':' and '@', so the host starts after the LAST '@'.
+            var authority = link.Substring(schemeEnd, authorityEnd - schemeEnd);
+            var hostStart = schemeEnd + authority.LastIndexOf('@') + 1;
+            var hostPort  = link.Substring(hostStart, authorityEnd - hostStart);
+
+            int colon;
+            if (hostPort.StartsWith('['))
+            {
+                var close = hostPort.IndexOf(']');
+                if (close < 0) return (link, null);
+                colon = hostPort.IndexOf(':', close);
+            }
+            else
+            {
+                colon = hostPort.LastIndexOf(':');
+            }
+            if (colon < 0) return (link, null);
+
+            var portPart = hostPort[(colon + 1)..];
+            var separator = portPart.IndexOfAny(['-', ',']);
+            if (separator < 0) return (link, null);
+
+            var firstPort = portPart[..separator];
+            if (!int.TryParse(firstPort, out _)) return (link, null);
+
+            // The port runs to the end of the authority by construction, so the tail resumes at
+            // authorityEnd — no need to re-derive it from the port length.
+            var portStart = hostStart + colon + 1;
+            return (string.Concat(link.AsSpan(0, portStart), firstPort, link.AsSpan(authorityEnd)), portPart);
+        }
+
+        private static string BuildHysteria2Finalmask(Dictionary<string, string> query, string? addressPortRange)
         {
             var finalmask = FinalmaskJson.NormalizeForStorage(
                 Q(query, "fm") ?? Q(query, "finalmask"));
 
             var obfs = Q(query, "obfs");
-            if (!string.Equals(obfs, "salamander", StringComparison.OrdinalIgnoreCase))
-                return finalmask;
+            if (string.Equals(obfs, "salamander", StringComparison.OrdinalIgnoreCase))
+            {
+                var obfsPassword = Q(query, "obfs-password")
+                                   ?? Q(query, "obfs_password")
+                                   ?? Q(query, "obfsPassword");
+                if (obfsPassword is not null)
+                    finalmask = FinalmaskJson.AddHysteria2SalamanderMask(finalmask, obfsPassword);
+            }
 
-            var obfsPassword = Q(query, "obfs-password")
-                               ?? Q(query, "obfs_password")
-                               ?? Q(query, "obfsPassword");
-            if (obfsPassword is null)
-                return finalmask;
+            // Query param wins over the address form — a client that emits both meant the param.
+            var ports = Q(query, "mport") ?? Q(query, "ports") ?? addressPortRange;
+            if (!string.IsNullOrWhiteSpace(ports))
+                finalmask = FinalmaskJson.AddHysteria2UdpHop(finalmask, ports);
 
-            return FinalmaskJson.AddHysteria2SalamanderMask(finalmask, obfsPassword);
+            return finalmask;
         }
 
         // Trojan

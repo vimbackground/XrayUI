@@ -121,6 +121,51 @@ namespace XrayUI.Tests
         }
 
         [Fact]
+        public void RoundTrip_Hysteria2PortHoppingAndPin()
+        {
+            RoundTrip("hysteria2://87ae2e88-068e-48bc-a785-b98047a308e7@167.234.251.78:35000" +
+                      "?sni=www.apple.com" +
+                      "&pinSHA256=88b874b4cee4f3b6ca00a629b71447c9b8dc9a12056ce6f8cba772fff80b3d02" +
+                      "&mport=35000-39000#hy2");
+        }
+
+        [Fact]
+        public void Share_Hysteria2PortHopping_EmitsMportNotFmBlob()
+        {
+            // Folding mport into finalmask is only worth it if it comes back out as mport= —
+            // a v2rayN user pasting our link has to get port hopping, not an opaque fm= blob.
+            var s = NodeLinkParser.Parse("hysteria2://pw@hy2.example.com:35000" +
+                                         "?sni=x.example.com&pinSHA256=88b874b4&mport=35000-39000#H2");
+            Assert.NotNull(s);
+
+            var link = NodeLinkSerializer.ToLink(s);
+
+            Assert.NotNull(link);
+            Assert.Contains("mport=35000-39000", link);
+            Assert.Contains("pinSHA256=88b874b4", link);
+            Assert.DoesNotContain("fm=", link);
+        }
+
+        [Fact]
+        public void RoundTrip_Hysteria2UdpHopWithoutInterval()
+        {
+            // A hand-written hop carrying only ports is NOT what the writer emits, so it must
+            // survive in fm= rather than being collapsed into mport= — collapsing it would make
+            // the re-import invent interval:"30" that the author never wrote.
+            var fm = Uri.EscapeDataString("""{"quicParams":{"udpHop":{"ports":"35000-39000"}}}""");
+            RoundTrip($"hysteria2://pw@hy2.example.com:443?sni=hy2.example.com&fm={fm}#H2");
+        }
+
+        [Fact]
+        public void RoundTrip_Hysteria2NonCanonicalUdpHop()
+        {
+            // A hop interval the parser would never write must survive the share hop: the
+            // serializer has to leave it in fm= instead of collapsing it into mport=.
+            var fm = Uri.EscapeDataString("""{"quicParams":{"congestion":"brutal","udpHop":{"ports":"35000-39000","interval":"5"}}}""");
+            RoundTrip($"hysteria2://pw@hy2.example.com:443?sni=hy2.example.com&fm={fm}#H2");
+        }
+
+        [Fact]
         public void RoundTrip_TrojanGrpc()
         {
             RoundTrip("trojan://pw@t.example.com:443?type=grpc&sni=t.example.com&serviceName=svc#TG");

@@ -449,6 +449,9 @@
   <data name="EditServer_AllowInsecure" xml:space="preserve">
     <value>允许不安全连接（跳过证书校验）</value>
   </data>
+  <data name="EditServer_CertFingerprint" xml:space="preserve">
+    <value>证书指纹 (SHA-256)</value>
+  </data>
   <data name="EditServer_FlowPlaceholder" xml:space="preserve">
     <value>xtls-rprx-vision 或留空</value>
   </data>
