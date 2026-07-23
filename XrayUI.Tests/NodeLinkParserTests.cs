@@ -206,6 +206,65 @@ namespace XrayUI.Tests
             Assert.Contains("ob123", s.Finalmask);
         }
 
+        [Fact]
+        public void Parse_Hysteria2WithMportAndPin_BuildsUdpHopAndPin()
+        {
+            // Shape emitted by v2rayN for a port-hopping node behind a masquerading serverName.
+            var link = "hysteria2://87ae2e88-068e-48bc-a785-b98047a308e7@167.234.251.78:35000" +
+                       "?sni=www.apple.com&insecure=0&allowInsecure=0" +
+                       "&pinSHA256=88b874b4cee4f3b6ca00a629b71447c9b8dc9a12056ce6f8cba772fff80b3d02" +
+                       "&mport=35000-39000#hy2";
+
+            var s = NodeLinkParser.Parse(link);
+
+            Assert.NotNull(s);
+            Assert.Equal(35000, s.Port);
+            Assert.False(s.AllowInsecure);
+            Assert.Equal("88b874b4cee4f3b6ca00a629b71447c9b8dc9a12056ce6f8cba772fff80b3d02", s.PinnedPeerCertSha256);
+            Assert.Contains("udpHop", s.Finalmask);
+            Assert.Contains("35000-39000", s.Finalmask);
+        }
+
+        [Fact]
+        public void Parse_Hysteria2PortRangeInAddress_DoesNotDropTheNode()
+        {
+            // hysteria2's native URI puts the hop range in the address. System.Uri rejects that
+            // port outright, which used to make the whole node disappear at import.
+            var s = NodeLinkParser.Parse("hysteria2://pw@hy2.example.com:35000-39000?sni=hy2.example.com#H2");
+
+            Assert.NotNull(s);
+            Assert.Equal("hy2.example.com", s.Host);
+            Assert.Equal(35000, s.Port);
+            Assert.Contains("35000-39000", s.Finalmask);
+        }
+
+        [Theory]
+        // Stored as given. The shipped core accepts hex in either case and strips colons itself,
+        // so rewriting what a link sent would only risk mangling it — separator cleanup belongs
+        // on the hand-entry path in the edit dialog, which is where dirty pastes actually arrive.
+        [InlineData("88b874b4cee4f3b6")]
+        [InlineData("88B874B4CEE4F3B6")]
+        [InlineData("88:b8:74:b4:ce:e4:f3:b6")]
+        public void Parse_Hysteria2Pin_StoredVerbatim(string param)
+        {
+            var s = NodeLinkParser.Parse($"hysteria2://pw@hy2.example.com:443?pinSHA256={param}#H2");
+
+            Assert.NotNull(s);
+            Assert.Equal(param, s.PinnedPeerCertSha256);
+        }
+
+        [Fact]
+        public void Parse_Hysteria2ExplicitFinalmaskHop_WinsOverMport()
+        {
+            // A hand-tuned udpHop in fm= must not be clobbered by the compact mport= form.
+            var fm = Uri.EscapeDataString("""{"quicParams":{"udpHop":{"ports":"40000-41000","interval":"5"}}}""");
+            var s = NodeLinkParser.Parse($"hysteria2://pw@hy2.example.com:443?fm={fm}&mport=35000-39000#H2");
+
+            Assert.NotNull(s);
+            Assert.Contains("40000-41000", s.Finalmask);
+            Assert.DoesNotContain("35000-39000", s.Finalmask);
+        }
+
         // ── Trojan ────────────────────────────────────────────────────────────
 
         [Fact]

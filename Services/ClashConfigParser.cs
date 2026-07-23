@@ -178,6 +178,9 @@ namespace XrayUI.Services
             Security      = "tls",
             Sni           = Str(p, "sni", Str(p, "servername")),
             AllowInsecure = Bool(p, "skip-cert-verify"),
+            // Clash spells the pinned certificate digest `fingerprint` — unrelated to the
+            // uTLS `client-fingerprint` that maps to ServerEntry.Fingerprint elsewhere.
+            PinnedPeerCertSha256 = Str(p, "fingerprint"),
             Finalmask     = BuildHysteria2Finalmask(p),
             Encryption    = "TLS",
         };
@@ -186,14 +189,20 @@ namespace XrayUI.Services
         {
             var finalmask = FinalmaskJson.NormalizeForStorage(Str(p, "fm", Str(p, "finalmask")));
 
-            if (!string.Equals(Str(p, "obfs"), "salamander", StringComparison.OrdinalIgnoreCase))
-                return finalmask;
+            if (string.Equals(Str(p, "obfs"), "salamander", StringComparison.OrdinalIgnoreCase))
+            {
+                var obfsPassword = Str(p, "obfs-password", Str(p, "obfs_password", Str(p, "obfsPassword")));
+                if (!string.IsNullOrWhiteSpace(obfsPassword))
+                    finalmask = FinalmaskJson.AddHysteria2SalamanderMask(finalmask, obfsPassword);
+            }
 
-            var obfsPassword = Str(p, "obfs-password", Str(p, "obfs_password", Str(p, "obfsPassword")));
-            if (string.IsNullOrWhiteSpace(obfsPassword))
-                return finalmask;
+            // Port hopping. The v2rayN share-link spelling ("mport") is deliberately not accepted
+            // here — that vocabulary belongs to NodeLinkParser, no Clash config emits it.
+            var ports = Str(p, "ports");
+            if (!string.IsNullOrWhiteSpace(ports))
+                finalmask = FinalmaskJson.AddHysteria2UdpHop(finalmask, ports, Str(p, "hop-interval"));
 
-            return FinalmaskJson.AddHysteria2SalamanderMask(finalmask, obfsPassword);
+            return finalmask;
         }
 
         // WireGuard: single-peer form (top-level public-key / server / port). Returns null when a

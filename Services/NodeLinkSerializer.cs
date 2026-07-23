@@ -174,11 +174,18 @@ namespace XrayUI.Services
             sb.Append(':');
             sb.Append(s.Port);
 
-            var (hasSalamanderObfs, obfsPassword, finalmask) =
-                ExtractHysteria2SalamanderObfs(FinalmaskJson.NormalizeForShare(s.Finalmask));
+            // Everything the mask can express as a dedicated link parameter is lifted out by
+            // FinalmaskJson; whatever is left rides along in fm=. This method only maps the
+            // results onto query keys.
+            var (hasSalamanderObfs, obfsPassword, mask) =
+                FinalmaskJson.TakeHysteria2Salamander(FinalmaskJson.NormalizeForShare(s.Finalmask));
+            var (hopPorts, finalmask) = FinalmaskJson.TakeHysteria2UdpHop(mask);
+
             bool hasQuery = !string.IsNullOrEmpty(s.Sni)
                             || s.AllowInsecure
+                            || !string.IsNullOrEmpty(s.PinnedPeerCertSha256)
                             || hasSalamanderObfs
+                            || hopPorts is not null
                             || !string.IsNullOrEmpty(finalmask);
             if (hasQuery)
             {
@@ -197,10 +204,18 @@ namespace XrayUI.Services
                 {
                     AddParam("insecure", "1");
                 }
+                if (!string.IsNullOrEmpty(s.PinnedPeerCertSha256))
+                {
+                    AddParam("pinSHA256", s.PinnedPeerCertSha256);
+                }
                 if (hasSalamanderObfs)
                 {
                     AddParam("obfs", "salamander");
                     AddParam("obfs-password", obfsPassword ?? string.Empty);
+                }
+                if (hopPorts is not null)
+                {
+                    AddParam("mport", hopPorts);
                 }
                 if (!string.IsNullOrEmpty(finalmask))
                 {
@@ -218,42 +233,6 @@ namespace XrayUI.Services
         }
 
         // ── Trojan ───────────────────────────────────────────────────────────
-
-        private static (bool hasObfs, string? password, string finalmask) ExtractHysteria2SalamanderObfs(string finalmask)
-        {
-            // FinalmaskJson.Parse returns a freshly-parsed node owned by this call, so we
-            // mutate `root` and `udp` in place rather than cloning.
-            var parsed = FinalmaskJson.Parse(finalmask);
-            if (parsed is not JsonObject root)
-                return (false, null, finalmask);
-
-            if (root["udp"] is not JsonArray udp)
-                return (false, null, finalmask);
-
-            string? password = null;
-            for (int i = 0; i < udp.Count; i++)
-            {
-                if (udp[i] is JsonObject itemObject
-                    && string.Equals(itemObject["type"]?.GetValue<string>(), "salamander", StringComparison.OrdinalIgnoreCase))
-                {
-                    password = (itemObject["settings"] as JsonObject)?["password"]?.GetValue<string>() ?? string.Empty;
-                    udp.RemoveAt(i);
-                    break;
-                }
-            }
-
-            if (password is null)
-                return (false, null, finalmask);
-
-            if (udp.Count == 0)
-                root.Remove("udp");
-
-            var cleanedFinalmask = root.Count == 0
-                ? string.Empty
-                : FinalmaskJson.NormalizeForShare(root.ToJsonString());
-
-            return (true, password, cleanedFinalmask);
-        }
 
         private static string? ToTrojanLink(ServerEntry s)
         {

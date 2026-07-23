@@ -48,6 +48,7 @@ public static class L
     public static string EditServer_Security         => Loc.GetString("EditServer_Security");
     public static string EditServer_Fingerprint      => Loc.GetString("EditServer_Fingerprint");
     public static string EditServer_AllowInsecure    => Loc.GetString("EditServer_AllowInsecure");
+    public static string EditServer_CertFingerprint  => Loc.GetString("EditServer_CertFingerprint");
     public static string EditServer_FlowPlaceholder  => Loc.GetString("EditServer_FlowPlaceholder");
 
     // ── Edit port dialog ───────────────────────────────────────────────────

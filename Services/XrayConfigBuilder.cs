@@ -416,15 +416,15 @@ namespace XrayUI.Services
         {
             var sni = string.IsNullOrWhiteSpace(server.Sni) ? server.Host : server.Sni;
 
+            // hysteria2 forks the *stream* shape, not the TLS block underneath — no uTLS
+            // fingerprint because it is QUIC, everything else identical to the shared path.
+            var tlsSettings = BuildTlsSettings(server, sni);
+
             var streamSettings = new JsonObject
             {
                 ["network"] = "hysteria",
                 ["security"] = "tls",
-                ["tlsSettings"] = new JsonObject
-                {
-                    ["serverName"] = sni,
-                    ["allowInsecure"] = server.AllowInsecure
-                },
+                ["tlsSettings"] = tlsSettings,
                 ["hysteriaSettings"] = new JsonObject
                 {
                     ["version"] = 2,
@@ -638,6 +638,32 @@ namespace XrayUI.Services
             return array;
         }
 
+        /// <summary>
+        /// The tlsSettings keys that are the same for every TLS outbound. hysteria2 builds its own
+        /// streamSettings because its stream shape differs, but the TLS block underneath is the
+        /// same contract — routing both through here is what stops each new TLS field from having
+        /// to be written twice and drifting. Transport-specific keys (uTLS fingerprint, ECH) are
+        /// added by the caller.
+        /// </summary>
+        private static JsonObject BuildTlsSettings(ServerEntry server, string sni)
+        {
+            var tlsSettings = new JsonObject
+            {
+                ["serverName"] = sni,
+                ["allowInsecure"] = server.AllowInsecure
+            };
+
+            // A node masquerading behind someone else's serverName authenticates by certificate
+            // fingerprint instead of by chain. Protocol-agnostic; REALITY is unaffected because it
+            // authenticates with the x25519 public key and has no tlsSettings at all.
+            if (!string.IsNullOrWhiteSpace(server.PinnedPeerCertSha256))
+            {
+                tlsSettings["pinnedPeerCertSha256"] = server.PinnedPeerCertSha256;
+            }
+
+            return tlsSettings;
+        }
+
         private static JsonObject BuildStreamSettings(ServerEntry server)
         {
             var network = string.IsNullOrWhiteSpace(server.Network)
@@ -662,13 +688,11 @@ namespace XrayUI.Services
                 var sni = !string.IsNullOrWhiteSpace(server.Sni) ? server.Sni
                     : !string.IsNullOrWhiteSpace(hostHeader) ? hostHeader
                     : server.Host;
-                var fingerprint = string.IsNullOrWhiteSpace(server.Fingerprint) ? "chrome" : server.Fingerprint;
-                var tlsSettings = new JsonObject
-                {
-                    ["serverName"] = sni,
-                    ["fingerprint"] = fingerprint,
-                    ["allowInsecure"] = server.AllowInsecure
-                };
+                var tlsSettings = BuildTlsSettings(server, sni);
+                // uTLS fingerprint applies to the TCP-based transports only, so it stays here
+                // rather than in the shared builder that hysteria2 also goes through.
+                tlsSettings["fingerprint"] =
+                    string.IsNullOrWhiteSpace(server.Fingerprint) ? "chrome" : server.Fingerprint;
 
                 if (string.Equals(server.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
                     && !string.IsNullOrWhiteSpace(server.EchConfigList))

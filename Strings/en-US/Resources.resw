@@ -449,6 +449,9 @@
   <data name="EditServer_AllowInsecure" xml:space="preserve">
     <value>Allow insecure connection (skip certificate verification)</value>
   </data>
+  <data name="EditServer_CertFingerprint" xml:space="preserve">
+    <value>Certificate fingerprint (SHA-256)</value>
+  </data>
   <data name="EditServer_FlowPlaceholder" xml:space="preserve">
     <value>xtls-rprx-vision or leave empty</value>
   </data>

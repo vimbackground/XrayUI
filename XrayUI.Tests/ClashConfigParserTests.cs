@@ -160,6 +160,33 @@ namespace XrayUI.Tests
         }
 
         [Fact]
+        public void Parse_Hysteria2PortsAndFingerprint_BuildsUdpHopAndPin()
+        {
+            var yaml = """
+                proxies:
+                  - name: hy2hop
+                    type: hysteria2
+                    server: hy2.example.com
+                    port: 35000
+                    password: pw
+                    ports: 35000-39000
+                    hop-interval: 15-30
+                    fingerprint: 88b874b4
+                    sni: www.apple.com
+                """;
+
+            var node = Assert.Single(ClashConfigParser.Parse(yaml).Nodes);
+
+            Assert.Equal("hysteria2", node.Protocol);
+            // Clash's `fingerprint` is the cert pin, not the uTLS `client-fingerprint`; stored
+            // as given, like the link parser does.
+            Assert.Equal("88b874b4", node.PinnedPeerCertSha256);
+            Assert.Contains("udpHop", node.Finalmask);
+            Assert.Contains("35000-39000", node.Finalmask);
+            Assert.Contains("15-30", node.Finalmask);
+        }
+
+        [Fact]
         public void Parse_Hysteria2Salamander_BuildsFinalmask()
         {
             var yaml = """
