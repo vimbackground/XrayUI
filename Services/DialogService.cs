@@ -168,7 +168,6 @@ namespace XrayUI.Services
             var txtPinnedCert = new TextBox
             {
                 Header = L.EditServer_CertFingerprint,
-                PlaceholderText = "88b874b4cee4f3b6…",
                 Text = existing?.PinnedPeerCertSha256 ?? string.Empty,
                 TextWrapping = TextWrapping.Wrap
             };
