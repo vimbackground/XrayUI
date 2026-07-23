@@ -494,11 +494,18 @@ namespace XrayUI.Services
             }
 
             // Same rule for the certificate pin, the other TLS-only field: anything that cannot
-            // produce a tlsSettings block must not keep one. Covers REALITY (authenticates by
-            // public key), security=none, and the non-TLS protocols — hysteria2 passes because
-            // its branch above forces Security to "tls". Enforced here rather than only in the
-            // row's visibility, so a collapsed row cannot persist a value that revives on switch-back.
-            if (!string.Equals(entry.Security, "tls", StringComparison.OrdinalIgnoreCase))
+            // produce a tlsSettings block must not keep one. Gated on protocol AND security, not
+            // Security alone: ss shows the same Security combobox as vmess/vless/trojan (it is
+            // "standard transport" for visibility purposes) but BuildSsOutbound never reads
+            // Security at all, so a "tls" selection left over from before switching to ss would
+            // otherwise survive untouched — and silently reapply itself, targeting the wrong
+            // server, if the entry is later switched to a real TLS protocol without the user
+            // re-entering the pin. hysteria2 always qualifies because its branch above forces
+            // Security to "tls"; REALITY is excluded because it has no tlsSettings at all.
+            bool pinApplies = entry.Protocol == "hysteria2"
+                || ((entry.Protocol == "vmess" || entry.Protocol == "vless" || entry.Protocol == "trojan")
+                    && string.Equals(entry.Security, "tls", StringComparison.OrdinalIgnoreCase));
+            if (!pinApplies)
             {
                 entry.PinnedPeerCertSha256 = string.Empty;
             }
