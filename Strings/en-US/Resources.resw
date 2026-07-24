@@ -1188,7 +1188,7 @@
     <value>Leave empty to use link domain</value>
   </data>
   <data name="Subscription_AutoImportHintText.Text" xml:space="preserve">
-    <value>All nodes from the subscription will be parsed and imported automatically</value>
+    <value>Auto-parsing and importing subscription nodes.</value>
   </data>
   <data name="Subscription_EmptyText.Text" xml:space="preserve">
     <value>No subscriptions</value>
