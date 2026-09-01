@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -293,7 +293,9 @@ namespace XrayUI
                 CenterOnPrimaryDisplay();
             }
 
+            AppWindow.Show();
             Activate();
+            BringToForeground();
         }
 
         private void HandleHotkeyMessage(int id)
@@ -672,6 +674,45 @@ namespace XrayUI
             ViewModel.ControlPanel.XrayService.StopForShutdown();
             ViewModel.ControlPanel.CleanupTunOnExit(fastShutdown);
         }
+
+        private const int SwRestore = 9;
+        private static readonly IntPtr HwndTopmost = new(-1);
+        private static readonly IntPtr HwndNoTopmost = new(-2);
+        private const uint SwpNomove = 0x0002;
+        private const uint SwpNosize = 0x0001;
+        private const uint SwpShowwindow = 0x0040;
+
+        private void BringToForeground()
+        {
+            try
+            {
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                if (hWnd == IntPtr.Zero) return;
+
+                ShowWindow(hWnd, SwRestore);
+                // Momentarily toggle TOPMOST then NOTOPMOST to force DWM to place window on top of all others
+                // without leaving it permanently pinned as always-on-top.
+                SetWindowPos(hWnd, HwndTopmost, 0, 0, 0, 0, SwpNomove | SwpNosize | SwpShowwindow);
+                SetWindowPos(hWnd, HwndNoTopmost, 0, 0, 0, 0, SwpNomove | SwpNosize | SwpShowwindow);
+                SetForegroundWindow(hWnd);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainWindow] BringToForeground failed: {ex.Message}");
+            }
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -19,7 +19,7 @@ namespace XrayUI.Services
         // setting (AppSettings.IsAutoConnect) evaluated by MainViewModel.
         public const string StartupMinimizedArgument = "--startup-minimized";
 
-        private const string TaskName = "XrayUI_Autostart";
+        private const string TaskName = "XrayUI_Portable_Autostart";
         private const int TASK_CREATE_OR_UPDATE        = 6;
         private const int TASK_LOGON_INTERACTIVE_TOKEN = 3;
         private const uint CLSCTX_INPROC_SERVER        = 0x1;

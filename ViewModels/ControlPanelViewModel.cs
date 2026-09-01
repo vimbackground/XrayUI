@@ -711,10 +711,15 @@ namespace XrayUI.ViewModels
         /// For display, bind to <see cref="RoutingModeText"/>.</summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(RoutingModeText))]
+        [NotifyPropertyChangedFor(nameof(IsGlobalRoutingChecked))]
+        [NotifyPropertyChangedFor(nameof(IsSmartRoutingChecked))]
         public partial string RoutingMode { get; set; }
 
         /// <summary>Localized display string for the status bar / mini view.</summary>
         public string RoutingModeText => RoutingMode == "global" ? L.ControlPanel_RoutingGlobal : L.ControlPanel_RoutingSmart;
+
+        public bool IsGlobalRoutingChecked => RoutingMode == "global";
+        public bool IsSmartRoutingChecked  => RoutingMode == "smart";
 
         [RelayCommand]
         private async Task SetRoutingMode(string mode)
@@ -746,32 +751,40 @@ namespace XrayUI.ViewModels
         public bool IsGlobalProxyChecked => IsSystemProxyEnabled;
         public bool IsNoTakeoverChecked  => !IsSystemProxyEnabled;
 
-        [RelayCommand]
-        private async Task SetProxyMode(string mode)
+        partial void OnIsSystemProxyEnabledChanged(bool value)
         {
-            // Business code: "system" = take over WinINet system proxy, "manual" = leave
-            // registry alone (user wires their apps to the local SOCKS port themselves).
-            var want = mode == "system";
+            _ = ApplySystemProxyModeAsync(value);
+        }
 
-            // No-op guard: clicking the already-selected radio must not re-hit
-            // the registry or re-write settings.
-            if (want == IsSystemProxyEnabled) return;
-
-            IsSystemProxyEnabled = want;
-            var s = await _settings.LoadSettingsAsync();
-            s.IsSystemProxyEnabled = IsSystemProxyEnabled;
-            await TrySaveSettingsAsync(s, "persist proxy mode");
-
-            // Apply live if xray is running outside TUN (UI prevents this call in TUN+Running).
-            // Note: system proxy lives in Windows registry, not in xray config — so no
-            // ReapplyRoutingAsync needed; just flip the registry flag.
-            if (IsRunning && !IsTunMode)
+        private async Task ApplySystemProxyModeAsync(bool enabled)
+        {
+            try
             {
-                if (IsSystemProxyEnabled)
-                    SystemProxyService.SetProxy("127.0.0.1", s.LocalMixedPort);
-                else
-                    SystemProxyService.ClearProxy();
+                var s = await _settings.LoadSettingsAsync();
+                s.IsSystemProxyEnabled = enabled;
+                await TrySaveSettingsAsync(s, "persist proxy mode");
+
+                if (IsRunning && !IsTunMode)
+                {
+                    if (enabled)
+                        SystemProxyService.SetProxy("127.0.0.1", s.LocalMixedPort);
+                    else
+                        SystemProxyService.ClearProxy();
+                }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ControlPanel] ApplySystemProxyModeAsync failed: {ex.Message}");
+            }
+        }
+
+        [RelayCommand]
+        private Task SetProxyMode(string mode)
+        {
+            var want = mode == "system";
+            if (want == IsSystemProxyEnabled) return Task.CompletedTask;
+            IsSystemProxyEnabled = want;
+            return Task.CompletedTask;
         }
 
         // ── Startup ───────────────────────────────────────────────────────────

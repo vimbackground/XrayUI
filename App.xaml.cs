@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -12,7 +12,7 @@ namespace XrayUI
 {
     public partial class App
     {
-        private const string SingleInstanceKey = "XrayUI.MainInstance";
+        private const string SingleInstanceKey = "XrayUI.Portable.MainInstance";
         private const string ParentPidArgumentPrefix = "--parent-pid=";
         private const string TunArgument = "--tun";
         private const uint ShutdownNoRetry = 0x00000001;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -21,8 +21,7 @@ namespace XrayUI.Services
             AppContext.BaseDirectory, "Assets", "rules");
 
         private static readonly string ConfigPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "XrayUI", "xray_config.json");
+            AppPaths.DataDir, "xray_config.json");
 
         private const int LogBufferMax = 500;
 

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -404,6 +404,12 @@
   <data name="Import_ParseFailedMsg" xml:space="preserve">
     <value>No valid node links found. Please verify your input and try again.</value>
   </data>
+  <data name="Import_ClipboardEmptyTitle" xml:space="preserve">
+    <value>Clipboard Empty</value>
+  </data>
+  <data name="Import_ClipboardEmptyMsg" xml:space="preserve">
+    <value>No valid content found in the clipboard.</value>
+  </data>
   <data name="EditServer_AddTitle" xml:space="preserve">
     <value>Add Server Manually</value>
   </data>
@@ -728,7 +734,16 @@
   <data name="ControlPanel_GlobalProxyItem.Text" xml:space="preserve">
     <value>System Proxy</value>
   </data>
+  <data name="ControlPanel_GlobalProxyLabel.Text" xml:space="preserve">
+    <value>System Proxy</value>
+  </data>
+  <data name="ControlPanel_GlobalProxySegment.Content" xml:space="preserve">
+    <value>System Proxy</value>
+  </data>
   <data name="ControlPanel_NoProxyItem.Text" xml:space="preserve">
+    <value>Bypass System Proxy</value>
+  </data>
+  <data name="ControlPanel_NoProxySegment.Content" xml:space="preserve">
     <value>Bypass System Proxy</value>
   </data>
   <data name="ControlPanel_StartupItem.Text" xml:space="preserve">
@@ -760,6 +775,9 @@
   </data>
   <data name="ServerList_AddBtnText.Text" xml:space="preserve">
     <value>Add</value>
+  </data>
+  <data name="ServerList_ImportClipboardItem.Text" xml:space="preserve">
+    <value>Import from Clipboard</value>
   </data>
   <data name="ServerList_ImportNodeItem.Text" xml:space="preserve">
     <value>Import Nodes</value>
