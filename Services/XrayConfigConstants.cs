@@ -19,13 +19,13 @@ namespace XrayUI.Services
 
         // TUN adapter: the inbound name in the xray config must match the Windows
         // interface alias used by TunService for adapter operations (DNS reset, route delete).
-        public const string TunInterfaceName        = "xray-tun";
+        public const string TunInterfaceName        = "xray-tun-portable";
         public const string TunOutboundInterfaceAuto = "auto";
 
         // TUN adapter addressing. xray assigns these to the xray-tun adapter and, via
         // autoSystemRoutingTable, hijacks the matching default route when run elevated.
         // The v6 gateway sits in fd00::/8, deliberately clear of the FakeDNS v6 pool (fc00::/18).
-        public const string TunGatewayV4   = "172.18.0.1/30";
+        public const string TunGatewayV4   = "172.18.1.1/30";
         public const string TunGatewayV6   = "fdfe:dcba:9876::1/64";
         public const string TunAutoRouteV4 = "0.0.0.0/0";
         public const string TunAutoRouteV6 = "::/0";

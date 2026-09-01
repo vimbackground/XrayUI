@@ -1,71 +1,69 @@
-## .NET / C# / WinUI3
+## ── 1. Portable Runtime Data & User Secrets (CRITICAL) ─────────
+# 包含用户的真实订阅、节点密码、私钥和本地配置，严禁提交到远程仓库
+[Dd]ata/
+xray_config.json
+xray_speedtest.json
+*.log
+[Ll]og/
+[Ll]ogs/
 
-# Build results
+## ── 2. .NET & WinUI Build / Publish Outputs ─────────────────────
+[Bb]in/
+[Oo]bj/
 [Dd]ebug/
 [Rr]elease/
 x64/
 x86/
 ARM/
 ARM64/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
-# The ARM64/ build-output rule above also matches Assets/engine/arm64/
-# (gitignore is case-insensitive on Windows). Those are shipped engine
-# binaries, not build output — un-ignore them.
-!Assets/engine/arm64/
+publish/
+out/
+artifacts/
+Generated\ Files/
+*.g.cs
+*.g.i.cs
 
-# Visual Studio
+# 保证 Assets 下的官方内置引擎与规则不被上述通配符误杀
+!Assets/engine/
+!Assets/engine/**
+!Assets/rules/
+!Assets/rules/**
+!Assets/icons/
+!Assets/icons/**
+
+## ── 3. Rust (updater-rs) Outputs ───────────────────────────────
+updater-rs/target/
+target/
+
+## ── 4. Visual Studio / VS Code / IDEs ──────────────────────────
 .vs/
-*.suo
+.vscode/
+.idea/
 *.user
+*.suo
 *.userosscache
 *.sln.docstates
-
-# User-specific files
 *.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# Build logs
-*.log
+*.sln.iml
 msbuild*.wrn
 msbuild*.err
-
-# Visual Studio profiler
 *.psess
 *.vsp
 *.vspx
 *.sap
 
-# NuGet
+## ── 5. NuGet & Package Caches ──────────────────────────────────
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 *.nupkg
 **/packages/repositories.config
 project.lock.json
 project.fragment.lock.json
-artifacts/
+*.nuget.props
+*.nuget.targets
+.dotnet/
 
-# Rider / JetBrains
-.idea/
-*.sln.iml
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# WinUI / MSIX packaging
+## ── 6. MSIX / AppX Packaging & Archives ────────────────────────
 AppPackages/
 BundleArtifacts/
 *.appx
@@ -74,25 +72,32 @@ BundleArtifacts/
 *.msixbundle
 *.msixupload
 *.appxupload
+*.zip
+*.7z
+*.tar.gz
+*.sha256
 
-# Publish output
-publish/
+## ── 7. Tests & Coverage ─────────────────────────────────────────
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
 
-# NuGet v3 cache
-*.nuget.props
-*.nuget.targets
+## ── 8. OS System Files ──────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+*.tmp
+*.temp
 
-# dotnet tool
-.dotnet/
-
-# Generated files
-Generated\ Files/
-
-# Auto-generated files
-*.g.cs
-*.g.i.cs
-
-# Claude / AI
+## ── 9. AI Helpers & Local Scratch ──────────────────────────────
 .claude/
-/CLAUDE.md
+.gemini/
+.cursor/
+.windsurf/
+scratch/
 /BuildAndRun.ps1

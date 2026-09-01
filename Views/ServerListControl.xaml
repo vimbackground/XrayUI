@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <UserControl x:Class="XrayUI.Views.ServerListControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -39,12 +39,20 @@
                     </DropDownButton.Content>
                     <DropDownButton.Flyout>
                         <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                            <MenuFlyoutItem x:Uid="ServerList_ImportClipboardItem"
+                                            Text="从剪贴板导入"
+                                            Command="{x:Bind ViewModel.ImportFromClipboardCommand}"
+                                            FontWeight="Normal">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE77F;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
                             <MenuFlyoutItem x:Uid="ServerList_ImportNodeItem"
                                             Text="导入节点"
                                             Command="{x:Bind ViewModel.ImportFromLinkCommand}"
                                             FontWeight="Normal">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE77F;" />
+                                    <FontIcon Glyph="&#xE71B;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                             <MenuFlyoutItem x:Uid="ServerList_AddSubscriptionItem"

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -404,6 +404,12 @@
   <data name="Import_ParseFailedMsg" xml:space="preserve">
     <value>无法识别有效的节点链接，请检查后重试。</value>
   </data>
+  <data name="Import_ClipboardEmptyTitle" xml:space="preserve">
+    <value>剪贴板为空</value>
+  </data>
+  <data name="Import_ClipboardEmptyMsg" xml:space="preserve">
+    <value>未在剪贴板中检测到有效内容。</value>
+  </data>
   <data name="EditServer_AddTitle" xml:space="preserve">
     <value>手动添加服务器</value>
   </data>
@@ -728,7 +734,16 @@
   <data name="ControlPanel_GlobalProxyItem.Text" xml:space="preserve">
     <value>全局代理</value>
   </data>
+  <data name="ControlPanel_GlobalProxyLabel.Text" xml:space="preserve">
+    <value>全局代理</value>
+  </data>
+  <data name="ControlPanel_GlobalProxySegment.Content" xml:space="preserve">
+    <value>全局代理</value>
+  </data>
   <data name="ControlPanel_NoProxyItem.Text" xml:space="preserve">
+    <value>不接管代理</value>
+  </data>
+  <data name="ControlPanel_NoProxySegment.Content" xml:space="preserve">
     <value>不接管代理</value>
   </data>
   <data name="ControlPanel_StartupItem.Text" xml:space="preserve">
@@ -760,6 +775,9 @@
   </data>
   <data name="ServerList_AddBtnText.Text" xml:space="preserve">
     <value>添加</value>
+  </data>
+  <data name="ServerList_ImportClipboardItem.Text" xml:space="preserve">
+    <value>从剪贴板导入</value>
   </data>
   <data name="ServerList_ImportNodeItem.Text" xml:space="preserve">
     <value>导入节点</value>

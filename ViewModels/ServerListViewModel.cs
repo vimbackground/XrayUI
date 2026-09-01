@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -881,6 +881,52 @@ namespace XrayUI.ViewModels
                 _latencySortRefreshPending = true;
             else
                 RebuildGroupedView();
+        }
+
+        // ── Import via clipboard ──────────────────────────────────────────────
+
+        [RelayCommand]
+        private async Task ImportFromClipboard()
+        {
+            string? text = null;
+            try
+            {
+                var dataPackageView = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+                if (dataPackageView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.Text))
+                {
+                    text = await dataPackageView.GetTextAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Clipboard] Failed to read clipboard: {ex.Message}");
+            }
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                await _dialogs.ShowErrorAsync(L.Import_ClipboardEmptyTitle, L.Import_ClipboardEmptyMsg);
+                return;
+            }
+
+            var entries = ParseSubscriptionText(text);
+            if (entries.Count == 0)
+            {
+                await _dialogs.ShowErrorAsync(L.Import_ParseFailed, L.Import_ParseFailedMsg);
+                return;
+            }
+
+            ServerEntry? lastAdded = null;
+            MutateServersInBatch(() =>
+            {
+                foreach (var entry in entries)
+                {
+                    Servers.Add(entry);
+                    lastAdded = entry;
+                }
+            });
+
+            SelectedServer = lastAdded;
+            await SaveAsync();
         }
 
         // ── Import via link ───────────────────────────────────────────────────

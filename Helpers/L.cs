@@ -1,4 +1,4 @@
-﻿namespace XrayUI.Helpers;
+namespace XrayUI.Helpers;
 
 /// <summary>
 /// Strongly-typed accessors for resource strings. Each property is the canonical
@@ -255,8 +255,10 @@ public static class L
     public static string ServerDetail_Favorited      => Loc.GetString("ServerDetail_Favorited");
 
     // ── Import link dialog ────────────────────────────────────────────────
-    public static string Import_ParseFailed    => Loc.GetString("Import_ParseFailed");
-    public static string Import_ParseFailedMsg => Loc.GetString("Import_ParseFailedMsg");
+    public static string Import_ParseFailed          => Loc.GetString("Import_ParseFailed");
+    public static string Import_ParseFailedMsg       => Loc.GetString("Import_ParseFailedMsg");
+    public static string Import_ClipboardEmptyTitle  => Loc.GetString("Import_ClipboardEmptyTitle");
+    public static string Import_ClipboardEmptyMsg    => Loc.GetString("Import_ClipboardEmptyMsg");
 
     // ── Subscription ──────────────────────────────────────────────────────
     public static string Subscription_FetchFailed       => Loc.GetString("Subscription_FetchFailed");
