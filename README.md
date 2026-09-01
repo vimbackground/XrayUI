@@ -1,8 +1,5 @@
-﻿<img width="2172" height="724" alt="image" src="https://github.com/user-attachments/assets/ea4d4a40-76cd-48f5-abc5-ce3bc07d6f3c" />
-
 <h1 align="center">XrayUI</h1>
 A native Windows GUI client for the Xray core, built with <a style="text-decoration:none" href="https://docs.microsoft.com/windows/apps/winui">WinUI</a>. Designed to be a fast and lightweight proxy client.
-
 
 ## Features
 
@@ -13,9 +10,6 @@ A native Windows GUI client for the Xray core, built with <a style="text-decorat
 - Custom routing rules with geoip / geosite
 - Auto-start on boot, auto-connect
 - Theme and protocol color customization
-
-## UI Preview
-<img width="1465" height="982" alt="image" src="https://github.com/user-attachments/assets/ff288102-d874-4ecb-87dd-0a9d880cc1cf" />
 
 ## Download
 
