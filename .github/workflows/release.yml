@@ -1,18 +1,51 @@
-name: release
+﻿name: release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
       - '[0-9]+.*'
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
+  init:
+    name: resolve version
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute version
+        id: ver
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          if ($tag -match '^v?\d+(\.\d+){1,3}$') {
+            $ver = $tag -replace '^v',''
+          } else {
+            $csproj = [xml](Get-Content -Path "XrayUI-dev.csproj" -Raw)
+            $ver = $csproj.Project.PropertyGroup.Version
+            if (-not $ver -or $ver -like '*-dev') {
+              $ver = '1.1.0'
+            }
+          }
+          "version=$ver" | Out-File $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved version: $ver"
+
   publish:
     name: publish ${{ matrix.rid }}${{ matrix.wasdk_sc && '-wasdk' || '' }} (AOT)
+    needs: init
     runs-on: windows-latest
     timeout-minutes: 30
     strategy:
@@ -23,15 +56,7 @@ jobs:
         # smaller zip; the auto-update channel tracks these). true = runtime bundled
         # into the app folder ("-wasdk" zips, no installer needed, much larger).
         wasdk_sc: [false, true]
-        # The include entries below attach per-rid build parameters to every
-        # rid × wasdk_sc combination. Keep rid/platform/rust_target here and the
-        # variant flags as axes above — flat include entries would overwrite each
-        # other instead of forming a cross product.
         include:
-          # arm64 cross-compiles on the x64 windows-latest runner: NativeAOT and
-          # rustc both use the ARM64 MSVC cross tools preinstalled on the image
-          # (no windows-11-arm runner needed). win-x86 would follow the same
-          # pattern (platform: x86, rust_target: i686-pc-windows-msvc).
           - rid: win-x64
             platform: x64
             rust_target: x86_64-pc-windows-msvc
@@ -52,18 +77,8 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Compute version from tag
-        id: ver
-        shell: pwsh
-        run: |
-          $tag = '${{ github.ref_name }}'
-          $ver = $tag -replace '^v',''
-          if ($ver -notmatch '^\d+(\.\d+){0,3}$') { $ver = '0.0.0' }
-          "version=$ver" | Out-File $env:GITHUB_OUTPUT -Append
-          Write-Host "Resolved version: $ver (from tag $tag)"
-
       # No separate `dotnet restore` step: PublishAot must be set at restore time
-      # for ILCompiler to be pulled in. See build.yml for details.
+      # for ILCompiler to be pulled in.
       - name: Publish (${{ matrix.rid }}${{ env.VARIANT }}, AOT)
         run: >
           dotnet publish XrayUI-dev.csproj
@@ -77,7 +92,7 @@ jobs:
           -p:PublishReadyToRun=false
           -p:WindowsAppSDKSelfContained=${{ matrix.wasdk_sc }}
           -p:CopyOutputSymbolsToPublishDirectory=false
-          -p:Version=${{ steps.ver.outputs.version }}
+          -p:Version=${{ needs.init.outputs.version }}
           -p:BuildingForCI=true
 
       - name: Install Rust (${{ matrix.rust_target }})
@@ -101,8 +116,6 @@ jobs:
             Write-Host "::error::Updater build did not produce $updaterExe"
             exit 1
           }
-          # Cargo can't emit a dotted file name; copy to the contract filename that
-          # UpdateService.cs and already-released versions expect.
           Copy-Item $updaterExe -Destination "$publishDir/XrayUI.Updater.exe" -Force
           Write-Host "Bundled XrayUI.Updater.exe (Rust) into $publishDir"
 
@@ -136,7 +149,6 @@ jobs:
         run: |
           $zip = "XrayUI-${{ matrix.rid }}${{ env.VARIANT }}.zip"
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-          # Standard sha256sum format: "<hash>  <filename>" (two spaces, no newline).
           [System.IO.File]::WriteAllText("$zip.sha256", "$hash  $zip", [System.Text.Encoding]::ASCII)
           Write-Host "Wrote $zip.sha256 = $hash"
 
@@ -150,43 +162,70 @@ jobs:
 
   release:
     name: create GitHub release
-    needs: publish
-    runs-on: ubuntu-latest
-    # Only create a Release on real tag pushes. workflow_dispatch is for testing
-    # the publish flow only; download the zip artifacts from the run page to verify.
-    if: startsWith(github.ref, 'refs/tags/')
+    needs: [init, publish]
+    runs-on: windows-latest
     permissions:
       contents: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
       - name: Flatten release files
+        shell: pwsh
         run: |
-          mkdir -p release-files
-          find artifacts \( -name '*.zip' -o -name '*.sha256' \) -exec mv {} release-files/ \;
-          ls -la release-files
+          New-Item -ItemType Directory -Force -Path "release-files" | Out-Null
+          Get-ChildItem -Path "artifacts" -Recurse -Include "*.zip", "*.sha256" | ForEach-Object {
+            Move-Item -Path $_.FullName -Destination "release-files" -Force
+          }
+          Get-ChildItem -Path "release-files" | ForEach-Object { Write-Host $_.Name }
 
-      - name: Create GitHub Release
+      - name: Extract Changelog & Generate Release Body
+        shell: pwsh
+        run: |
+          $ver = "${{ needs.init.outputs.version }}"
+          $notes = ""
+          if (Test-Path "CHANGELOG.md") {
+            $content = Get-Content "CHANGELOG.md" -Raw
+            $pattern = "(?ms)##\s*\[?v?$([regex]::Escape($ver))\]?.*?(?=(?:\r?\n##\s|\Z))"
+            if ($content -match $pattern) {
+              $notes = $matches[0].Trim()
+            }
+          }
+          if (-not $notes) {
+            $notes = "## XrayUI-Portable v$ver`n`n欢迎使用 XrayUI-Portable 绿色便携版客户端。"
+          }
+
+          $body = @"
+## 📥 下载指南 / Download Guide
+
+#### 🌟 推荐常规版 / Normal version (Recommended)
+- **x64 (绝大多数 Windows 电脑)**: [XrayUI-win-x64.zip](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-x64.zip)
+- **ARM64 (骁龙/Surface Pro X 等)**: [XrayUI-win-arm64.zip](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-arm64.zip)
+
+#### 📦 包含 WinAppSDK 运行时独立版（仅在常规版提示缺少组件无法启动时使用）
+- [x64 独立版](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-x64-wasdk.zip)
+- [ARM64 独立版](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-arm64-wasdk.zip)
+
+---
+
+$notes
+"@
+          [System.IO.File]::WriteAllText("release-body.md", $body, [System.Text.Encoding]::UTF8)
+          Write-Host "Generated release body for v$ver"
+
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
-        env:
-          # Direct-download base for this tag's assets; asset names below are the
-          # UpdateService.cs contract (XrayUI-{rid}[-wasdk].zip) — do not rename.
-          DL: ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}
         with:
-          body: |
-            ## 下载指南 / Which one should I download
-
-            #### 推荐常规版 / Normal version (Recommended)
-            - [x64 (Most common)](${{ env.DL }}/XrayUI-win-x64.zip) | [ARM64](${{ env.DL }}/XrayUI-win-arm64.zip)
-
-            #### 包含 WinAppSDK 运行时独立版（体积较大，仅在常规版无法启动时使用） / Self-contained WinAppSDK version
-            - [x64](${{ env.DL }}/XrayUI-win-x64-wasdk.zip) | [ARM64](${{ env.DL }}/XrayUI-win-arm64-wasdk.zip)
+          tag_name: v${{ needs.init.outputs.version }}
+          name: XrayUI-Portable v${{ needs.init.outputs.version }}
+          body_path: release-body.md
           files: |
             release-files/*.zip
             release-files/*.sha256
-          generate_release_notes: true
-          fail_on_unmatched_files: true
+          make_latest: true

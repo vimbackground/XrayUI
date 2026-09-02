@@ -1784,5 +1784,95 @@ namespace XrayUI.ViewModels
 
             await SaveAsync();
         }
+
+        // ── Dedicated Port / Multi-Node Concurrency ──────────────────────────
+
+        [ObservableProperty]
+        public partial bool EnableMultiNodeRouting { get; set; }
+
+        public Func<Task>? RequestReapplyRouting { get; set; }
+
+        public IEnumerable<int> GetAllUsedPorts(ServerEntry? excluding = null)
+        {
+            var list = new List<int>();
+            if (GetLocalProxyPort != null && GetLocalProxyPort() is int p)
+                list.Add(p);
+            foreach (var s in Servers)
+            {
+                if (s != excluding && s.DedicatedPort.HasValue && s.DedicatedPort.Value > 0)
+                    list.Add(s.DedicatedPort.Value);
+            }
+            return list.Distinct();
+        }
+
+        [RelayCommand]
+        public async Task ToggleDedicatedPort(ServerEntry? target = null)
+        {
+            var server = target ?? SelectedServer;
+            if (server is null) return;
+
+            if (!server.DedicatedPort.HasValue || server.DedicatedPort.Value <= 0)
+            {
+                await EditDedicatedPort(server);
+                return;
+            }
+
+            server.IsDedicatedPortActive = !server.IsDedicatedPortActive;
+            await SaveAsync();
+
+            if (IsProxyRunning && RequestReapplyRouting != null)
+            {
+                await RequestReapplyRouting.Invoke();
+            }
+        }
+
+        [RelayCommand]
+        public async Task EditDedicatedPort(ServerEntry? target = null)
+        {
+            var server = target ?? SelectedServer;
+            if (server is null) return;
+
+            var usedPorts = GetAllUsedPorts(server);
+            var result = await _dialogs.ShowEditDedicatedPortDialogAsync(server, usedPorts);
+            if (!result.HasValue) return;
+
+            if (result.Value.remove)
+            {
+                server.DedicatedPort = null;
+                server.IsDedicatedPortActive = false;
+            }
+            else
+            {
+                server.DedicatedPort = result.Value.port;
+                server.AllowDedicatedLan = result.Value.allowLan;
+                server.IsDedicatedPortActive = true;
+            }
+
+            await SaveAsync();
+
+            if (IsProxyRunning && RequestReapplyRouting != null)
+            {
+                await RequestReapplyRouting.Invoke();
+            }
+        }
+
+        [RelayCommand]
+        public void CopyDedicatedPortAddress(ServerEntry? target = null)
+        {
+            var server = target ?? SelectedServer;
+            if (server?.DedicatedPort == null || server.DedicatedPort.Value <= 0) return;
+
+            var addr = $"127.0.0.1:{server.DedicatedPort.Value}";
+            try
+            {
+                var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                package.SetText(addr);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ServerList] CopyDedicatedPortAddress failed: {ex.Message}");
+            }
+        }
     }
 }

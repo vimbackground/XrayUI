@@ -200,7 +200,24 @@ namespace XrayUI.Models
 
         /// <summary>WireGuard tunnel MTU. 0 = let the config builder use its default.</summary>
         [ObservableProperty]
-        public partial int WgMtu { get; set; }
+        public partial int? WgMtu { get; set; }
+
+        // Multi-Node Concurrency / Dedicated Local Port
+        /// <summary>Optional dedicated local listening port for this server in multi-node concurrency mode.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DedicatedPortDisplay))]
+        public partial int? DedicatedPort { get; set; }
+
+        /// <summary>Whether this server is actively listening on its dedicated port.</summary>
+        [ObservableProperty]
+        public partial bool IsDedicatedPortActive { get; set; }
+
+        /// <summary>Whether this server's dedicated port accepts connections from local network devices.</summary>
+        [ObservableProperty]
+        public partial bool AllowDedicatedLan { get; set; }
+
+        [JsonIgnore]
+        public string DedicatedPortDisplay => DedicatedPort.HasValue ? $":{DedicatedPort.Value}" : string.Empty;
 
         public string Id
         {
@@ -293,6 +310,9 @@ namespace XrayUI.Models
             WgLocalAddress     = source.WgLocalAddress;
             WgReserved         = source.WgReserved;
             WgMtu              = source.WgMtu;
+            DedicatedPort      = source.DedicatedPort;
+            IsDedicatedPortActive = source.IsDedicatedPortActive;
+            AllowDedicatedLan  = source.AllowDedicatedLan;
         }
     }
 }

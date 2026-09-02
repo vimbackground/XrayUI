@@ -94,10 +94,13 @@ $RECYCLE.BIN/
 *.tmp
 *.temp
 
-## ── 9. AI Helpers & Local Scratch ──────────────────────────────
+## ── 9. AI Helpers, Agent Specifications & Local Dev Docs ─────────
 .claude/
 .gemini/
 .cursor/
 .windsurf/
 scratch/
 /BuildAndRun.ps1
+[Aa]gent.md
+_[Dd]ev/
+

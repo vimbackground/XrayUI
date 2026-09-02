@@ -136,9 +136,9 @@
 
   <!-- Version: defaults for local builds; CI overrides via -p:Version=<tag> -->
   <PropertyGroup>
-    <Version Condition="'$(Version)' == ''">1.0.0</Version>
-    <FileVersion Condition="'$(FileVersion)' == ''">1.0.0.0</FileVersion>
-    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.0.0.0</AssemblyVersion>
+    <Version Condition="'$(Version)' == ''">1.1.0</Version>
+    <FileVersion Condition="'$(FileVersion)' == ''">1.1.0.0</FileVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.1.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <!-- Auto-update channel marker. release.yml publishes two variants per RID:

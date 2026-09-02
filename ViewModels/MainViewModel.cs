@@ -108,6 +108,7 @@ namespace XrayUI.ViewModels
             // the selected node, so property notifications on ServerEntry can't cover it.
             ServerList.GroupNamesChanged += ServerDetail.RefreshGroupName;
             ServerList.RequestSwitchToSelectedServer = ControlPanel.SwitchToSelectedServerAsync;
+            ServerList.RequestReapplyRouting = ControlPanel.ReapplyRoutingAsync;
             // Live TUN state for the speed test's egress pin — settings.IsTunMode alone lags
             // the UI toggle and can survive a crash as a stale true (see IDialogService remarks).
             realLatencyProbe.IsTunActive = () => ControlPanel.IsRunning && ControlPanel.IsTunMode;
@@ -164,6 +165,7 @@ namespace XrayUI.ViewModels
             ServerDetail.ShowAiUnlockInDetails = s.ShowAiUnlockInDetails;
             ServerDetail.ShowGroupInDetails = s.ShowGroupInDetails;
             ServerList.IsFilterPanelOpen = s.OpenServerFilterPanelOnStartup;
+            ServerList.EnableMultiNodeRouting = s.EnableMultiNodeRouting;
 
             // Show the persisted autostart state immediately and reconcile against the
             // Task Scheduler off the critical path: the ITaskService::Connect RPC can
@@ -438,6 +440,11 @@ namespace XrayUI.ViewModels
         private void CloseAppSettings()
         {
             _showAppSettings = false;
+            ServerList.EnableMultiNodeRouting = AppSettings.EnableMultiNodeRouting;
+            if (ControlPanel.IsRunning)
+            {
+                _ = ControlPanel.ReapplyRoutingAsync();
+            }
             OnPropertyChanged(nameof(MainContentVisibility));
             OnPropertyChanged(nameof(PersonalizeVisibility));
             OnPropertyChanged(nameof(AppSettingsVisibility));
@@ -463,6 +470,10 @@ namespace XrayUI.ViewModels
             else if (e.PropertyName == nameof(AppSettingsViewModel.AllowLanConnections))
             {
                 ControlPanel.AllowLanConnections = AppSettings.AllowLanConnections;
+            }
+            else if (e.PropertyName == nameof(AppSettingsViewModel.EnableMultiNodeRouting))
+            {
+                ServerList.EnableMultiNodeRouting = AppSettings.EnableMultiNodeRouting;
             }
         }
 

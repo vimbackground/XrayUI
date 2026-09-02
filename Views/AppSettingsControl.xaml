@@ -152,6 +152,40 @@
                                           MinWidth="0"
                                           VerticalAlignment="Center" />
                         </Grid>
+
+                        <!-- Multi-Node Split Routing Mode Toggle -->
+                        <Grid Padding="16,12" ColumnSpacing="12"
+                              BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                              BorderThickness="0,1,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xE7F4;"
+                                      FontSize="16"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                                <TextBlock Text="多节点分流模式"
+                                           FontSize="14" />
+                                <TextBlock Text="允许为不同节点分配独立本地端口，供第三方软件定向分流上网"
+                                           FontSize="12"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+
+                            <ToggleSwitch Grid.Column="2"
+                                          IsOn="{x:Bind ViewModel.EnableMultiNodeRouting, Mode=TwoWay}"
+                                          OnContent=""
+                                          OffContent=""
+                                          MinWidth="0"
+                                          VerticalAlignment="Center" />
+                        </Grid>
                     </StackPanel>
                 </Border>
             </StackPanel>

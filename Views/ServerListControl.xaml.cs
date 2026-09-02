@@ -203,6 +203,30 @@ namespace XrayUI.Views
         private MenuFlyout CreateSelectedServerContextFlyout()
         {
             var flyout = new MenuFlyout();
+            var server = ViewModel.SelectedServer;
+
+            if (ViewModel.EnableMultiNodeRouting && server != null && server.IsActive != true)
+            {
+                var isDedicatedActive = server.IsDedicatedPortActive;
+                var toggleDedicatedText = isDedicatedActive ? "停止独立端口分流" : "开启独立端口分流";
+                var toggleDedicatedItem = CreateMenuItem(toggleDedicatedText, "");
+                toggleDedicatedItem.Click += (_, _) => ViewModel.ToggleDedicatedPortCommand.Execute(server);
+
+                var editDedicatedItem = CreateMenuItem("设置独立分流端口...", "");
+                editDedicatedItem.Click += (_, _) => ViewModel.EditDedicatedPortCommand.Execute(server);
+
+                flyout.Items.Add(toggleDedicatedItem);
+                flyout.Items.Add(editDedicatedItem);
+
+                if (server.DedicatedPort.HasValue && server.DedicatedPort.Value > 0)
+                {
+                    var copyAddressItem = CreateMenuItem($"复制代理地址 (127.0.0.1:{server.DedicatedPort.Value})", "");
+                    copyAddressItem.Click += (_, _) => ViewModel.CopyDedicatedPortAddressCommand.Execute(server);
+                    flyout.Items.Add(copyAddressItem);
+                }
+
+                flyout.Items.Add(new MenuFlyoutSeparator());
+            }
 
             var editItem = CreateMenuItem(L.ServerList_Edit, "");
             editItem.IsEnabled = ViewModel.CanEditSelectedServer;
@@ -228,6 +252,9 @@ namespace XrayUI.Views
 
             return flyout;
         }
+
+        public static string FormatDedicatedBadge(int? port) =>
+            port.HasValue ? $"🎧 专口 :{port.Value}" : "🎧 专口";
 
         private static MenuFlyoutItem CreateMenuItem(string text, string glyph)
         {
