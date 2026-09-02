@@ -187,8 +187,13 @@ jobs:
 
       - name: Extract Changelog & Generate Release Body
         shell: pwsh
+        env:
+          APP_VER: ${{ needs.init.outputs.version }}
+          SERVER_URL: ${{ github.server_url }}
+          REPO_NAME: ${{ github.repository }}
         run: |
-          $ver = "${{ needs.init.outputs.version }}"
+          $ver = $env:APP_VER
+          $dlBase = "$($env:SERVER_URL)/$($env:REPO_NAME)/releases/download/v$ver"
           $notes = ""
           if (Test-Path "CHANGELOG.md") {
             $content = Get-Content "CHANGELOG.md" -Raw
@@ -201,21 +206,22 @@ jobs:
             $notes = "## XrayUI-Portable v$ver`n`n欢迎使用 XrayUI-Portable 绿色便携版客户端。"
           }
 
-          $body = @"
-## 📥 下载指南 / Download Guide
-
-#### 🌟 推荐常规版 / Normal version (Recommended)
-- **x64 (绝大多数 Windows 电脑)**: [XrayUI-win-x64.zip](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-x64.zip)
-- **ARM64 (骁龙/Surface Pro X 等)**: [XrayUI-win-arm64.zip](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-arm64.zip)
-
-#### 📦 包含 WinAppSDK 运行时独立版（仅在常规版提示缺少组件无法启动时使用）
-- [x64 独立版](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-x64-wasdk.zip)
-- [ARM64 独立版](${{ github.server_url }}/${{ github.repository }}/releases/download/v$ver/XrayUI-win-arm64-wasdk.zip)
-
----
-
-$notes
-"@
+          $lines = @(
+            "## 📥 下载指南 / Download Guide",
+            "",
+            "#### 🌟 推荐常规版 / Normal version (Recommended)",
+            "- **x64 (绝大多数 Windows 电脑)**: [XrayUI-win-x64.zip]($dlBase/XrayUI-win-x64.zip)",
+            "- **ARM64 (骁龙/Surface Pro X 等)**: [XrayUI-win-arm64.zip]($dlBase/XrayUI-win-arm64.zip)",
+            "",
+            "#### 📦 包含 WinAppSDK 运行时独立版（仅在常规版提示缺少组件无法启动时使用）",
+            "- [x64 独立版]($dlBase/XrayUI-win-x64-wasdk.zip)",
+            "- [ARM64 独立版]($dlBase/XrayUI-win-arm64-wasdk.zip)",
+            "",
+            "---",
+            "",
+            $notes
+          )
+          $body = $lines -join "`n"
           [System.IO.File]::WriteAllText("release-body.md", $body, [System.Text.Encoding]::UTF8)
           Write-Host "Generated release body for v$ver"
 
