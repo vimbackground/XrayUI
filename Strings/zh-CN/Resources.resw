@@ -728,6 +728,21 @@
   <data name="ControlPanel_ViewLogItem.Text" xml:space="preserve">
     <value>查看日志</value>
   </data>
+  <data name="ControlPanel_ModeSettings" xml:space="preserve">
+    <value>模式调节</value>
+  </data>
+  <data name="ControlPanel_AppSettings" xml:space="preserve">
+    <value>软件设置</value>
+  </data>
+  <data name="ControlPanel_HotkeysItem.Text" xml:space="preserve">
+    <value>快捷键设置</value>
+  </data>
+  <data name="ControlPanel_DataManagementItem.Text" xml:space="preserve">
+    <value>数据管理</value>
+  </data>
+  <data name="ControlPanel_OpenDataFolderItem.Text" xml:space="preserve">
+    <value>打开数据文件夹 (Data)</value>
+  </data>
   <data name="ControlPanel_ProxySettingsItem.Text" xml:space="preserve">
     <value>代理设置</value>
   </data>
@@ -1059,7 +1074,19 @@
     <value>启动/停止代理</value>
   </data>
   <data name="Personalize_HotkeyRestoreTitle.Text" xml:space="preserve">
-    <value>从托盘恢复窗口</value>
+    <value>显示/隐藏控制台窗口</value>
+  </data>
+  <data name="Personalize_HotkeySystemProxyTitle.Text" xml:space="preserve">
+    <value>切换全局代理</value>
+  </data>
+  <data name="Personalize_HotkeyTunTitle.Text" xml:space="preserve">
+    <value>切换 TUN 模式</value>
+  </data>
+  <data name="Personalize_HotkeyRoutingTitle.Text" xml:space="preserve">
+    <value>切换路由模式</value>
+  </data>
+  <data name="Personalize_HotkeyImportClipboardTitle.Text" xml:space="preserve">
+    <value>从剪贴板导入节点</value>
   </data>
   <data name="Personalize_HotkeyNotSet" xml:space="preserve">
     <value>分配快捷方式</value>

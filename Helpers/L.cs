@@ -87,6 +87,8 @@ public static class L
 
     // ── ControlPanel ───────────────────────────────────────────────────────
     public static string ControlPanel_Personalize        => Loc.GetString("ControlPanel_Personalize");
+    public static string ControlPanel_ModeSettings       => Loc.GetString("ControlPanel_ModeSettings");
+    public static string ControlPanel_AppSettings        => Loc.GetString("ControlPanel_AppSettings");
     public static string ControlPanel_Start              => Loc.GetString("ControlPanel_Start");
     public static string ControlPanel_Stop               => Loc.GetString("ControlPanel_Stop");
     public static string ControlPanel_StatusApplying     => Loc.GetString("ControlPanel_StatusApplying");

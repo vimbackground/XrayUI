@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +13,7 @@ namespace XrayUI.ViewModels
 {
     public partial class MainViewModel : BaseViewModel
     {
+        private readonly IDialogService _dialogs;
         private readonly SettingsService _settings;
         private readonly StartupService _startupService;
         private readonly IUpdateService _updateService;
@@ -22,15 +23,18 @@ namespace XrayUI.ViewModels
         private ServerEntry? _activeServer;
         private string _activeLatencyText = string.Empty;
         private bool _showPersonalize;
+        private bool _showAppSettings;
 
         public ServerListViewModel   ServerList   { get; }
         public ServerDetailViewModel ServerDetail { get; }
         public ControlPanelViewModel ControlPanel { get; }
         public PersonalizeViewModel  Personalize  { get; }
+        public AppSettingsViewModel  AppSettings  { get; }
 
-        public Visibility MainContentVisibility => _showPersonalize ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility MainContentVisibility => (!_showPersonalize && !_showAppSettings) ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PersonalizeVisibility  => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
-        public Visibility BackButtonVisibility   => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
+        public Visibility AppSettingsVisibility  => _showAppSettings ? Visibility.Visible   : Visibility.Collapsed;
+        public Visibility BackButtonVisibility   => (_showPersonalize || _showAppSettings) ? Visibility.Visible   : Visibility.Collapsed;
         public Visibility MiniModeVisibility     => IsMiniMode       ? Visibility.Visible   : Visibility.Collapsed;
         public Visibility FullModeVisibility     => IsMiniMode       ? Visibility.Collapsed : Visibility.Visible;
 
@@ -71,6 +75,7 @@ namespace XrayUI.ViewModels
             StartupService  startupService,
             IUpdateService  updateService)
         {
+            _dialogs        = dialogs;
             _settings       = settings;
             _startupService = startupService;
             _updateService  = updateService;
@@ -90,6 +95,7 @@ namespace XrayUI.ViewModels
             ServerDetail = new ServerDetailViewModel(latencyProbe, aiUnlockCheck);
             ControlPanel = new ControlPanelViewModel(dialogs, settings, xray, tunService, startupService, updateService);
             Personalize  = new PersonalizeViewModel(dialogs, settings);
+            AppSettings  = new AppSettingsViewModel(settings, startupService, dialogs, updateService, xray);
 
             // Wire ControlPanel so it knows the current selected server
             ControlPanel.GetSelectedServer = () => ServerList.SelectedServer;
@@ -102,7 +108,6 @@ namespace XrayUI.ViewModels
             // the selected node, so property notifications on ServerEntry can't cover it.
             ServerList.GroupNamesChanged += ServerDetail.RefreshGroupName;
             ServerList.RequestSwitchToSelectedServer = ControlPanel.SwitchToSelectedServerAsync;
-            Personalize.IsProxyRunning = () => ControlPanel.IsRunning;
             // Live TUN state for the speed test's egress pin — settings.IsTunMode alone lags
             // the UI toggle and can survive a crash as a stale true (see IDialogService remarks).
             realLatencyProbe.IsTunActive = () => ControlPanel.IsRunning && ControlPanel.IsTunMode;
@@ -116,10 +121,15 @@ namespace XrayUI.ViewModels
             ControlPanel.PropertyChanged += OnControlPanelPropertyChanged;
             ServerDetail.PropertyChanged += OnServerDetailPropertyChanged;
             Personalize.PropertyChanged  += OnPersonalizePropertyChanged;
+            AppSettings.PropertyChanged  += OnAppSettingsPropertyChanged;
 
             ControlPanel.ShowPersonalizeRequested += (_, _) => OpenPersonalize();
             Personalize.CloseRequested            += (_, _) => ClosePersonalize();
-            Personalize.PresetImported            += OnPresetImported;
+
+            ControlPanel.ShowAppSettingsRequested += (_, _) => OpenAppSettings();
+            AppSettings.CloseRequested            += (_, _) => CloseAppSettings();
+            AppSettings.PresetImported            += (_, _) => OnPresetImported(this, EventArgs.Empty);
+            AppSettings.ShowLogsRequested         += (_, _) => ControlPanel.ShowLogsCommand.Execute(null);
 
             ServerDetail.SelectedServer = ServerList.SelectedServer;
         }
@@ -128,6 +138,7 @@ namespace XrayUI.ViewModels
 
         public async Task InitializeAsync(bool isBootLaunch = false)
         {
+            await FirstRunWizardService.RunWizardIfNeededAsync(_dialogs, _settings);
             await new InitialImportService(_settings).ImportAsync();
 
             // Load saved server list
@@ -365,12 +376,42 @@ namespace XrayUI.ViewModels
             await ControlPanel.SwitchToSelectedServerAsync();
         }
 
+        [RelayCommand]
+        private async Task ToggleServerConnectionAsync(ServerEntry? server)
+        {
+            if (server is null) return;
+            if (ControlPanel.IsReapplying) return;
+
+            // Double clicking an already connected server stops/disconnects it
+            if (ControlPanel.IsRunning && server.IsActive)
+            {
+                await ControlPanel.StartStopCommand.ExecuteAsync(null);
+                return;
+            }
+
+            // Otherwise select the clicked server
+            ServerList.SelectedServer = server;
+
+            // If proxy is currently running, switch to this new server
+            if (ControlPanel.IsRunning)
+            {
+                await ControlPanel.SwitchToSelectedServerAsync();
+            }
+            else
+            {
+                // If stopped, start proxy with this server
+                await ControlPanel.StartStopCommand.ExecuteAsync(null);
+            }
+        }
+
         private void OpenPersonalize()
         {
             Personalize.LoadFromStore();
             _showPersonalize = true;
+            _showAppSettings = false;
             OnPropertyChanged(nameof(MainContentVisibility));
             OnPropertyChanged(nameof(PersonalizeVisibility));
+            OnPropertyChanged(nameof(AppSettingsVisibility));
             OnPropertyChanged(nameof(BackButtonVisibility));
         }
 
@@ -379,6 +420,27 @@ namespace XrayUI.ViewModels
             _showPersonalize = false;
             OnPropertyChanged(nameof(MainContentVisibility));
             OnPropertyChanged(nameof(PersonalizeVisibility));
+            OnPropertyChanged(nameof(AppSettingsVisibility));
+            OnPropertyChanged(nameof(BackButtonVisibility));
+        }
+
+        private void OpenAppSettings()
+        {
+            _ = AppSettings.LoadStateAsync();
+            _showAppSettings = true;
+            _showPersonalize = false;
+            OnPropertyChanged(nameof(MainContentVisibility));
+            OnPropertyChanged(nameof(PersonalizeVisibility));
+            OnPropertyChanged(nameof(AppSettingsVisibility));
+            OnPropertyChanged(nameof(BackButtonVisibility));
+        }
+
+        private void CloseAppSettings()
+        {
+            _showAppSettings = false;
+            OnPropertyChanged(nameof(MainContentVisibility));
+            OnPropertyChanged(nameof(PersonalizeVisibility));
+            OnPropertyChanged(nameof(AppSettingsVisibility));
             OnPropertyChanged(nameof(BackButtonVisibility));
         }
 
@@ -388,8 +450,20 @@ namespace XrayUI.ViewModels
         [RelayCommand]
         private void GoBack()
         {
-            if (!_showPersonalize) return;
-            ClosePersonalize();
+            if (_showPersonalize) ClosePersonalize();
+            else if (_showAppSettings) CloseAppSettings();
+        }
+
+        private void OnAppSettingsPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppSettingsViewModel.LocalPort))
+            {
+                ControlPanel.LocalPort = AppSettings.LocalPort;
+            }
+            else if (e.PropertyName == nameof(AppSettingsViewModel.AllowLanConnections))
+            {
+                ControlPanel.AllowLanConnections = AppSettings.AllowLanConnections;
+            }
         }
 
         // ── Property change wiring ─────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using Microsoft.UI.Dispatching;
@@ -7,8 +7,10 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
+using CommunityToolkit.Mvvm.Input;
 using XrayUI.Helpers;
 using XrayUI.Models;
+using XrayUI.ViewModels;
 
 namespace XrayUI.Views
 {
@@ -16,6 +18,7 @@ namespace XrayUI.Views
     {
         public ServerListViewModel ViewModel { get; set; } = null!;
         public IAsyncRelayCommand? SwitchToSelectedServerCommand { get; set; }
+        public IAsyncRelayCommand<ServerEntry?>? ToggleServerConnectionCommand { get; set; }
 
         public ServerListControl()
         {
@@ -142,6 +145,14 @@ namespace XrayUI.Views
             if (element.DataContext is not ServerEntry server)
                 return;
 
+            e.Handled = true;
+
+            if (ToggleServerConnectionCommand is not null)
+            {
+                await ToggleServerConnectionCommand.ExecuteAsync(server);
+                return;
+            }
+
             if (!ReferenceEquals(ViewModel.SelectedServer, server))
                 ViewModel.SelectedServer = server;
 
@@ -149,7 +160,6 @@ namespace XrayUI.Views
             if (command is null || !command.CanExecute(null))
                 return;
 
-            e.Handled = true;
             await command.ExecuteAsync(null);
         }
 

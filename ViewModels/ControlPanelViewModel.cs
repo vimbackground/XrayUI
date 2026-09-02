@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading;
@@ -68,6 +69,7 @@ namespace XrayUI.ViewModels
 
         public event EventHandler? ShowLogsRequested;
         public event EventHandler? ShowPersonalizeRequested;
+        public event EventHandler? ShowAppSettingsRequested;
         public event EventHandler<CustomRulesViewModel>? ShowCustomRulesRequested;
 
         public ControlPanelViewModel(
@@ -229,6 +231,21 @@ namespace XrayUI.ViewModels
             var tunMode = IsTunMode;
 
             var appSettings = await _settings.LoadSettingsAsync();
+
+            if (!PortHelper.IsPortAvailable(LocalPort))
+            {
+                int suggestedPort = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+                var resolvedPort = await _dialogs.ShowPortConflictPromptAsync(LocalPort, suggestedPort);
+                if (resolvedPort.HasValue && resolvedPort.Value > 0)
+                {
+                    LocalPort = resolvedPort.Value;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
             appSettings.LocalMixedPort      = LocalPort;
             appSettings.AllowLanConnections = AllowLanConnections;
             appSettings.RoutingMode         = RoutingMode;
@@ -676,6 +693,9 @@ namespace XrayUI.ViewModels
         private void ShowPersonalize() => ShowPersonalizeRequested?.Invoke(this, EventArgs.Empty);
 
         [RelayCommand]
+        private void ShowAppSettings() => ShowAppSettingsRequested?.Invoke(this, EventArgs.Empty);
+
+        [RelayCommand]
         private void ShowCustomRules()
         {
             var vm = new CustomRulesViewModel(
@@ -852,6 +872,26 @@ namespace XrayUI.ViewModels
 
             ThemeHelper.ApplyTheme(theme);
             ThemeHelper.ApplyBackdrop(settings.BackdropSetting ?? "Mica");
+        }
+
+        [RelayCommand]
+        private void OpenDataFolder()
+        {
+            try
+            {
+                if (!Directory.Exists(AppPaths.DataDir))
+                    Directory.CreateDirectory(AppPaths.DataDir);
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = AppPaths.DataDir,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ControlPanel] OpenDataFolder failed: {ex.Message}");
+            }
         }
 
         private async Task TrySaveSettingsAsync(AppSettings settings, string scenario)

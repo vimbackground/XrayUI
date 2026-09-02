@@ -39,6 +39,7 @@ namespace XrayUI
         // returns to maximized instead of the plain windowed size.
         private bool _restoreMaximizedOnExpand;
         private bool _personalizeRealized;
+        private bool _appSettingsRealized;
         private readonly bool _startMinimized;
         // Set when we parked the window off-screen at startup; cleared after
         // we re-center it on the first user-initiated show (tray click).
@@ -300,15 +301,39 @@ namespace XrayUI
 
         private void HandleHotkeyMessage(int id)
         {
-            if (id == GlobalHotkeyStore.ToggleId)
+            switch (id)
             {
-                var cmd = ViewModel.ControlPanel.StartStopCommand;
-                if (cmd.CanExecute(null))
-                    _ = cmd.ExecuteAsync(null);
-            }
-            else if (id == GlobalHotkeyStore.RestoreId)
-            {
-                RestoreFromTray();
+                case GlobalHotkeyStore.ToggleId:
+                    var startStopCmd = ViewModel.ControlPanel.StartStopCommand;
+                    if (startStopCmd.CanExecute(null))
+                        _ = startStopCmd.ExecuteAsync(null);
+                    break;
+
+                case GlobalHotkeyStore.RestoreId:
+                    // Ping-pong toggle: if hidden/minimized -> restore and bring to top; if already visible -> hide to tray
+                    if (_isHiddenToTray || !AppWindow.IsVisible)
+                        RestoreFromTray();
+                    else
+                        _ = HideToTray();
+                    break;
+
+                case GlobalHotkeyStore.SystemProxyId:
+                    if (ViewModel.ControlPanel.IsModeToggleEnabled)
+                        ViewModel.ControlPanel.IsSystemProxyEnabled = !ViewModel.ControlPanel.IsSystemProxyEnabled;
+                    break;
+
+                case GlobalHotkeyStore.TunId:
+                    if (ViewModel.ControlPanel.IsTunToggleEnabled)
+                        ViewModel.ControlPanel.IsTunMode = !ViewModel.ControlPanel.IsTunMode;
+                    break;
+
+                case GlobalHotkeyStore.RoutingId:
+                    if (ViewModel.ControlPanel.IsModeToggleEnabled)
+                    {
+                        var next = ViewModel.ControlPanel.RoutingMode == "global" ? "smart" : "global";
+                        _ = ViewModel.ControlPanel.SetRoutingModeCommand.ExecuteAsync(next);
+                    }
+                    break;
             }
         }
 
@@ -331,22 +356,17 @@ namespace XrayUI
                 Debug.WriteLine("[Hotkey] Failed to enqueue post-takeover hotkey registration.");
         }
 
-        // Idempotent: always unregisters both ids first, then re-registers whichever have a
+        // Idempotent: always unregisters all ids first, then re-registers whichever have a
         // combo assigned (no separate enabled flag — presence of a combo means active). Safe to
         // call at startup and any time the Personalize page commits a hotkey change.
         private void RegisterGlobalHotkeys()
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-            foreach (var id in new[] { GlobalHotkeyStore.ToggleId, GlobalHotkeyStore.RestoreId })
+            foreach (var id in GlobalHotkeyStore.AllIds)
             {
                 HotkeyInterop.UnregisterHotKey(hWnd, id);
 
-                // On failure, the combo is left in the store as-is (not cleared) — a conflict may
-                // be temporary (another app releases it, or the system state changes), and the
-                // next call to this method retries with the same combo. Nothing else reads a
-                // "successfully registered" flag: the UI only reflects whether a combo is assigned,
-                // and WM_HOTKEY simply never arrives for an id Windows didn't actually register.
                 var (mods, vk) = GlobalHotkeyStore.GetCombo(id);
                 if (vk != 0)
                     RegisterHotkeyOrLog(hWnd, id, mods, vk);
@@ -531,8 +551,8 @@ namespace XrayUI
             _windowMessageMonitor.Dispose();
             GlobalHotkeyStore.HotkeysChanged -= OnGlobalHotkeysChanged;
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            HotkeyInterop.UnregisterHotKey(hWnd, GlobalHotkeyStore.ToggleId);
-            HotkeyInterop.UnregisterHotKey(hWnd, GlobalHotkeyStore.RestoreId);
+            foreach (var id in GlobalHotkeyStore.AllIds)
+                HotkeyInterop.UnregisterHotKey(hWnd, id);
             AppWindow.IsShownInSwitchers = true;
         }
 
@@ -558,18 +578,23 @@ namespace XrayUI
                 return;
             }
 
-            if (_personalizeRealized) return;
-            if (e.PropertyName != nameof(MainViewModel.PersonalizeVisibility)) return;
-            if (ViewModel.PersonalizeVisibility != Visibility.Visible) return;
-
-            _personalizeRealized = true;
-            // Set ViewModel before adding to the visual tree so that, when the
-            // host fires Loading, the UserControl's x:Bind initializers see a
-            // non-null ViewModel and bind correctly the first time.
-            PersonalizeHost.Children.Add(new Views.PersonalizeControl
+            if (!_personalizeRealized && e.PropertyName == nameof(MainViewModel.PersonalizeVisibility) && ViewModel.PersonalizeVisibility == Visibility.Visible)
             {
-                ViewModel = ViewModel.Personalize,
-            });
+                _personalizeRealized = true;
+                PersonalizeHost.Children.Add(new Views.PersonalizeControl
+                {
+                    ViewModel = ViewModel.Personalize,
+                });
+            }
+
+            if (!_appSettingsRealized && e.PropertyName == nameof(MainViewModel.AppSettingsVisibility) && ViewModel.AppSettingsVisibility == Visibility.Visible)
+            {
+                _appSettingsRealized = true;
+                AppSettingsHost.Children.Add(new Views.AppSettingsControl
+                {
+                    ViewModel = ViewModel.AppSettings,
+                });
+            }
         }
 
         private void OnWindowMessageReceived(object? sender, WindowMessageEventArgs e)

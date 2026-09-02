@@ -728,6 +728,21 @@
   <data name="ControlPanel_ViewLogItem.Text" xml:space="preserve">
     <value>Logs</value>
   </data>
+  <data name="ControlPanel_ModeSettings" xml:space="preserve">
+    <value>Mode Settings</value>
+  </data>
+  <data name="ControlPanel_AppSettings" xml:space="preserve">
+    <value>App Settings</value>
+  </data>
+  <data name="ControlPanel_HotkeysItem.Text" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="ControlPanel_DataManagementItem.Text" xml:space="preserve">
+    <value>Data Management</value>
+  </data>
+  <data name="ControlPanel_OpenDataFolderItem.Text" xml:space="preserve">
+    <value>Open Data Folder (Data)</value>
+  </data>
   <data name="ControlPanel_ProxySettingsItem.Text" xml:space="preserve">
     <value>Proxy Setting</value>
   </data>
@@ -1056,7 +1071,19 @@
     <value>Start/Stop Proxy</value>
   </data>
   <data name="Personalize_HotkeyRestoreTitle.Text" xml:space="preserve">
-    <value>Restore Window from Tray</value>
+    <value>Show/Hide Window</value>
+  </data>
+  <data name="Personalize_HotkeySystemProxyTitle.Text" xml:space="preserve">
+    <value>Toggle System Proxy</value>
+  </data>
+  <data name="Personalize_HotkeyTunTitle.Text" xml:space="preserve">
+    <value>Toggle TUN Mode</value>
+  </data>
+  <data name="Personalize_HotkeyRoutingTitle.Text" xml:space="preserve">
+    <value>Toggle Routing Mode</value>
+  </data>
+  <data name="Personalize_HotkeyImportClipboardTitle.Text" xml:space="preserve">
+    <value>Import Nodes from Clipboard</value>
   </data>
   <data name="Personalize_HotkeyNotSet" xml:space="preserve">
     <value>Assign shortcut</value>
