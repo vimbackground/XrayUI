@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Window x:Class="XrayUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -173,7 +173,8 @@
             <views:ServerListControl Grid.Column="0"
                                       x:Name="ServerList"
                                       ViewModel="{x:Bind ViewModel.ServerList, Mode=OneTime}"
-                                      SwitchToSelectedServerCommand="{x:Bind ViewModel.SwitchToSelectedServerCommand, Mode=OneTime}" />
+                                      SwitchToSelectedServerCommand="{x:Bind ViewModel.SwitchToSelectedServerCommand, Mode=OneTime}"
+                                      ToggleServerConnectionCommand="{x:Bind ViewModel.ToggleServerConnectionCommand, Mode=OneTime}" />
 
             <Grid Grid.Column="1"
                   VerticalAlignment="Stretch">
@@ -194,12 +195,13 @@
                                                ViewModel="{x:Bind ViewModel.ControlPanel, Mode=OneTime}" />
                 </Grid>
 
-                <!-- Personalize view — lazily realized in code-behind on first show
-                     (see RealizePersonalizeIfNeeded in MainWindow.xaml.cs). x:Load
-                     can't drive this from a Window-root XAML, so we do the lazy
-                     instantiation manually. -->
+                <!-- Personalize view -->
                 <Grid x:Name="PersonalizeHost"
                       Visibility="{x:Bind ViewModel.PersonalizeVisibility, Mode=OneWay}" />
+
+                <!-- AppSettings view -->
+                <Grid x:Name="AppSettingsHost"
+                      Visibility="{x:Bind ViewModel.AppSettingsVisibility, Mode=OneWay}" />
 
             </Grid>
         </Grid>

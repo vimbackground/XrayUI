@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           $publishDir = "bin/Release/net10.0-windows10.0.19041.0/win-x64/publish"
-          $exe = "$publishDir/XrayUI-dev.exe"
+          $exe = "$publishDir/XrayUI-Portable.exe"
           Write-Host "Listing $publishDir :"
           if (Test-Path $publishDir) {
             Get-ChildItem -Recurse $publishDir | ForEach-Object { $_.FullName }

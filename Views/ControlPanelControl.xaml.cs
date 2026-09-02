@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Windows.System;
 using XrayUI.Helpers;
 
@@ -15,6 +15,8 @@ namespace XrayUI.Views
         {
             this.InitializeComponent();
             ToolTipService.SetToolTip(PersonalizeButton, L.ControlPanel_Personalize);
+            ToolTipService.SetToolTip(ModeSettingsButton, L.ControlPanel_ModeSettings);
+            ToolTipService.SetToolTip(AppSettingsButton, L.ControlPanel_AppSettings);
         }
 
         // Called by MainWindow after ViewModel is assigned (via x:Bind the property is set before Loaded)
@@ -29,11 +31,6 @@ namespace XrayUI.Views
         {
             ViewModel.ShowLogsRequested         -= OnShowLogsRequested;
             ViewModel.ShowCustomRulesRequested  -= OnShowCustomRulesRequested;
-        }
-
-        private async void GitHubButton_Click(object sender, RoutedEventArgs e)
-        {
-            await Launcher.LaunchUriAsync(new Uri("https://github.com/PhoenixNil/XrayUI-dev"));
         }
 
         public void CloseLogWindow()

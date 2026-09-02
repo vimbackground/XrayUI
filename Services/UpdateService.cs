@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -30,7 +30,7 @@ namespace XrayUI.Services
         // be written (and translated) for end users.
         private const string ChangelogUrl = "https://www.xrayui.site/changelog.json";
 
-        private const string AppExeName     = "XrayUI-dev.exe";
+        private const string AppExeName     = "XrayUI-Portable.exe";
         private const string UpdaterExeName = "XrayUI.Updater.exe";
 
         // Which release-asset variant this build updates from. "-wasdk" zips bundle

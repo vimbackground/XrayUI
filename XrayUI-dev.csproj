@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>XrayUI</RootNamespace>
+    <AssemblyName>XrayUI-Portable</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -135,7 +136,9 @@
 
   <!-- Version: defaults for local builds; CI overrides via -p:Version=<tag> -->
   <PropertyGroup>
-    <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
+    <FileVersion Condition="'$(FileVersion)' == ''">1.0.0.0</FileVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <!-- Auto-update channel marker. release.yml publishes two variants per RID:

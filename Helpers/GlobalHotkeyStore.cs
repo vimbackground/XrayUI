@@ -13,8 +13,13 @@ namespace XrayUI.Helpers
     /// </summary>
     public static class GlobalHotkeyStore
     {
-        public const int ToggleId = 1;
-        public const int RestoreId = 2;
+        public const int ToggleId      = 1;
+        public const int RestoreId     = 2;
+        public const int SystemProxyId = 3;
+        public const int TunId         = 4;
+        public const int RoutingId     = 5;
+
+        public static readonly int[] AllIds = [ToggleId, RestoreId, SystemProxyId, TunId, RoutingId];
 
         public const uint ModAlt = 0x0001;
         public const uint ModControl = 0x0002;
@@ -33,36 +38,56 @@ namespace XrayUI.Helpers
         public static uint RestoreModifiers { get; set; }
         public static uint RestoreVirtualKey { get; set; }
 
+        public static uint SystemProxyModifiers { get; set; }
+        public static uint SystemProxyVirtualKey { get; set; }
+
+        public static uint TunModifiers { get; set; }
+        public static uint TunVirtualKey { get; set; }
+
+        public static uint RoutingModifiers { get; set; }
+        public static uint RoutingVirtualKey { get; set; }
+
         public static event EventHandler? HotkeysChanged;
         public static void NotifyHotkeysChanged() => HotkeysChanged?.Invoke(null, EventArgs.Empty);
 
-        /// <summary>Reads the combo for <see cref="ToggleId"/> or <see cref="RestoreId"/> — lets
-        /// callers that already branch on id (MainWindow's registration loop, the Personalize
-        /// hotkey dialog) avoid a separate Toggle/Restore branch just to pick the right fields.</summary>
+        /// <summary>Reads the combo for any hotkey id — lets
+        /// callers that already branch on id avoid a separate branch just to pick the right fields.</summary>
         public static (uint Mods, uint Vk) GetCombo(int id) => id switch
         {
-            ToggleId => (ToggleModifiers, ToggleVirtualKey),
-            RestoreId => (RestoreModifiers, RestoreVirtualKey),
+            ToggleId      => (ToggleModifiers, ToggleVirtualKey),
+            RestoreId     => (RestoreModifiers, RestoreVirtualKey),
+            SystemProxyId => (SystemProxyModifiers, SystemProxyVirtualKey),
+            TunId         => (TunModifiers, TunVirtualKey),
+            RoutingId     => (RoutingModifiers, RoutingVirtualKey),
             _ => (0, 0),
         };
 
         /// <summary>See <see cref="GetCombo"/>.</summary>
         public static void SetCombo(int id, uint mods, uint vk)
         {
-            if (id == ToggleId) { ToggleModifiers = mods; ToggleVirtualKey = vk; }
-            else if (id == RestoreId) { RestoreModifiers = mods; RestoreVirtualKey = vk; }
+            if (id == ToggleId)           { ToggleModifiers = mods; ToggleVirtualKey = vk; }
+            else if (id == RestoreId)     { RestoreModifiers = mods; RestoreVirtualKey = vk; }
+            else if (id == SystemProxyId) { SystemProxyModifiers = mods; SystemProxyVirtualKey = vk; }
+            else if (id == TunId)         { TunModifiers = mods; TunVirtualKey = vk; }
+            else if (id == RoutingId)     { RoutingModifiers = mods; RoutingVirtualKey = vk; }
         }
 
         public static void LoadFrom(AppSettings s)
         {
-            (ToggleModifiers, ToggleVirtualKey) = ParseCombo(s.HotkeyToggleCombo);
-            (RestoreModifiers, RestoreVirtualKey) = ParseCombo(s.HotkeyRestoreCombo);
+            (ToggleModifiers, ToggleVirtualKey)           = ParseCombo(s.HotkeyToggleCombo);
+            (RestoreModifiers, RestoreVirtualKey)         = ParseCombo(s.HotkeyRestoreCombo);
+            (SystemProxyModifiers, SystemProxyVirtualKey) = ParseCombo(s.HotkeySystemProxyCombo);
+            (TunModifiers, TunVirtualKey)                 = ParseCombo(s.HotkeyTunCombo);
+            (RoutingModifiers, RoutingVirtualKey)         = ParseCombo(s.HotkeyRoutingCombo);
         }
 
         public static void SaveTo(AppSettings s)
         {
-            s.HotkeyToggleCombo = FormatCombo(ToggleModifiers, ToggleVirtualKey);
-            s.HotkeyRestoreCombo = FormatCombo(RestoreModifiers, RestoreVirtualKey);
+            s.HotkeyToggleCombo      = FormatCombo(ToggleModifiers, ToggleVirtualKey);
+            s.HotkeyRestoreCombo     = FormatCombo(RestoreModifiers, RestoreVirtualKey);
+            s.HotkeySystemProxyCombo = FormatCombo(SystemProxyModifiers, SystemProxyVirtualKey);
+            s.HotkeyTunCombo         = FormatCombo(TunModifiers, TunVirtualKey);
+            s.HotkeyRoutingCombo     = FormatCombo(RoutingModifiers, RoutingVirtualKey);
         }
 
         private static (uint mods, uint vk) ParseCombo(string? raw)

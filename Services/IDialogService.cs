@@ -59,5 +59,7 @@ namespace XrayUI.Services
         /// user32 and only persisting on success.
         /// </summary>
         Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(string title, uint currentMods, uint currentVk);
+        Task<bool> ShowFirstRunImportPromptAsync(string sourceSummary);
+        Task<int?> ShowPortConflictPromptAsync(int port, int suggestedPort);
     }
 }

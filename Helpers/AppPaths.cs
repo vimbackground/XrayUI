@@ -13,6 +13,8 @@ namespace XrayUI.Helpers
         public static string UpdatesDir { get; } = Path.Combine(DataDir, "Updates");
 
         public static string SettingsJsonPath { get; } = Path.Combine(DataDir, "settings.json");
+        public static string ServersJsonPath { get; } = Path.Combine(DataDir, "servers.json");
+        public static string ServersJson => ServersJsonPath;
 
         static AppPaths()
         {
@@ -21,34 +23,11 @@ namespace XrayUI.Helpers
                 if (!Directory.Exists(DataDir))
                 {
                     Directory.CreateDirectory(DataDir);
-
-                    // Smooth migration: if local Data/ directory was just created, check if %LOCALAPPDATA%\XrayUI exists
-                    var oldDir = Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                        "XrayUI");
-
-                    if (Directory.Exists(oldDir))
-                    {
-                        var oldSettings = Path.Combine(oldDir, "settings.json");
-                        var oldServers = Path.Combine(oldDir, "servers.json");
-                        var newSettings = Path.Combine(DataDir, "settings.json");
-                        var newServers = Path.Combine(DataDir, "servers.json");
-
-                        if (File.Exists(oldSettings) && !File.Exists(newSettings))
-                        {
-                            File.Copy(oldSettings, newSettings, overwrite: false);
-                        }
-
-                        if (File.Exists(oldServers) && !File.Exists(newServers))
-                        {
-                            File.Copy(oldServers, newServers, overwrite: false);
-                        }
-                    }
                 }
             }
             catch
             {
-                // Best effort initialization
+                // Best effort directory creation
             }
         }
     }

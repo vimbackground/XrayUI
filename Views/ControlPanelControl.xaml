@@ -17,47 +17,23 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- ── Row 0: small button ─────────────────────────────────── -->
+        <!-- ── Row 0: toolbar buttons ─────────────────────────────────── -->
         <Grid Grid.Row="0">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Spacing="6">
+                        Spacing="4">
 
-                <Button x:Name="PersonalizeButton"
+                <!-- 1. 模式调节 -->
+                <Button x:Name="ModeSettingsButton"
                         Background="Transparent"
                         BorderBrush="Transparent"
                         VerticalAlignment="Center"
                         Padding="8"
-                        Command="{x:Bind ViewModel.ShowPersonalizeCommand}">
-                    <FontIcon Glyph="&#xE771;" FontSize="16" />
-                </Button>
-
-                <Button Background="Transparent"
-                        BorderBrush="Transparent"
-                        VerticalAlignment="Center"
-                        Padding="8">
-                    <Grid Width="20" Height="20">
-                        <FontIcon Glyph="&#xE713;" FontSize="16"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center" />
-                        <InfoBadge Style="{StaticResource AttentionDotInfoBadgeStyle}"
-                                   HorizontalAlignment="Right" VerticalAlignment="Top"
-                                   Height="6" Width="6"
-                                   Visibility="{x:Bind ViewModel.UpdateBadgeVisibility, Mode=OneWay}" />
-                    </Grid>
+                        ToolTipService.ToolTip="模式调节">
+                    <FontIcon Glyph="&#xF168;" FontSize="16" />
                     <Button.Flyout>
                         <MenuFlyout>
-                            <MenuFlyoutItem Text="{x:Bind ViewModel.UpdateMenuText, Mode=OneWay}"
-                                            Command="{x:Bind ViewModel.UpdateAppCommand}"
-                                            Visibility="{x:Bind ViewModel.UpdateBadgeVisibility, Mode=OneWay}" />
-                            <MenuFlyoutSeparator Visibility="{x:Bind ViewModel.UpdateBadgeVisibility, Mode=OneWay}" />
-                            <MenuFlyoutItem x:Uid="ControlPanel_EditPortItem"
-                                            Text="编辑本地端口"
-                                            Command="{x:Bind ViewModel.EditLocalPortCommand}" />
-                            <MenuFlyoutItem x:Uid="ControlPanel_ViewLogItem"
-                                            Text="查看日志"
-                                            Command="{x:Bind ViewModel.ShowLogsCommand}" />
                             <MenuFlyoutSubItem x:Uid="ControlPanel_ProxySettingsItem"
                                                Text="代理设置">
                                 <RadioMenuFlyoutItem x:Uid="ControlPanel_GlobalProxyItem"
@@ -75,20 +51,8 @@
                                                      Command="{x:Bind ViewModel.SetProxyModeCommand}"
                                                      CommandParameter="manual" />
                             </MenuFlyoutSubItem>
-                            <MenuFlyoutSeparator />
-                            <MenuFlyoutItem x:Uid="ControlPanel_StartupItem"
-                                            Text="开机启动"
-                                            Command="{x:Bind ViewModel.OpenStartupSettingsCommand}"
-                                            Icon="{x:Bind ViewModel.StartupMenuIcon, Mode=OneWay}" />
                             <MenuFlyoutSubItem x:Uid="ControlPanel_RoutingSettingsItem"
                                                Text="路由设置">
-                                <RadioMenuFlyoutItem x:Uid="ControlPanel_RoutingGlobalItem"
-                                                     Text="全局路由"
-                                                     GroupName="RoutingModeGroup"
-                                                     IsChecked="{x:Bind ViewModel.IsGlobalRoutingChecked, Mode=OneWay}"
-                                                     IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
-                                                     Command="{x:Bind ViewModel.SetRoutingModeCommand}"
-                                                     CommandParameter="global" />
                                 <RadioMenuFlyoutItem x:Uid="ControlPanel_RoutingSmartItem"
                                                      Text="智能分流"
                                                      GroupName="RoutingModeGroup"
@@ -96,30 +60,58 @@
                                                      IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                      Command="{x:Bind ViewModel.SetRoutingModeCommand}"
                                                      CommandParameter="smart" />
+                                <RadioMenuFlyoutItem x:Uid="ControlPanel_RoutingGlobalItem"
+                                                     Text="全局路由"
+                                                     GroupName="RoutingModeGroup"
+                                                     IsChecked="{x:Bind ViewModel.IsGlobalRoutingChecked, Mode=OneWay}"
+                                                     IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
+                                                     Command="{x:Bind ViewModel.SetRoutingModeCommand}"
+                                                     CommandParameter="global" />
                                 <MenuFlyoutSeparator />
                                 <MenuFlyoutItem x:Uid="ControlPanel_CustomRulesItem"
                                                 Text="自定义规则..."
                                                 IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
                                                 Command="{x:Bind ViewModel.ShowCustomRulesCommand}" />
-                                <MenuFlyoutItem x:Uid="ControlPanel_DnsItem"
-                                                Text="DNS设置"
-                                                IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
-                                                Command="{x:Bind ViewModel.ShowDnsSettingsCommand}" />
                             </MenuFlyoutSubItem>
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem Text="端口设置..."
+                                            Command="{x:Bind ViewModel.EditLocalPortCommand}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE8B9;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem x:Uid="ControlPanel_DnsItem"
+                                            Text="DNS设置"
+                                            IsEnabled="{x:Bind ViewModel.IsModeToggleEnabled, Mode=OneWay}"
+                                            Command="{x:Bind ViewModel.ShowDnsSettingsCommand}" />
+                            <MenuFlyoutItem x:Uid="ControlPanel_StartupItem"
+                                            Text="开机启动"
+                                            Command="{x:Bind ViewModel.OpenStartupSettingsCommand}"
+                                            Icon="{x:Bind ViewModel.StartupMenuIcon, Mode=OneWay}" />
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>
-                <!-- GitHub button -->
-                <Button Background="Transparent"
+
+                <!-- 2. 个性化设置 -->
+                <Button x:Name="PersonalizeButton"
+                        Background="Transparent"
                         BorderBrush="Transparent"
                         VerticalAlignment="Center"
                         Padding="8"
-                        Click="GitHubButton_Click"
-                        ToolTipService.ToolTip="GitHub">
-                    <Viewbox Width="16" Height="16">
-                        <Path Data="{StaticResource GitHubIconPath}"
-                              Fill="{ThemeResource TextFillColorPrimaryBrush}" />
-                    </Viewbox>
+                        ToolTipService.ToolTip="个性化设置"
+                        Command="{x:Bind ViewModel.ShowPersonalizeCommand}">
+                    <FontIcon Glyph="&#xE771;" FontSize="16" />
+                </Button>
+
+                <!-- 3. 软件设置 -->
+                <Button x:Name="AppSettingsButton"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        VerticalAlignment="Center"
+                        Padding="8"
+                        ToolTipService.ToolTip="软件设置"
+                        Command="{x:Bind ViewModel.ShowAppSettingsCommand}">
+                    <FontIcon Glyph="&#xE713;" FontSize="16" />
                 </Button>
 
             </StackPanel>
@@ -130,10 +122,12 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        Spacing="16">
+                        Spacing="14">
 
                 <!-- 1. 启动/停止按钮 -->
                 <ToggleButton MinWidth="84"
+                              FontSize="13"
+                              FontWeight="SemiBold"
                               Content="{x:Bind ViewModel.StartStopButtonContent, Mode=OneWay}"
                               IsChecked="{x:Bind ViewModel.StartStopButtonChecked, Mode=OneWay}"
                               IsEnabled="{x:Bind ViewModel.CanStartStop, Mode=OneWay}"
@@ -146,7 +140,7 @@
                             VerticalAlignment="Center">
                     <TextBlock x:Uid="ControlPanel_GlobalProxyLabel"
                                Text="全局代理"
-                               FontSize="14"
+                               FontSize="13"
                                FontWeight="SemiBold"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center" />
@@ -164,7 +158,7 @@
                             VerticalAlignment="Center">
                     <TextBlock x:Uid="ControlPanel_TunModeLabel"
                                Text="TUN 模式"
-                               FontSize="14"
+                               FontSize="13"
                                FontWeight="SemiBold"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center" />
@@ -182,11 +176,12 @@
                             VerticalAlignment="Center">
                     <TextBlock x:Uid="ControlPanel_RoutingLbl"
                                Text="路由:"
-                               FontSize="14"
+                               FontSize="13"
+                               FontWeight="SemiBold"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock Text="{x:Bind ViewModel.RoutingModeText, Mode=OneWay}"
-                               FontSize="14"
+                               FontSize="13"
                                FontWeight="SemiBold"
                                VerticalAlignment="Center" />
                 </StackPanel>

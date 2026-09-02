@@ -543,13 +543,30 @@ namespace XrayUI.Services
 
         public async Task<(int port, bool allowLan)?> ShowEditPortDialogAsync(int currentPort, bool currentAllowLan)
         {
-            var numBox = new NumberBox
+            var portBox = new TextBox
             {
-                Header = L.EditPort_Header,
-                Value = currentPort,
-                Minimum = 1024,
-                Maximum = 65535,
-                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
+                Text = currentPort.ToString(),
+                MinWidth = 120,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var randomPortBtn = new Button
+            {
+                Content = "🎲 随机无冲突端口",
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 0, 0)
+            };
+
+            var portInputRow = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children = { portBox, randomPortBtn }
+            };
+
+            var statusText = new TextBlock
+            {
+                FontSize = 12,
+                Margin = new Thickness(0, 4, 0, 0)
             };
 
             var lanToggle = new ToggleSwitch
@@ -593,7 +610,42 @@ namespace XrayUI.Services
             lanAddressRow.Children.Add(lanCopyBtn);
 
             var lanAddress = TunService.GetLanDisplayAddress();
-            int CurrentPortValue() => double.IsNaN(numBox.Value) ? currentPort : (int)numBox.Value;
+            int CurrentPortValue() => int.TryParse(portBox.Text.Trim(), out var p) ? p : currentPort;
+
+            var successBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorSuccessBrush"];
+            var cautionBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+            var criticalBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+
+            var dialog = CreateDialog();
+            dialog.Title = L.EditPort_Title;
+            dialog.PrimaryButtonText = L.Dialog_OK;
+            dialog.CloseButtonText = L.Dialog_Cancel;
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            void ValidatePort()
+            {
+                if (!int.TryParse(portBox.Text.Trim(), out var p) || p < 1 || p > 65535)
+                {
+                    statusText.Text = "❌ 请输入 1~65535 之间的有效端口号";
+                    statusText.Foreground = criticalBrush;
+                    dialog.IsPrimaryButtonEnabled = false;
+                    return;
+                }
+
+                dialog.IsPrimaryButtonEnabled = true;
+                if (PortHelper.IsPortAvailable(p))
+                {
+                    statusText.Text = $"✅ 端口 {p} 可用，当前无冲突";
+                    statusText.Foreground = successBrush;
+                }
+                else
+                {
+                    statusText.Text = $"⚠️ 端口 {p} 已被占用，请更换或点击随机生成";
+                    statusText.Foreground = cautionBrush;
+                }
+
+                UpdateLanAddressText();
+            }
 
             void UpdateLanAddressText()
             {
@@ -618,27 +670,30 @@ namespace XrayUI.Services
                 lanAddressRow.Visibility = Visibility.Visible;
             }
 
-            lanToggle.Toggled += (_, _) => UpdateLanAddressText();
-            numBox.ValueChanged += (_, _) => UpdateLanAddressText();
-            UpdateLanAddressText();
+            randomPortBtn.Click += (_, _) =>
+            {
+                int rp = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+                portBox.Text = rp.ToString();
+                ValidatePort();
+            };
 
-            var dialog = CreateDialog();
-            dialog.Title = L.EditPort_Title;
-            dialog.PrimaryButtonText = L.Dialog_OK;
-            dialog.CloseButtonText = L.Dialog_Cancel;
-            dialog.DefaultButton = ContentDialogButton.Primary;
+            portBox.TextChanged += (_, _) => ValidatePort();
+            lanToggle.Toggled += (_, _) => UpdateLanAddressText();
+            ValidatePort();
+
             dialog.Content = new StackPanel
             {
-                Width = 260,
+                Width = 320,
                 Spacing = 12,
                 Children =
                 {
-                    numBox,
                     new TextBlock
                     {
-                        Text = Loc.Format("EditPort_Range", numBox.Minimum, numBox.Maximum),
-                        Opacity = 0.65,
+                        Text = L.EditPort_Header,
+                        FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
                     },
+                    portInputRow,
+                    statusText,
                     lanRow,
                     lanAddressRow,
                 }
@@ -648,6 +703,94 @@ namespace XrayUI.Services
             if (result != ContentDialogResult.Primary) return null;
 
             return (CurrentPortValue(), lanToggle.IsOn);
+        }
+
+        public async Task<bool> ShowFirstRunImportPromptAsync(string sourceSummary)
+        {
+            var dialog = CreateDialog();
+            dialog.Title = "欢迎使用 XrayUI 便携版";
+            dialog.PrimaryButtonText = "需要导入";
+            dialog.CloseButtonText = "不需要，全新使用";
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            var panel = new StackPanel
+            {
+                Spacing = 14,
+                Width = 380,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = $"检测到系统中存在原 XrayUI 的节点与配置数据（{sourceSummary}）。",
+                        TextWrapping = TextWrapping.Wrap,
+                        FontSize = 14,
+                    },
+                    new Border
+                    {
+                        Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["LayerFillColorDefaultBrush"],
+                        BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["ControlStrokeColorDefaultBrush"],
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(6),
+                        Padding = new Thickness(12),
+                        Child = new TextBlock
+                        {
+                            Text = "• 点击【需要导入】：可自定义独立端口并导入所有节点；\n• 点击【不需要】：将生成全新的空配置直接开始使用。",
+                            TextWrapping = TextWrapping.Wrap,
+                            FontSize = 12,
+                            Opacity = 0.8
+                        }
+                    }
+                }
+            };
+
+            dialog.Content = panel;
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+
+        public async Task<int?> ShowPortConflictPromptAsync(int port, int suggestedPort)
+        {
+            var dialog = CreateDialog();
+            dialog.Title = "本地代理端口冲突提示";
+            dialog.PrimaryButtonText = $"自动切换为端口 {suggestedPort} 并启动";
+            dialog.SecondaryButtonText = "手动修改端口";
+            dialog.CloseButtonText = "取消";
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            var panel = new StackPanel
+            {
+                Spacing = 12,
+                Width = 380,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = $"本地代理端口 {port} 当前已被其他正在运行的程序（如原版 XrayUI 或其他软件）占用，导致代理核心无法启动。",
+                        TextWrapping = TextWrapping.Wrap,
+                        FontSize = 14,
+                    },
+                    new TextBlock
+                    {
+                        Text = $"建议自动切换至检测无冲突的空闲端口 {suggestedPort}，或者您可以前往手动修改端口。",
+                        TextWrapping = TextWrapping.Wrap,
+                        FontSize = 12,
+                        Opacity = 0.8
+                    }
+                }
+            };
+
+            dialog.Content = panel;
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                return suggestedPort;
+            }
+            if (result == ContentDialogResult.Secondary)
+            {
+                var editResult = await ShowEditPortDialogAsync(port, false);
+                if (editResult.HasValue) return editResult.Value.port;
+            }
+            return null;
         }
 
         // ── Error ─────────────────────────────────────────────────────────────
