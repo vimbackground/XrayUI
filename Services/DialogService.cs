@@ -216,7 +216,7 @@ namespace XrayUI.Services
             var numWgMtu = new NumberBox
             {
                 Header = "MTU",
-                Value = existing is { WgMtu: > 0 } ? existing.WgMtu : 1420,
+                Value = existing is { WgMtu: > 0 } ? (double)existing.WgMtu.Value : 1420,
                 Minimum = 0,
                 Maximum = 65535,
                 SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
@@ -703,6 +703,194 @@ namespace XrayUI.Services
             if (result != ContentDialogResult.Primary) return null;
 
             return (CurrentPortValue(), lanToggle.IsOn);
+        }
+
+        public async Task<(int port, bool allowLan, bool remove)?> ShowEditDedicatedPortDialogAsync(ServerEntry server, IEnumerable<int> otherUsedPorts)
+        {
+            var usedSet = new HashSet<int>(otherUsedPorts);
+            var initialPort = server.DedicatedPort ?? PortHelper.GenerateRandomAvailablePort(10000, 65000);
+            while (usedSet.Contains(initialPort))
+            {
+                initialPort = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+            }
+
+            var portBox = new TextBox
+            {
+                Text = initialPort.ToString(),
+                MinWidth = 120,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var randomPortBtn = new Button
+            {
+                Content = "🎲 随机无冲突端口",
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 0, 0)
+            };
+
+            var portInputRow = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children = { portBox, randomPortBtn }
+            };
+
+            var statusText = new TextBlock
+            {
+                FontSize = 12,
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+
+            var lanToggle = new ToggleSwitch
+            {
+                IsOn = server.AllowDedicatedLan,
+                OnContent = L.Dialog_On,
+                OffContent = L.Dialog_Off,
+                MinWidth = 0,
+                Margin = new Thickness(0),
+            };
+            var lanRow = CreateLabelRow(L.EditPort_AllowLan, lanToggle);
+
+            var lanAddressText = new TextBlock
+            {
+                Opacity = 0.65,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            var transparentBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+            var lanCopyBtn = new CopyButton
+            {
+                Content = "",
+                FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe Fluent Icons"),
+                Width = 28,
+                Height = 28,
+                Padding = new Thickness(0),
+                FontSize = 14,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = transparentBrush,
+                BorderBrush = transparentBrush,
+            };
+            ToolTipService.SetToolTip(lanCopyBtn, L.EditPort_CopyAddress);
+
+            var lanAddressRow = new Grid { ColumnSpacing = 4 };
+            lanAddressRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            lanAddressRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            Grid.SetColumn(lanAddressText, 0);
+            Grid.SetColumn(lanCopyBtn, 1);
+            lanAddressRow.Children.Add(lanAddressText);
+            lanAddressRow.Children.Add(lanCopyBtn);
+
+            var lanAddress = TunService.GetLanDisplayAddress();
+            int CurrentPortValue() => int.TryParse(portBox.Text.Trim(), out var p) ? p : initialPort;
+
+            var successBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorSuccessBrush"];
+            var criticalBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+
+            var dialog = CreateDialog();
+            dialog.Title = $"独立端口分流 - {server.Name}";
+            dialog.PrimaryButtonText = L.Dialog_Save;
+            dialog.CloseButtonText = L.Dialog_Cancel;
+            if (server.DedicatedPort.HasValue)
+            {
+                dialog.SecondaryButtonText = "清除独立端口";
+            }
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            void UpdateLanAddressText()
+            {
+                var p = CurrentPortValue();
+                if (lanToggle.IsOn && !string.IsNullOrEmpty(lanAddress))
+                {
+                    lanAddressText.Text = $"{lanAddress}:{p} (Socks5/HTTP)";
+                    lanCopyBtn.TextToCopy = $"{lanAddress}:{p}";
+                    lanAddressRow.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    lanAddressText.Text = $"127.0.0.1:{p} (Socks5/HTTP)";
+                    lanCopyBtn.TextToCopy = $"127.0.0.1:{p}";
+                    lanAddressRow.Visibility = Visibility.Visible;
+                }
+            }
+
+            void ValidatePort()
+            {
+                if (int.TryParse(portBox.Text.Trim(), out var p) && p >= 1 && p <= 65535)
+                {
+                    if (usedSet.Contains(p) && p != server.DedicatedPort)
+                    {
+                        statusText.Text = "⚠️ 该端口已被其他节点或系统主端口占用";
+                        statusText.Foreground = criticalBrush;
+                        statusText.Visibility = Visibility.Visible;
+                        dialog.IsPrimaryButtonEnabled = false;
+                    }
+                    else if (!PortHelper.IsPortAvailable(p) && p != server.DedicatedPort)
+                    {
+                        statusText.Text = "⚠️ 端口已被系统其他软件占用";
+                        statusText.Foreground = criticalBrush;
+                        statusText.Visibility = Visibility.Visible;
+                        dialog.IsPrimaryButtonEnabled = false;
+                    }
+                    else
+                    {
+                        statusText.Text = "✓ 端口可用且无冲突";
+                        statusText.Foreground = successBrush;
+                        statusText.Visibility = Visibility.Visible;
+                        dialog.IsPrimaryButtonEnabled = true;
+                    }
+                }
+                else
+                {
+                    statusText.Text = "❌ 请输入 1~65535 之间的有效端口号";
+                    statusText.Foreground = criticalBrush;
+                    statusText.Visibility = Visibility.Visible;
+                    dialog.IsPrimaryButtonEnabled = false;
+                }
+                UpdateLanAddressText();
+            }
+
+            randomPortBtn.Click += (_, _) =>
+            {
+                var rand = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+                while (usedSet.Contains(rand))
+                {
+                    rand = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+                }
+                portBox.Text = rand.ToString();
+            };
+
+            portBox.TextChanged += (_, _) => ValidatePort();
+            lanToggle.Toggled += (_, _) => UpdateLanAddressText();
+            ValidatePort();
+
+            dialog.Content = new StackPanel
+            {
+                Width = 340,
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "为当前节点分配独立本地监听端口，第三方软件可直接填入该端口定向分流上网：",
+                        TextWrapping = TextWrapping.Wrap,
+                        FontSize = 13,
+                        Opacity = 0.85
+                    },
+                    portInputRow,
+                    statusText,
+                    lanRow,
+                    lanAddressRow,
+                }
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Secondary)
+            {
+                return (0, false, true); // remove
+            }
+            if (result != ContentDialogResult.Primary) return null;
+
+            return (CurrentPortValue(), lanToggle.IsOn, false);
         }
 
         public async Task<bool> ShowFirstRunImportPromptAsync(string sourceSummary)

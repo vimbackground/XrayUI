@@ -23,7 +23,7 @@ namespace XrayUI.Services
     public sealed class UpdateService : IUpdateService
     {
         private const string ReleaseApiUrl =
-            "https://api.github.com/repos/PhoenixNil/XrayUI-dev/releases/latest";
+            "https://api.github.com/repos/vimbackground/XrayUI/releases/latest";
 
         // User-facing release notes live on the website, not in the GitHub release body —
         // the release page stays a plain technical PR list, and the notes shown in-app can

@@ -61,5 +61,6 @@ namespace XrayUI.Services
         Task<(bool cleared, uint mods, uint vk)?> ShowHotkeyRecorderDialogAsync(string title, uint currentMods, uint currentVk);
         Task<bool> ShowFirstRunImportPromptAsync(string sourceSummary);
         Task<int?> ShowPortConflictPromptAsync(int port, int suggestedPort);
+        Task<(int port, bool allowLan, bool remove)?> ShowEditDedicatedPortDialogAsync(ServerEntry server, IEnumerable<int> otherUsedPorts);
     }
 }

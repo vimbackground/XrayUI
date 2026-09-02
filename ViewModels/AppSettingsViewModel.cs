@@ -55,6 +55,10 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial string AppVersionText { get; set; } = "v1.0.0";
 
+        // ── Multi-Node Routing & Concurrency ──────────────────────────────────
+        [ObservableProperty]
+        public partial bool EnableMultiNodeRouting { get; set; }
+
         // ── Local Port & LAN ───────────────────────────────────────────────────
         [ObservableProperty]
         public partial int LocalPort { get; set; } = 16891;
@@ -164,6 +168,7 @@ namespace XrayUI.ViewModels
             LocalPort = s.LocalMixedPort;
             LocalPortText = LocalPort.ToString();
             AllowLanConnections = s.AllowLanConnections;
+            EnableMultiNodeRouting = s.EnableMultiNodeRouting;
 
             try
             {
@@ -243,6 +248,7 @@ namespace XrayUI.ViewModels
                 s.LocalMixedPort = LocalPort;
             }
             s.AllowLanConnections = AllowLanConnections;
+            s.EnableMultiNodeRouting = EnableMultiNodeRouting;
 
             GlobalHotkeyStore.SaveTo(s);
             await _settings.SaveSettingsAsync(s);

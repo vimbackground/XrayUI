@@ -44,6 +44,12 @@
     <Compile Include="..\Services\EchSettings.cs" Link="Prod\Services\EchSettings.cs" />
     <Compile Include="..\Services\FinalmaskJson.cs" Link="Prod\Services\FinalmaskJson.cs" />
     <Compile Include="..\Helpers\PortHelper.cs" Link="Prod\Helpers\PortHelper.cs" />
+    <Compile Include="..\Models\AppSettings.cs" Link="Prod\Models\AppSettings.cs" />
+    <Compile Include="..\Models\CustomRoutingRule.cs" Link="Prod\Models\CustomRoutingRule.cs" />
+    <Compile Include="..\Services\XrayConfigConstants.cs" Link="Prod\Services\XrayConfigConstants.cs" />
+    <Compile Include="..\Services\XrayLogLevel.cs" Link="Prod\Services\XrayLogLevel.cs" />
+    <Compile Include="..\Services\LogMaskAddress.cs" Link="Prod\Services\LogMaskAddress.cs" />
+    <Compile Include="..\Services\XrayConfigBuilder.cs" Link="Prod\Services\XrayConfigBuilder.cs" />
     <Compile Include="..\Services\SubscriptionRefreshBatchRunner.cs" Link="Prod\Services\SubscriptionRefreshBatchRunner.cs" />
   </ItemGroup>
 

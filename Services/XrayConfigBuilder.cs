@@ -29,13 +29,20 @@ namespace XrayUI.Services
             AppSettings settings,
             IEnumerable<ServerEntry>? availableServers = null)
         {
+            var auxServers = (settings.EnableMultiNodeRouting && availableServers != null)
+                ? availableServers
+                    .Where(s => s.Id != server.Id && s.IsDedicatedPortActive && s.DedicatedPort.HasValue && s.DedicatedPort.Value > 0 && s.DedicatedPort.Value <= 65535 && s.DedicatedPort.Value != settings.LocalMixedPort)
+                    .DistinctBy(s => s.DedicatedPort!.Value)
+                    .ToList()
+                : (IReadOnlyList<ServerEntry>)Array.Empty<ServerEntry>();
+
             var config = new JsonObject
             {
                 ["log"] = BuildLog(settings),
                 ["dns"] = BuildDns(settings),
-                ["inbounds"] = BuildInbounds(settings),
-                ["outbounds"] = BuildOutbounds(server, settings, availableServers),
-                ["routing"] = BuildRouting(settings)
+                ["inbounds"] = BuildInbounds(settings, auxServers),
+                ["outbounds"] = BuildOutbounds(server, settings, availableServers, auxServers),
+                ["routing"] = BuildRouting(settings, auxServers)
             };
 
             if (IsFakeDnsActive(settings))
@@ -84,7 +91,7 @@ namespace XrayUI.Services
             return log;
         }
 
-        private static JsonArray BuildInbounds(AppSettings settings)
+        private static JsonArray BuildInbounds(AppSettings settings, IReadOnlyList<ServerEntry> auxServers)
         {
             var list = new JsonArray();
 
@@ -105,6 +112,28 @@ namespace XrayUI.Services
                     ["udp"] = true
                 }
             });
+
+            foreach (var aux in auxServers)
+            {
+                if (!aux.DedicatedPort.HasValue) continue;
+                AddNode(list, new JsonObject
+                {
+                    ["tag"] = $"inbound_dedicated_{aux.DedicatedPort.Value}",
+                    ["protocol"] = "socks",
+                    ["listen"] = aux.AllowDedicatedLan ? "0.0.0.0" : "127.0.0.1",
+                    ["port"] = aux.DedicatedPort.Value,
+                    ["settings"] = new JsonObject
+                    {
+                        ["auth"] = "noauth",
+                        ["udp"] = true
+                    },
+                    ["sniffing"] = new JsonObject
+                    {
+                        ["enabled"] = true,
+                        ["destOverride"] = CreateStringArray("http", "tls", "quic")
+                    }
+                });
+            }
 
             return list;
         }
@@ -153,7 +182,8 @@ namespace XrayUI.Services
         private static JsonArray BuildOutbounds(
             ServerEntry server,
             AppSettings settings,
-            IEnumerable<ServerEntry>? availableServers)
+            IEnumerable<ServerEntry>? availableServers,
+            IReadOnlyList<ServerEntry> auxServers)
         {
             var list = new JsonArray();
 
@@ -169,6 +199,25 @@ namespace XrayUI.Services
             else
             {
                 AddNode(list, BuildProxyOutbound(server, ProxyOutboundTag));
+            }
+
+            foreach (var aux in auxServers)
+            {
+                var auxTag = $"outbound_dedicated_{aux.Id}";
+                if (aux.IsChain)
+                {
+                    var (entryServer, exitServer) = ResolveChainServers(aux, availableServers);
+                    var proxy = BuildProxyOutbound(exitServer, auxTag);
+                    var chainEntryTag = $"chain-entry-{aux.Id}";
+                    var chainEntry = BuildProxyOutbound(entryServer, chainEntryTag);
+                    ApplyProxySettings(proxy, chainEntryTag);
+                    AddNode(list, proxy);
+                    AddNode(list, chainEntry);
+                }
+                else
+                {
+                    AddNode(list, BuildProxyOutbound(aux, auxTag));
+                }
             }
 
             var direct = new JsonObject
@@ -848,41 +897,69 @@ namespace XrayUI.Services
             }
         }
 
-        private static JsonObject BuildRouting(AppSettings settings)
+        private static JsonObject BuildRouting(AppSettings settings, IReadOnlyList<ServerEntry> auxServers)
         {
+            JsonObject routing;
             // Global mode bypasses both AdvancedRouting and the smart-mode default template;
             // it always force-routes everything to the proxy outbound after the TUN prefix.
             if (settings.RoutingMode == "global")
             {
-                return BuildGlobalRouting(settings);
+                routing = BuildGlobalRouting(settings);
             }
-
-            // Smart mode: AdvancedRouting (if set) replaces the default routing template.
-            // TUN prefix rules and CustomRules are merged on top, so the user cannot lock
-            // themselves out of TUN-required system traffic by writing a bad advanced JSON.
-            var hasAdvancedRouting = settings.AdvancedRouting is not null;
-            var baseRouting = hasAdvancedRouting
-                ? (JsonObject)settings.AdvancedRouting!.DeepClone()
-                : BuildDefaultRoutingTemplate(settings, includeFallback: false);
-
-            // baseRouting is exclusively owned (fresh clone or fresh build). Build a fresh
-            // rules array so TUN process bypass rules can sit before the UDP/443 quench rule,
-            // while ordinary domain/IP rules still remain behind it.
-            var baseRules = baseRouting["rules"] as JsonArray ?? new JsonArray();
-            var rules = BuildSmartRules(settings, baseRules);
-            baseRouting["rules"] = rules;
-
-            if (!hasAdvancedRouting)
+            else
             {
-                AddDefaultProxyFallbackRule(rules);
+                // Smart mode: AdvancedRouting (if set) replaces the default routing template.
+                // TUN prefix rules and CustomRules are merged on top, so the user cannot lock
+                // themselves out of TUN-required system traffic by writing a bad advanced JSON.
+                var hasAdvancedRouting = settings.AdvancedRouting is not null;
+                var baseRouting = hasAdvancedRouting
+                    ? (JsonObject)settings.AdvancedRouting!.DeepClone()
+                    : BuildDefaultRoutingTemplate(settings, includeFallback: false);
+
+                // baseRouting is exclusively owned (fresh clone or fresh build). Build a fresh
+                // rules array so TUN process bypass rules can sit before the UDP/443 quench rule,
+                // while ordinary domain/IP rules still remain behind it.
+                var baseRules = baseRouting["rules"] as JsonArray ?? new JsonArray();
+                var rules = BuildSmartRules(settings, baseRules);
+                baseRouting["rules"] = rules;
+
+                if (!hasAdvancedRouting)
+                {
+                    AddDefaultProxyFallbackRule(rules);
+                }
+
+                if (baseRouting["domainStrategy"] is null)
+                {
+                    baseRouting["domainStrategy"] = "AsIs";
+                }
+
+                routing = baseRouting;
             }
 
-            if (baseRouting["domainStrategy"] is null)
+            if (auxServers.Count > 0 && routing["rules"] is JsonArray existingRules)
             {
-                baseRouting["domainStrategy"] = "AsIs";
+                var finalRules = new JsonArray();
+                foreach (var aux in auxServers)
+                {
+                    if (!aux.DedicatedPort.HasValue) continue;
+                    AddNode(finalRules, new JsonObject
+                    {
+                        ["type"] = "field",
+                        ["inboundTag"] = CreateStringArray($"inbound_dedicated_{aux.DedicatedPort.Value}"),
+                        ["outboundTag"] = $"outbound_dedicated_{aux.Id}"
+                    });
+                }
+                foreach (var rule in existingRules)
+                {
+                    if (rule != null)
+                    {
+                        AddNode(finalRules, rule.DeepClone());
+                    }
+                }
+                routing["rules"] = finalRules;
             }
 
-            return baseRouting;
+            return routing;
         }
 
         private static JsonObject BuildGlobalRouting(AppSettings settings)
