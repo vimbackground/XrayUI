@@ -1,11 +1,15 @@
 ## ── 1. Portable Runtime Data & User Secrets (CRITICAL) ─────────
 # 包含用户的真实订阅、节点密码、私钥和本地配置，严禁提交到远程仓库
-[Dd]ata/
-xray_config.json
-xray_speedtest.json
+/[Dd]ata/
+/xray_config.json
+/xray_speedtest.json
 *.log
 [Ll]og/
 [Ll]ogs/
+.env
+.env.*
+!.env.example
+!.env.template
 
 ## ── 2. .NET & WinUI Build / Publish Outputs ─────────────────────
 [Bb]in/
@@ -17,7 +21,7 @@ x86/
 ARM/
 ARM64/
 publish/
-out/
+/out/
 artifacts/
 Generated\ Files/
 *.g.cs
@@ -79,9 +83,13 @@ BundleArtifacts/
 
 ## ── 7. Tests & Coverage ─────────────────────────────────────────
 TestResults/
+coverage/
+coverage-report/
 *.trx
 *.coverage
 *.coveragexml
+*.lcov
+lcov.info
 
 ## ── 8. OS System Files ──────────────────────────────────────────
 Thumbs.db
@@ -95,12 +103,10 @@ $RECYCLE.BIN/
 *.temp
 
 ## ── 9. AI Helpers, Agent Specifications & Local Dev Docs ─────────
-.claude/
-.gemini/
-.cursor/
-.windsurf/
-scratch/
+/.claude/
+/.gemini/
+/.cursor/
+/.windsurf/
+/scratch/
 /BuildAndRun.ps1
-[Aa]gent.md
-_[Dd]ev/
-
+/_wip/

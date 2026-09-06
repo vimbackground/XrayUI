@@ -53,6 +53,16 @@
     <ApplicationDefinition Remove="XrayUI.Tests\**" />
   </ItemGroup>
 
+  <!-- vHarness local snapshots and migration backups live under _wip. Exclude
+       them from SDK default globs so copied source files never enter builds. -->
+  <ItemGroup>
+    <Compile Remove="_wip\**" />
+    <Content Remove="_wip\**" />
+    <None Remove="_wip\**" />
+    <Page Remove="_wip\**" />
+    <ApplicationDefinition Remove="_wip\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Default engine binaries (x64). Used for empty RID (`dotnet build` / BuildAndRun.ps1)
          and explicit -r win-x64 publishes. Explicit form avoids silently matching
