@@ -19,6 +19,15 @@ namespace XrayUI.Views
             AutomationProperties.SetName(AppLanguageExpander, L.Personalize_LanguageRegionExpanderAutomationName);
         }
 
+        private void BackToConsoleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((Application.Current as App)?.Window is XrayUI.MainWindow mainWindow
+                && mainWindow.ViewModel.GoBackCommand.CanExecute(null))
+            {
+                mainWindow.ViewModel.GoBackCommand.Execute(null);
+            }
+        }
+
         private async void LanguageRestartButton_Click(object sender, RoutedEventArgs e)
         {
             await ViewModel.ApplyPendingChangesAsync();

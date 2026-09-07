@@ -119,22 +119,29 @@
 
         <!-- Row 1: main control area laid out horizontally in a single row -->
         <Grid Grid.Row="1">
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Spacing="14">
 
-                <!-- 1. 启动/停止按钮 -->
-                <ToggleButton MinWidth="84"
-                              FontSize="13"
-                              FontWeight="SemiBold"
-                              Content="{x:Bind ViewModel.StartStopButtonContent, Mode=OneWay}"
-                              IsChecked="{x:Bind ViewModel.StartStopButtonChecked, Mode=OneWay}"
-                              IsEnabled="{x:Bind ViewModel.CanStartStop, Mode=OneWay}"
-                              Command="{x:Bind ViewModel.StartStopCommand}"
-                              VerticalAlignment="Center" />
+                <!-- 路由状态 -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="4"
+                            VerticalAlignment="Center">
+                    <TextBlock x:Uid="ControlPanel_RoutingLbl"
+                               Text="路由:"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind ViewModel.RoutingModeText, Mode=OneWay}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </StackPanel>
 
-                <!-- 2. 全局代理开关 -->
+                <!-- 全局代理开关 -->
                 <StackPanel Orientation="Horizontal"
                             Spacing="6"
                             VerticalAlignment="Center">
@@ -152,7 +159,7 @@
                                   VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- 3. TUN 模式开关 -->
+                <!-- TUN 模式开关 -->
                 <StackPanel Orientation="Horizontal"
                             Spacing="6"
                             VerticalAlignment="Center">
@@ -170,25 +177,15 @@
                                   VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- 4. 路由状态 -->
-                <StackPanel Orientation="Horizontal"
-                            Spacing="4"
-                            VerticalAlignment="Center">
-                    <TextBlock x:Uid="ControlPanel_RoutingLbl"
-                               Text="路由:"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               VerticalAlignment="Center" />
-                    <TextBlock Text="{x:Bind ViewModel.RoutingModeText, Mode=OneWay}"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center" />
                 </StackPanel>
 
-            </StackPanel>
+                <Button Grid.Column="1"
+                        Content="完全退出"
+                        Command="{x:Bind ViewModel.ExitApplicationCommand}"
+                        FontSize="13"
+                        VerticalAlignment="Center" />
+            </Grid>
         </Grid>
 
     </Grid>
 </UserControl>
-

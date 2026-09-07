@@ -38,21 +38,8 @@
                 <FontIcon Glyph="&#xE90C;"  FontSize="13"  />
             </Button>
 
-            <Button Grid.Column="1"
-                    Click="AppTitleBar_BackRequested"
-                    Visibility="{x:Bind ViewModel.BackButtonVisibility, Mode=OneWay}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    CornerRadius="4"
-                    Margin="6,0,0,0"
-                    Width="30" Height="28"
-                    Padding="0"
-                    VerticalAlignment="Center">
-                <FontIcon Glyph="&#xE72B;"  FontSize="12" />
-            </Button>
-
             <TextBlock x:Uid="MainWindow_TitleText"
-                       Grid.Column="2"
+                       Grid.Column="1"
                        Text="代理控制台"
                        FontSize="13"
                        VerticalAlignment="Center"
@@ -166,23 +153,25 @@
               Margin="16,0,16,16"
               ColumnSpacing="16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.2*" MinWidth="380" MaxWidth="600" />
-                <ColumnDefinition Width="1.5*" MinWidth="400" />
+                <ColumnDefinition Width="1.35*" MinWidth="440" MaxWidth="680" />
+                <ColumnDefinition Width="1.4*" MinWidth="440" />
             </Grid.ColumnDefinitions>
 
             <views:ServerListControl Grid.Column="0"
                                       x:Name="ServerList"
                                       ViewModel="{x:Bind ViewModel.ServerList, Mode=OneTime}"
                                       SwitchToSelectedServerCommand="{x:Bind ViewModel.SwitchToSelectedServerCommand, Mode=OneTime}"
-                                      ToggleServerConnectionCommand="{x:Bind ViewModel.ToggleServerConnectionCommand, Mode=OneTime}" />
+                                      ToggleServerConnectionCommand="{x:Bind ViewModel.ToggleServerConnectionCommand, Mode=OneTime}"
+                                      SetPrimaryProxyCommand="{x:Bind ViewModel.SetPrimaryProxyCommand, Mode=OneTime}" />
 
             <Grid Grid.Column="1"
                   VerticalAlignment="Stretch">
 
                 <!-- Main view: server detail + control panel -->
-                <Grid Visibility="{x:Bind ViewModel.MainContentVisibility, Mode=OneWay}">
+                <Grid Visibility="{x:Bind ViewModel.MainContentVisibility, Mode=OneWay}"
+                      VerticalAlignment="Top">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 

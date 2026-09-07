@@ -1,0 +1,35 @@
+{
+  "$schema": "schemas/naming_rules.schema.json",
+  "schema_version": 1,
+  "registry": "vharness-naming",
+  "product_name": "vHarness",
+  "machine_name": "vharness",
+  "styles": {
+    "python_module": "snake_case",
+    "data_field": "snake_case",
+    "cli_option": "kebab-case",
+    "document_id": "UPPER-KEBAB-CASE"
+  },
+  "canonical_paths": {
+    "agent_entry": "Agent.md",
+    "system_root": "_System",
+    "standards_root": "_System/standards",
+    "architecture_root": "_System/architecture",
+    "state_root": "_System/memory",
+    "reviews_root": "_System/reviews",
+    "recovery_root": "_System/recovery",
+    "tools_root": "_System/tools",
+    "fusion_root": "_System/tools/fusion",
+    "developer_root": "_Dev",
+    "sop_root": "_Dev/SOP",
+    "manuals_root": "_Dev/manuals",
+    "references_root": "_Dev/References",
+    "developer_box": "_Dev/box"
+  },
+  "non_framework_business_directories": ["Tasks", "Projects"],
+  "rules": [
+    "Canonical path case is significant.",
+    "Tasks and Projects are host Project Content, never required Framework Infrastructure.",
+    "Every migration document includes schema_version and migration_id."
+  ]
+}

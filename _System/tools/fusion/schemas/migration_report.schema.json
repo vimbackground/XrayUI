@@ -1,0 +1,9 @@
+{
+  "$id": "fusion/migration_report.schema.json",
+  "type": "object",
+  "required": ["schema_version", "migration_id", "status", "applied", "verified"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "status": {"enum": ["applied", "verified", "rolled_back", "failed"]}
+  }
+}

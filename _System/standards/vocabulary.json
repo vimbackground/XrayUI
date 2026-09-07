@@ -1,0 +1,24 @@
+{
+  "$schema": "schemas/vocabulary.schema.json",
+  "schema_version": 1,
+  "registry": "vharness-vocabulary",
+  "terms": [
+    {"id": "vharness_framework", "en": "vHarness Framework", "zh": "vHarness 框架", "definition": "Agent governance, state, migration, and verification framework."},
+    {"id": "framework_source", "en": "Framework Source", "zh": "框架源码", "definition": "The single authoritative implementation in the vHarness source repository."},
+    {"id": "distribution_artifact", "en": "Distribution Artifact", "zh": "发布物", "definition": "Generated or verified deliverable under _Dist."},
+    {"id": "host_repository", "en": "Host Repository", "zh": "宿主仓库", "definition": "A repository adopting or already using vHarness."},
+    {"id": "project_content", "en": "Project Content", "zh": "项目内容", "definition": "Host-owned source, documents, data, and business directories."},
+    {"id": "framework_infrastructure", "en": "Framework Infrastructure", "zh": "框架基础设施", "definition": "Agent.md, _System, and governed capabilities installed in a host."},
+    {"id": "developer_resources", "en": "Developer Resources", "zh": "开发资料", "definition": "SOPs, manuals, references, and developer-managed material in _Dev."},
+    {"id": "canonical_path", "en": "Canonical Path", "zh": "规范路径", "definition": "The registered current location for a framework artifact."},
+    {"id": "legacy_path", "en": "Legacy Path", "zh": "旧路径", "definition": "A previous or foreign framework path; not an automatic deletion instruction."},
+    {"id": "managed_artifact", "en": "Managed Artifact", "zh": "受管制品", "definition": "Generated artifact carrying source and version provenance."},
+    {"id": "project_extension", "en": "Project Extension", "zh": "项目扩展", "definition": "Host-specific governance or tooling preserved outside the standard set."},
+    {"id": "work_item", "en": "Work Item", "zh": "工作项", "definition": "A governance progress record; never a top-level business container.", "deprecated_aliases": ["task"]},
+    {"id": "migration_plan", "en": "Migration Plan", "zh": "迁移计划", "definition": "A machine-readable execution contract with frozen input fingerprints."},
+    {"id": "migration_run", "en": "Migration Run", "zh": "迁移运行", "definition": "Transactional application of an approved Migration Plan."},
+    {"id": "repair_run", "en": "Repair Run", "zh": "补救运行", "definition": "A Migration Run that repairs a legacy upgrade result."},
+    {"id": "decision_item", "en": "Decision Item", "zh": "决策项", "definition": "An action requiring human adjudication."},
+    {"id": "verification_contract", "en": "Verification Contract", "zh": "验证契约", "definition": "Assertions that must hold before and after migration."}
+  ]
+}

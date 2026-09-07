@@ -1,0 +1,9 @@
+{
+  "$id": "standards/document_metadata.schema.json",
+  "type": "object",
+  "required": ["id", "title", "document_type", "status", "version", "project", "owner", "audience", "scope", "created_at", "updated_at", "tags"],
+  "properties": {
+    "project": {"const": "vHarness"},
+    "status": {"enum": ["active", "archived", "deprecated", "draft", "in_progress", "superseded", "verified"]}
+  }
+}

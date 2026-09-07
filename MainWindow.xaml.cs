@@ -50,9 +50,13 @@ namespace XrayUI
         private const uint WmHotkey = 0x0312;
         private const uint WmNclButtonDown   = 0x00A1;
         private const uint WmNclButtonDblClk = 0x00A3;
+        // Explorer broadcasts this registered message after it rebuilds the notification area.
+        // A previously successful Shell_NotifyIcon registration is then gone even though the
+        // managed TrayIcon object still exists.
+        private static readonly uint WmTaskbarCreated = RegisterWindowMessage("TaskbarCreated");
         private const int HtCaption = 0x0002;
-        private const int FullWindowWidth = 950;
-        private const int FullWindowHeight = 600;
+        private const int FullWindowWidth = 1080;
+        private const int FullWindowHeight = 660;
         private const int FullModeMinWidth = 430;
         private const int FullModeMinHeight = 260;
         private const int MiniWindowWidth = 330;
@@ -108,6 +112,7 @@ namespace XrayUI
             // realize it lazily into PersonalizeHost on first show — saves the
             // entire subtree from cold-start construction. See OnViewModelPropertyChanged.
             ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+            ViewModel.ExitRequested += (_, _) => ExitApplication();
 
             _miniDragRegion = (Border)_rootElement.FindName("MiniDragRegion");
             _miniExpandButton = (Button)_rootElement.FindName("MiniExpandButton");
@@ -148,7 +153,17 @@ namespace XrayUI
                 AppWindow.Hide();
             }
 
-            await ViewModel.InitializeAsync(isBootLaunch: _startMinimized);
+            try
+            {
+                await ViewModel.InitializeAsync(isBootLaunch: _startMinimized);
+            }
+            catch (Exception ex)
+            {
+                // Initialization must never turn one bad portable-data file into a silent
+                // WinExe crash. SettingsService preserves malformed JSON for recovery; this is
+                // the final boundary for any other unexpected startup fault.
+                Debug.WriteLine($"[Startup] Initialization failed: {ex}");
+            }
             RegisterGlobalHotkeys();
 
             if (_startMinimized && !HideToTray())
@@ -234,6 +249,26 @@ namespace XrayUI
             if (path is null || !File.Exists(path)) return;
             AppWindow.SetIcon(path);
             _trayIcon?.SetIcon(path);
+        }
+
+        private void RecreateTrayIcon()
+        {
+            if (_allowClose || _isSessionEnding) return;
+            var path = _trayShowsRunning ? _runningIconPath : _idleIconPath;
+            if (path is null || !File.Exists(path)) return;
+
+            try
+            {
+                _trayIcon?.Dispose();
+                _trayIcon = TryCreateTrayIcon(path);
+                Debug.WriteLine(_trayIcon is null
+                    ? "[Tray] Notification-area icon recreation failed."
+                    : "[Tray] Notification-area icon recreated.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Tray] Notification-area icon recreation failed: {ex.Message}");
+            }
         }
 
         private MenuFlyout BuildTrayContextMenu()
@@ -599,6 +634,12 @@ namespace XrayUI
 
         private void OnWindowMessageReceived(object? sender, WindowMessageEventArgs e)
         {
+            if (e.Message.MessageId == WmTaskbarCreated)
+            {
+                RecreateTrayIcon();
+                return;
+            }
+
             if (e.Message.MessageId == WmNclButtonDblClk && ViewModel.IsMiniMode)
             {
                 e.Handled = true;
@@ -745,6 +786,9 @@ namespace XrayUI
 
         [DllImport("user32.dll")]
         private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern uint RegisterWindowMessage(string lpString);
 
         [DllImport("kernel32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

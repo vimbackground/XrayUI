@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "registry": "vharness-fusion-rules",
+  "standards": {
+    "vocabulary": "../../../standards/vocabulary.json",
+    "naming": "../../../standards/naming_rules.json",
+    "aliases": "../../../standards/compatibility_aliases.json"
+  },
+  "managed_roots": ["Agent.md", "_System", "_Dev", "plugins"],
+  "protected_paths": ["_Dev/box"],
+  "project_content_paths": ["Tasks", "Projects"],
+  "semantic_merge_paths": [
+    "Agent.md",
+    "_System/memory/current_state.md",
+    "_System/architecture/task_breakdown.md"
+  ],
+  "template_placeholder_markers": [
+    "current_phase: initialization",
+    "next_action: confirm_project_goal",
+    "尚无业务变更或半成品"
+  ]
+}

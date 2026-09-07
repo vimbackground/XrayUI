@@ -1,0 +1,10 @@
+{
+  "$id": "standards/vocabulary.schema.json",
+  "type": "object",
+  "required": ["schema_version", "registry", "terms"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "registry": {"const": "vharness-vocabulary"},
+    "terms": {"type": "array", "items": {"type": "object", "required": ["id", "en", "zh", "definition"]}}
+  }
+}

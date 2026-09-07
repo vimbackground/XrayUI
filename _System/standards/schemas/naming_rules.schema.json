@@ -1,0 +1,12 @@
+{
+  "$id": "standards/naming_rules.schema.json",
+  "type": "object",
+  "required": ["schema_version", "registry", "product_name", "machine_name", "canonical_paths"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "registry": {"const": "vharness-naming"},
+    "product_name": {"const": "vHarness"},
+    "machine_name": {"const": "vharness"},
+    "canonical_paths": {"type": "object"}
+  }
+}

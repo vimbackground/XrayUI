@@ -30,6 +30,7 @@ namespace XrayUI.ViewModels
         public ControlPanelViewModel ControlPanel { get; }
         public PersonalizeViewModel  Personalize  { get; }
         public AppSettingsViewModel  AppSettings  { get; }
+        public event EventHandler? ExitRequested;
 
         public Visibility MainContentVisibility => (!_showPersonalize && !_showAppSettings) ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PersonalizeVisibility  => _showPersonalize ? Visibility.Visible   : Visibility.Collapsed;
@@ -125,6 +126,7 @@ namespace XrayUI.ViewModels
             AppSettings.PropertyChanged  += OnAppSettingsPropertyChanged;
 
             ControlPanel.ShowPersonalizeRequested += (_, _) => OpenPersonalize();
+            ControlPanel.ExitRequested += (_, _) => ExitRequested?.Invoke(this, EventArgs.Empty);
             Personalize.CloseRequested            += (_, _) => ClosePersonalize();
 
             ControlPanel.ShowAppSettingsRequested += (_, _) => OpenAppSettings();
@@ -154,6 +156,7 @@ namespace XrayUI.ViewModels
             // Load settings and apply to ControlPanel
             var s = await _settings.LoadSettingsAsync();
             ControlPanel.LocalPort             = s.LocalMixedPort;
+            ServerList.SetPrimaryProxyPort(s.LocalMixedPort);
             ControlPanel.AllowLanConnections   = s.AllowLanConnections;
             ControlPanel.RoutingMode           = s.RoutingMode;
             ControlPanel.IsSystemProxyEnabled  = s.IsSystemProxyEnabled;
@@ -384,6 +387,15 @@ namespace XrayUI.ViewModels
             if (server is null) return;
             if (ControlPanel.IsReapplying) return;
 
+            // An auxiliary proxy is controlled independently from the primary proxy. Reapplying
+            // the single Xray core may briefly interrupt traffic, but it never changes the
+            // selected primary server or the enabled state of other auxiliary proxies.
+            if (ServerList.EnableMultiNodeRouting && server.DedicatedPort is > 0)
+            {
+                await ServerList.ToggleDedicatedPort(server);
+                return;
+            }
+
             // Double clicking an already connected server stops/disconnects it
             if (ControlPanel.IsRunning && server.IsActive)
             {
@@ -397,13 +409,21 @@ namespace XrayUI.ViewModels
             // If proxy is currently running, switch to this new server
             if (ControlPanel.IsRunning)
             {
-                await ControlPanel.SwitchToSelectedServerAsync();
+                await ControlPanel.ConnectToServerAsync(server);
             }
             else
             {
                 // If stopped, start proxy with this server
-                await ControlPanel.StartStopCommand.ExecuteAsync(null);
+                await ControlPanel.ConnectToServerAsync(server);
             }
+        }
+
+        [RelayCommand]
+        private async Task SetPrimaryProxyAsync(ServerEntry? server)
+        {
+            if (server is null || ControlPanel.IsReapplying) return;
+            ServerList.SelectedServer = server;
+            await ControlPanel.ConnectToServerAsync(server);
         }
 
         private void OpenPersonalize()
@@ -466,6 +486,7 @@ namespace XrayUI.ViewModels
             if (e.PropertyName == nameof(AppSettingsViewModel.LocalPort))
             {
                 ControlPanel.LocalPort = AppSettings.LocalPort;
+                ServerList.SetPrimaryProxyPort(AppSettings.LocalPort);
             }
             else if (e.PropertyName == nameof(AppSettingsViewModel.AllowLanConnections))
             {
@@ -512,6 +533,7 @@ namespace XrayUI.ViewModels
                 // logically active. Clear so the UI doesn't claim a stale Active state.
                 UpdateActiveServer(null);
                 ServerList.IsProxyRunning = ControlPanel.IsRunning;
+                ServerList.SetPrimaryProxyPort(ControlPanel.LocalPort);
                 OnPropertyChanged(nameof(ActiveServerName));
                 OnPropertyChanged(nameof(TrayTooltip));
             }
@@ -554,6 +576,12 @@ namespace XrayUI.ViewModels
 
         private void OnControlPanelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(ControlPanelViewModel.LocalPort))
+            {
+                ServerList.SetPrimaryProxyPort(ControlPanel.LocalPort);
+                return;
+            }
+
             if (e.PropertyName == nameof(ControlPanelViewModel.IsReapplying))
             {
                 SwitchToSelectedServerCommand.NotifyCanExecuteChanged();
@@ -604,14 +632,19 @@ namespace XrayUI.ViewModels
             }
 
             if (previous is not null)
+            {
                 previous.IsActive = false;
+            }
 
             _activeServer = server;
             _activeLatencyText = server is not null ? ServerDetail.LatencyText : string.Empty;
             ServerDetail.ActiveServer = server;
 
             if (server is not null)
+            {
                 server.IsActive = true;
+                server.RuntimeProxyPort = ControlPanel.LocalPort;
+            }
         }
 
         private void ClearActiveServerFlags()
@@ -621,4 +654,3 @@ namespace XrayUI.ViewModels
         }
     }
 }
-

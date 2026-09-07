@@ -274,94 +274,97 @@
                         <StackPanel Orientation="Vertical"
                                     Spacing="6"
                                     Margin="0,12,0,12">
-                            <Grid VerticalAlignment="Center">
+                            <Grid VerticalAlignment="Center"
+                                  ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBlock Text="{x:Bind Name, Mode=OneWay}"
-                                           FontSize="16"
-                                           FontWeight="SemiBold"
-                                           Grid.Column="0"
-                                           TextTrimming="CharacterEllipsis" />
-
-                                <StackPanel Grid.Column="1"
-                                            Orientation="Horizontal"
-                                            Spacing="6"
-                                            Margin="8,0,0,0">
-                                    <!-- Dedicated Port Badge -->
-                                    <Border Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                            CornerRadius="3"
-                                            Padding="6,2"
-                                            Visibility="{x:Bind IsDedicatedPortActive, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Text="{x:Bind views:ServerListControl.FormatDedicatedBadge(DedicatedPort), Mode=OneWay}"
-                                                   FontSize="11.5"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="White" />
-                                    </Border>
-
-                                    <!-- Main Active Badge -->
-                                    <Border Background="{ThemeResource SystemFillColorSuccessBrush}"
-                                            CornerRadius="3"
-                                            Padding="6,2"
-                                            Visibility="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                            Opacity="{x:Bind views:ServerListControl.ActiveBadgeOpacity(IsActive), Mode=OneWay}"
-                                            Scale="{x:Bind views:ServerListControl.ActiveBadgeScale(IsActive), Mode=OneWay}"
-                                            SizeChanged="ActiveBadge_SizeChanged">
-                                        <Border.OpacityTransition>
-                                            <ScalarTransition Duration="0:0:0.18" />
-                                        </Border.OpacityTransition>
-                                        <Border.ScaleTransition>
-                                            <Vector3Transition Duration="0:0:0.18" />
-                                        </Border.ScaleTransition>
-                                        <TextBlock x:Uid="ServerList_ActivatedBadge"
-                                                   Text="● Activated"
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="White" />
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
+                                <!-- Left information area: name plus its nearby latency, then endpoint details. -->
                                 <StackPanel Grid.Column="0"
-                                            Orientation="Horizontal"
-                                            Spacing="8"
-                                            Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                    <TextBlock Text="{x:Bind Host, Mode=OneWay}"
-                                               MaxWidth="180"
-                                               TextTrimming="CharacterEllipsis"
-                                               TextWrapping="NoWrap"
-                                               MaxLines="1"
-                                               FontSize="13"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Text="{x:Bind Port, Mode=OneWay}"
-                                               FontSize="13"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Text="{x:Bind DisplayProtocol, Mode=OneWay}"
-                                               FontSize="13"
+                                            Spacing="6">
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="6">
+                                        <TextBlock Text="{x:Bind Name, Mode=OneWay}"
+                                                   MaxWidth="210"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Text="{x:Bind LatencyText, Mode=OneWay}"
+                                                   Visibility="{x:Bind HasLatency, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{x:Bind views:ServerListControl.LatencyForeground(LatencyMs), Mode=OneWay}" />
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="8"
+                                                Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                        <TextBlock Text="{x:Bind Host, Mode=OneWay}"
+                                                   MaxWidth="180"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   TextWrapping="NoWrap"
+                                                   MaxLines="1"
+                                                   FontSize="16"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind Port, Mode=OneWay}"
+                                                   FontSize="16"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind DisplayProtocol, Mode=OneWay}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
+                                    </StackPanel>
+                                    <TextBlock x:Uid="ServerList_ChainBadgeText"
+                                               Text="ProxyChain"
+                                               Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                               FontSize="16"
                                                FontWeight="SemiBold"
                                                Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
                                 </StackPanel>
-                                <TextBlock x:Uid="ServerList_ChainBadgeText"
-                                           Text="ProxyChain"
-                                           Visibility="{x:Bind IsChain, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{x:Bind Protocol, Mode=OneWay, Converter={StaticResource ProtocolToBrushConverter}}" />
 
-                                <TextBlock Grid.Column="1"
-                                           Text="{x:Bind LatencyText, Mode=OneWay}"
-                                           Visibility="{x:Bind HasLatency, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                           FontSize="13.5"
-                                           FontWeight="SemiBold"
-                                           Foreground="{x:Bind views:ServerListControl.LatencyForeground(LatencyMs), Mode=OneWay}" />
+                                <!-- Each row exposes exactly one action: auxiliary when configured in multi-proxy mode, otherwise primary. -->
+                                <StackPanel Grid.Column="1"
+                                            Width="166"
+                                            Spacing="6"
+                                            HorizontalAlignment="Right">
+                                    <Button Tag="{x:Bind}"
+                                            Click="ProxyActionButton_Click"
+                                            Padding="8,2"
+                                            MinHeight="0"
+                                            FontSize="16"
+                                            Foreground="White"
+                                            Background="{x:Bind IsCurrentProxyActionActive, Mode=OneWay, Converter={StaticResource RunningStatusBrushConverter}}"
+                                            BorderBrush="{x:Bind IsCurrentProxyActionActive, Mode=OneWay, Converter={StaticResource RunningStatusBrushConverter}}"
+                                            HorizontalAlignment="Right"
+                                            Content="{x:Bind views:ServerListControl.ProxyActionText(UsesAuxiliaryProxyAction, IsCurrentProxyActionActive), Mode=OneWay}" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="12"
+                                                HorizontalAlignment="Right"
+                                                Visibility="{x:Bind UsesAuxiliaryProxyAction, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                        <TextBlock Text="{x:Bind views:ServerListControl.PrimaryPortText(RuntimeProxyPort), Mode=OneWay}"
+                                                   FontSize="13"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind views:ServerListControl.ConnectionStatusText(IsActive), Mode=OneWay}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource RunningStatusBrushConverter}}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="12"
+                                                HorizontalAlignment="Right"
+                                                Visibility="{x:Bind UsesAuxiliaryProxyAction, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="{x:Bind views:ServerListControl.AuxiliaryPortText(DedicatedPort), Mode=OneWay}"
+                                                   FontSize="13"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind views:ServerListControl.ConnectionStatusText(IsDedicatedPortActive), Mode=OneWay}"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{x:Bind IsDedicatedPortActive, Mode=OneWay, Converter={StaticResource RunningStatusBrushConverter}}" />
+                                    </StackPanel>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Grid>

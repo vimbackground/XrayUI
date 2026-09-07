@@ -19,6 +19,7 @@ namespace XrayUI.Views
         public ServerListViewModel ViewModel { get; set; } = null!;
         public IAsyncRelayCommand? SwitchToSelectedServerCommand { get; set; }
         public IAsyncRelayCommand<ServerEntry?>? ToggleServerConnectionCommand { get; set; }
+        public IAsyncRelayCommand<ServerEntry?>? SetPrimaryProxyCommand { get; set; }
 
         public ServerListControl()
         {
@@ -163,6 +164,21 @@ namespace XrayUI.Views
             await command.ExecuteAsync(null);
         }
 
+        private async void ProxyActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: ServerEntry server })
+                return;
+
+            if (server.UsesAuxiliaryProxyAction)
+            {
+                await ViewModel.ToggleDedicatedPort(server);
+                return;
+            }
+
+            if (ToggleServerConnectionCommand is null) return;
+            await ToggleServerConnectionCommand.ExecuteAsync(server);
+        }
+
         private void ServerItem_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
         {
             if (ViewModel.HasMultipleSelectedServers)
@@ -205,24 +221,35 @@ namespace XrayUI.Views
             var flyout = new MenuFlyout();
             var server = ViewModel.SelectedServer;
 
-            if (ViewModel.EnableMultiNodeRouting && server != null && server.IsActive != true)
+            if (server != null)
             {
-                var isDedicatedActive = server.IsDedicatedPortActive;
-                var toggleDedicatedText = isDedicatedActive ? "停止独立端口分流" : "开启独立端口分流";
-                var toggleDedicatedItem = CreateMenuItem(toggleDedicatedText, "");
-                toggleDedicatedItem.Click += (_, _) => ViewModel.ToggleDedicatedPortCommand.Execute(server);
-
-                var editDedicatedItem = CreateMenuItem("设置独立分流端口...", "");
-                editDedicatedItem.Click += (_, _) => ViewModel.EditDedicatedPortCommand.Execute(server);
-
-                flyout.Items.Add(toggleDedicatedItem);
-                flyout.Items.Add(editDedicatedItem);
-
-                if (server.DedicatedPort.HasValue && server.DedicatedPort.Value > 0)
+                var primaryItem = CreateMenuItem("设为主代理", "");
+                primaryItem.Click += async (_, _) =>
                 {
-                    var copyAddressItem = CreateMenuItem($"复制代理地址 (127.0.0.1:{server.DedicatedPort.Value})", "");
-                    copyAddressItem.Click += (_, _) => ViewModel.CopyDedicatedPortAddressCommand.Execute(server);
-                    flyout.Items.Add(copyAddressItem);
+                    if (SetPrimaryProxyCommand is not null)
+                        await SetPrimaryProxyCommand.ExecuteAsync(server);
+                };
+                flyout.Items.Add(primaryItem);
+
+                if (ViewModel.EnableMultiNodeRouting && server.IsActive != true)
+                {
+                    var isDedicatedActive = server.IsDedicatedPortActive;
+                    var toggleDedicatedText = isDedicatedActive ? "停止辅助代理" : "启动辅助代理";
+                    var toggleDedicatedItem = CreateMenuItem(toggleDedicatedText, "");
+                    toggleDedicatedItem.Click += (_, _) => ViewModel.ToggleDedicatedPortCommand.Execute(server);
+
+                    var editDedicatedItem = CreateMenuItem("设置辅助代理端口...", "");
+                    editDedicatedItem.Click += (_, _) => ViewModel.EditDedicatedPortCommand.Execute(server);
+
+                    flyout.Items.Add(toggleDedicatedItem);
+                    flyout.Items.Add(editDedicatedItem);
+
+                    if (server.DedicatedPort.HasValue && server.DedicatedPort.Value > 0)
+                    {
+                        var copyAddressItem = CreateMenuItem($"复制代理地址 (127.0.0.1:{server.DedicatedPort.Value})", "");
+                        copyAddressItem.Click += (_, _) => ViewModel.CopyDedicatedPortAddressCommand.Execute(server);
+                        flyout.Items.Add(copyAddressItem);
+                    }
                 }
 
                 flyout.Items.Add(new MenuFlyoutSeparator());
@@ -253,8 +280,16 @@ namespace XrayUI.Views
             return flyout;
         }
 
-        public static string FormatDedicatedBadge(int? port) =>
-            port.HasValue ? $"🎧 专口 :{port.Value}" : "🎧 专口";
+        public static string ProxyActionText(bool auxiliary, bool isActive) => auxiliary
+            ? (isActive ? "关闭辅代理" : "启用辅代理")
+            : (isActive ? "关闭主代理" : "启用主代理");
+
+        public static string PrimaryPortText(int port) => $"主端口 :{port}";
+
+        public static string AuxiliaryPortText(int? port) =>
+            port.HasValue ? $"辅端口 :{port.Value}" : "辅端口 未配置";
+
+        public static string ConnectionStatusText(bool isActive) => isActive ? "已连接" : "未连接";
 
         private static MenuFlyoutItem CreateMenuItem(string text, string glyph)
         {

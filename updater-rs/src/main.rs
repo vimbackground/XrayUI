@@ -234,6 +234,17 @@ fn copy_overwrite(source: &Path, dest: &Path, log: &mut Logger) -> std::io::Resu
     let mut copied = 0usize;
     for src_file in enumerate_files(source)? {
         let rel = src_file.strip_prefix(source).unwrap_or(&src_file);
+
+        // Portable configuration is user data. A correct release archive never contains it,
+        // but preserve it defensively if a manually-built or malformed archive does.
+        let is_data_file = rel.components().next()
+            .and_then(|component| component.as_os_str().to_str())
+            .map(|part| part.eq_ignore_ascii_case("data"))
+            .unwrap_or(false);
+        if is_data_file {
+            log.log(&format!("Preserved user data file '{}'.", rel.display()));
+            continue;
+        }
         let dst_file = dest.join(rel);
 
         if let Some(parent) = dst_file.parent() {

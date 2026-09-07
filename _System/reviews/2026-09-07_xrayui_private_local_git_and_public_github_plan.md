@@ -1,0 +1,102 @@
+---
+id: PLAN-XRAYUI-PRIVATE-LOCAL-GIT-PUBLIC-GITHUB-20260907
+title: XrayUI 本地私有 Git 与公开 GitHub 发布隔离方案
+document_type: plan
+status: draft
+version: 1.0.0
+project: XrayUI
+owner: XrayUI maintainers
+audience:
+  - developer
+  - agent
+scope: _System/reviews
+created_at: 2026-09-07T00:00:00+08:00
+updated_at: 2026-09-07T00:00:00+08:00
+tags:
+  - xrayui
+  - git
+  - github
+  - release
+  - privacy
+---
+
+# XrayUI 本地私有 Git 与公开 GitHub 发布隔离方案
+
+## 1. 事实基线
+
+- 当前本机 `main` 在公开远端 `origin/main` 之后有本地提交；这些本地提交已跟踪 `_Dev/`、`_System/`、`Agent.md` 和 `XrayUI.code-workspace`。
+- 当前 `origin/main` 仍在公开的 1.1.0 基线，未包含上述私有目录或文件；`_wip/` 已被忽略且未跟踪。
+- Git 的忽略规则只对未跟踪文件生效：如果直接推送当前本机 `main`，即使随后新增 `.gitignore`，先前已经提交的私有文件及其历史仍会上传。
+- GitHub Release 工作流由推送到 `main` 触发，因此公开分支必须是没有私有目录、且已完成产品代码审查的干净历史。
+
+## 2. 目标与非目标
+
+### 目标
+
+1. 保留当前本地 Git 历史、快照、SOP、Agent 规则和工作区文件，继续用于日常开发与本地版本管理。
+2. 建立仅用于公开 GitHub 推送的干净本地分支与独立工作树；该分支从当前 `origin/main` 公开基线开始，永不包含私有文件或其提交历史。
+3. 每次公开发布前，只将经清单审查的产品代码、测试、资源、发布工作流、版本和 changelog 同步到公开工作树，再从该工作树推送到 `origin/main`。
+4. 在公开分支新增忽略规则，并增加本地推送前路径审查，阻止以下路径进入待推送提交：`_Dev/`、`_System/`、`_wip/`、`Agent.md`、`XrayUI.code-workspace`。
+
+### 非目标
+
+- 不删除当前本地私有分支、私有提交、快照或开发资料。
+- 不重写、强推或清理当前 GitHub 公开历史；经核对，当前公开历史中没有本方案禁止的路径。
+- 不在本方案实施时创建 GitHub Release、Git tag 或远程推送；真正推送仍需开发者单独确认。
+- 不把私有资料自动同步到另一个远程私有仓库；如需异地备份，另案决定私有远端。
+
+## 3. 推荐工作方式
+
+```text
+当前工作树 / 私有本地分支
+  ├─ 产品源码、测试、发布配置
+  ├─ _Dev/、_System/、_wip/、Agent.md、工作区文件
+  └─ 仅本地提交，绝不推送到 origin
+
+独立公开工作树 / public-main 分支
+  ├─ 从 origin/main 建立干净历史
+  ├─ 仅接收经审核的公开产品文件
+  ├─ 忽略私有路径并在推送前检查
+  └─ 仅在开发者确认发布时推送到 origin/main
+```
+
+### 为什么不只使用 `.gitignore`
+
+`.gitignore` 不能删除已经提交的文件，也不能从提交历史中隐藏文件。因此它只能作为公开分支的第二道保护，不能替代分支和历史隔离。
+
+## 4. 变更清单
+
+### [MODIFY]
+
+- `.gitignore`（仅公开分支）：新增 `_Dev/`、`_System/`、`_wip/`、`Agent.md`、`XrayUI.code-workspace` 忽略规则，防止公开工作树中误添加私有文件。
+- `.github/workflows/release.yml`：不改变发布逻辑；实施时仅验证其继续以公开 `main` 为触发源，避免扩大发布范围。
+- `_System/architecture/task_breakdown.md`、`_System/memory/current_state.md`：记录私有本地分支、公开工作树、推送前审查与远程推送 defer 状态。
+- 本方案：获批后转为 `in_progress`，验收完成后转为 `verified`。
+
+### [NEW]
+
+- 本地私有分支：保存当前工作树和私有历史，不配置为向 `origin` 推送的发布源。
+- 本地公开分支与独立工作树：从 `origin/main` 创建，只承载允许公开的产品内容。
+- 本地推送前审查脚本或 Git hook：检查即将推送的提交范围，发现任何禁止路径即以失败退出；脚本本身不含私有内容。
+- 公开同步清单：明确允许的产品目录和文件，并要求每次发布前审查新增、修改和删除文件。
+
+### [DELETE]
+
+- 无物理文件或 Git 历史删除。
+
+## 5. 实施与验收
+
+1. 获批后创建并验证实施前快照；记录本地当前分支、`origin/main` 基线和禁止路径的远端空结果。
+2. 将当前本地状态固定到私有分支；从 `origin/main` 创建独立公开工作树和公开分支，确认该工作树中不存在禁止路径。
+3. 建立公开同步清单和推送前路径审查；用正例（产品源码）和反例（每个禁止路径）验证审查结果。
+4. 将当前待发布的产品修改按清单同步到公开工作树，检查其提交历史与待推送差异均不含禁止路径；本阶段不执行 push。
+5. 验收：本地私有工作树保持不变；公开工作树可构建、测试与生成发布物；禁止路径在公开工作树、提交历史和待推送范围中均为零；`git status`、`git check-ignore`、Host 验证和 `git diff --check` 通过。
+6. 未来实际发布时，开发者单独确认后，只从公开工作树执行推送；GitHub Release 工作流继续从公开 `main` 生成 Release 与更新说明。
+
+## 6. 风险、回滚与决策
+
+- 风险：从当前私有 `main` 直接推送会泄露已提交的私有历史。控制方式是禁止直接推送私有分支，只允许干净公开工作树进入发布流程。
+- 风险：同步产品改动时遗漏文件或混入私有文件。控制方式是使用显式 allowlist、提交前差异审查和推送前路径审查三层校验。
+- 风险：本地私有资料只在一台机器保存。控制方式是本方案保持 defer；如需异地备份，另案设置受控私有远端。
+- 回滚：删除公开工作树和未推送的公开分支即可；私有分支、当前工作树、快照和 `origin/main` 均不受影响。
+- Decision Item：adopt“私有本地分支 + 从 `origin/main` 派生的公开工作树”模式；禁止路径为 `_Dev/`、`_System/`、`_wip/`、`Agent.md`、`XrayUI.code-workspace`；发布前必须单独确认推送。拒绝仅依赖 `.gitignore` 的方案。

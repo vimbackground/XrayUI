@@ -109,4 +109,5 @@ $RECYCLE.BIN/
 /.windsurf/
 /scratch/
 /BuildAndRun.ps1
+/_Dist/
 /_wip/

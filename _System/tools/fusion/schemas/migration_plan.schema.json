@@ -1,0 +1,11 @@
+{
+  "$id": "fusion/migration_plan.schema.json",
+  "type": "object",
+  "required": ["schema_version", "migration_id", "mode", "assets", "target", "actions", "decision_items"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "mode": {"enum": ["fusion", "repair"]},
+    "actions": {"type": "array"},
+    "decision_items": {"type": "array"}
+  }
+}

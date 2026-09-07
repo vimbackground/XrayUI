@@ -787,12 +787,12 @@ namespace XrayUI.Services
             var criticalBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
 
             var dialog = CreateDialog();
-            dialog.Title = $"独立端口分流 - {server.Name}";
+            dialog.Title = $"辅助代理端口 - {server.Name}";
             dialog.PrimaryButtonText = L.Dialog_Save;
             dialog.CloseButtonText = L.Dialog_Cancel;
             if (server.DedicatedPort.HasValue)
             {
-                dialog.SecondaryButtonText = "清除独立端口";
+                dialog.SecondaryButtonText = "移除辅助代理端口";
             }
             dialog.DefaultButton = ContentDialogButton.Primary;
 
@@ -871,7 +871,7 @@ namespace XrayUI.Services
                 {
                     new TextBlock
                     {
-                        Text = "为当前节点分配独立本地监听端口，第三方软件可直接填入该端口定向分流上网：",
+                        Text = "为当前节点分配辅助代理端口，第三方软件可直接填入该端口使用此节点：",
                         TextWrapping = TextWrapping.Wrap,
                         FontSize = 13,
                         Opacity = 0.85

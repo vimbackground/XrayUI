@@ -161,6 +161,16 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial ObservableCollection<ServerEntry> Servers { get; set; }
 
+        private int _primaryProxyPort = 16890;
+
+        public void SetPrimaryProxyPort(int port)
+        {
+            if (port is < 1 or > 65535) return;
+            _primaryProxyPort = port;
+            foreach (var server in Servers)
+                server.RuntimeProxyPort = port;
+        }
+
         partial void OnServersChanging(ObservableCollection<ServerEntry> oldValue, ObservableCollection<ServerEntry> newValue)
         {
             if (oldValue is not null)
@@ -535,6 +545,15 @@ namespace XrayUI.ViewModels
 
         private void OnServersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            if (e.NewItems is not null)
+            {
+                foreach (var server in e.NewItems.OfType<ServerEntry>())
+                {
+                    server.ShowAuxiliaryProxyUi = EnableMultiNodeRouting;
+                    server.RuntimeProxyPort = _primaryProxyPort;
+                }
+            }
+
             if (_suppressRebuild) return;
             // Move events come from intra-group drag-reorder; membership is unchanged.
             if (e.Action == NotifyCollectionChangedAction.Move) return;
@@ -946,7 +965,7 @@ namespace XrayUI.ViewModels
                 foreach (var line in lines)
                 {
                     var entry = NodeLinkParser.Parse(line.Trim());
-                    if (entry == null) continue;
+                    if (entry == null || !IsSafeImportedNode(entry)) continue;
 
                     Servers.Add(entry);
                     lastAdded = entry;
@@ -1302,7 +1321,7 @@ namespace XrayUI.ViewModels
             foreach (var line in lines)
             {
                 var entry = NodeLinkParser.Parse(line.Trim());
-                if (entry != null) entries.Add(entry);
+                if (entry != null && IsSafeImportedNode(entry)) entries.Add(entry);
             }
 
             if (entries.Count == 0)
@@ -1318,6 +1337,20 @@ namespace XrayUI.ViewModels
             }
 
             return entries;
+        }
+
+        private static bool IsSafeImportedNode(ServerEntry entry)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Protocol) || string.IsNullOrWhiteSpace(entry.Host))
+                return false;
+            if (entry.Port is < 1 or > 65535)
+                return false;
+
+            return entry.Protocol.Equals("ss", StringComparison.OrdinalIgnoreCase)
+                || entry.Protocol.Equals("vmess", StringComparison.OrdinalIgnoreCase)
+                || entry.Protocol.Equals("vless", StringComparison.OrdinalIgnoreCase)
+                || entry.Protocol.Equals("hysteria2", StringComparison.OrdinalIgnoreCase)
+                || entry.Protocol.Equals("trojan", StringComparison.OrdinalIgnoreCase);
         }
 
         // Parses `upload=..; download=..; total=..; expire=..` (bytes; expire in unix seconds).
@@ -1789,6 +1822,30 @@ namespace XrayUI.ViewModels
 
         [ObservableProperty]
         public partial bool EnableMultiNodeRouting { get; set; }
+
+        partial void OnEnableMultiNodeRoutingChanged(bool value)
+        {
+            foreach (var server in Servers)
+                server.ShowAuxiliaryProxyUi = value;
+
+            if (!value)
+                _ = DisableAllAuxiliaryProxiesAsync();
+        }
+
+        private async Task DisableAllAuxiliaryProxiesAsync()
+        {
+            if (!Servers.Any(s => s.IsDedicatedPortActive)) return;
+
+            MutateServersInBatch(() =>
+            {
+                foreach (var server in Servers)
+                    server.IsDedicatedPortActive = false;
+            });
+            await SaveAsync();
+
+            if (IsProxyRunning && RequestReapplyRouting is not null)
+                await RequestReapplyRouting.Invoke();
+        }
 
         public Func<Task>? RequestReapplyRouting { get; set; }
 

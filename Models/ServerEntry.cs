@@ -73,6 +73,7 @@ namespace XrayUI.Models
         // would resurrect the badge on a stale server.
         [JsonIgnore]
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCurrentProxyActionActive))]
         public partial bool IsActive { get; set; }
 
         // Runtime-only latency probe result in milliseconds; null = not yet measured.
@@ -206,10 +207,14 @@ namespace XrayUI.Models
         /// <summary>Optional dedicated local listening port for this server in multi-node concurrency mode.</summary>
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DedicatedPortDisplay))]
+        [NotifyPropertyChangedFor(nameof(HasDedicatedPort))]
+        [NotifyPropertyChangedFor(nameof(UsesAuxiliaryProxyAction))]
+        [NotifyPropertyChangedFor(nameof(IsCurrentProxyActionActive))]
         public partial int? DedicatedPort { get; set; }
 
         /// <summary>Whether this server is actively listening on its dedicated port.</summary>
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCurrentProxyActionActive))]
         public partial bool IsDedicatedPortActive { get; set; }
 
         /// <summary>Whether this server's dedicated port accepts connections from local network devices.</summary>
@@ -218,6 +223,31 @@ namespace XrayUI.Models
 
         [JsonIgnore]
         public string DedicatedPortDisplay => DedicatedPort.HasValue ? $":{DedicatedPort.Value}" : string.Empty;
+
+        [JsonIgnore]
+        public bool HasDedicatedPort => DedicatedPort is > 0;
+
+        // Runtime-only display value for the primary proxy's local listening port.
+        [JsonIgnore]
+        [ObservableProperty]
+        public partial int RuntimeProxyPort { get; set; }
+
+        // UI-only state supplied by ServerListViewModel. Keeping this on the item avoids an
+        // ElementName binding out of a virtualized DataTemplate, which is unstable in the
+        // Native AOT WinUI runtime once multiple list containers are realized.
+        [JsonIgnore]
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UsesAuxiliaryProxyAction))]
+        [NotifyPropertyChangedFor(nameof(IsCurrentProxyActionActive))]
+        public partial bool ShowAuxiliaryProxyUi { get; set; }
+
+        [JsonIgnore]
+        public bool UsesAuxiliaryProxyAction => ShowAuxiliaryProxyUi && HasDedicatedPort;
+
+        [JsonIgnore]
+        public bool IsCurrentProxyActionActive => UsesAuxiliaryProxyAction
+            ? IsDedicatedPortActive
+            : IsActive;
 
         public string Id
         {

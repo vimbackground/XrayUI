@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "registry": "vharness-compatibility-aliases",
+  "aliases": [
+    {"legacy": "harness_validator.py", "canonical": "vharness_validator.py", "kind": "file", "confidence": "high", "action": "relocate"},
+    {"legacy": "harness_upgrade", "canonical": "vharness_upgrade", "kind": "product", "confidence": "high", "action": "rename_reference"},
+    {"legacy": "_System/state", "canonical": "_System/memory", "kind": "directory", "confidence": "medium", "action": "decision_required"},
+    {"legacy": "_System/tasks", "canonical": "_System/architecture/task_breakdown.md", "kind": "directory", "confidence": "low", "action": "decision_required"},
+    {"legacy": "Tasks", "canonical_term": "project_content", "kind": "directory", "confidence": "high", "action": "preserve"},
+    {"legacy": "Projects", "canonical_term": "project_content", "kind": "directory", "confidence": "high", "action": "preserve"}
+  ]
+}
