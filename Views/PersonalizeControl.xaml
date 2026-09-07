@@ -24,11 +24,16 @@
                     Padding="0,0,12,24">
 
             <!-- ── Header ──────────────────────────────────────────────────── -->
-            <TextBlock x:Uid="Personalize_Header"
-                       Text="个性化设置"
-                       FontSize="20"
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,4" />
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Uid="Personalize_Header"
+                           Text="个性化设置"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+                <Button Grid.Column="1"
+                        Content="返回控制台"
+                        Click="BackToConsoleButton_Click" />
+            </Grid>
 
             <!-- ── Theme ───────────────────────────────────────────────────── -->
             <StackPanel Spacing="10">

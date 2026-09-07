@@ -22,6 +22,15 @@ namespace XrayUI.Views
             this.InitializeComponent();
         }
 
+        private void BackToConsoleButton_Click(object sender, RoutedEventArgs e)
+        {
+            if ((Application.Current as App)?.Window is XrayUI.MainWindow mainWindow
+                && mainWindow.ViewModel.GoBackCommand.CanExecute(null))
+            {
+                mainWindow.ViewModel.GoBackCommand.Execute(null);
+            }
+        }
+
         private async void HotkeyButton_Click(object sender, RoutedEventArgs e)
         {
             int id = GlobalHotkeyStore.ToggleId;

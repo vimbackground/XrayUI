@@ -68,6 +68,7 @@ namespace XrayUI.ViewModels
         }
 
         public event EventHandler? ShowLogsRequested;
+        public event EventHandler? ExitRequested;
         public event EventHandler? ShowPersonalizeRequested;
         public event EventHandler? ShowAppSettingsRequested;
         public event EventHandler<CustomRulesViewModel>? ShowCustomRulesRequested;
@@ -128,36 +129,26 @@ namespace XrayUI.ViewModels
 
             try
             {
+                await _reapplyLock.WaitAsync();
+                try
+                {
                 if (IsRunning)
                 {
-                    // Serialize with SwitchToSelectedServerAsync and hold IsReapplying:
-                    // the netsh cleanup inside the stop path now runs off the UI thread,
-                    // so without these gates a switch (double-click / subscription
-                    // auto-switch) could interleave with the multi-second stop and
-                    // stomp the session state.
-                    await _reapplyLock.WaitAsync();
-                    try
-                    {
-                        if (!IsRunning) return;
-
-                        IsReapplying = true;
-                        try
-                        {
-                            await StopCurrentSessionAsync();
-                        }
-                        finally
-                        {
-                            IsReapplying = false;
-                        }
-                    }
-                    finally
-                    {
-                        _reapplyLock.Release();
-                    }
+                    if (!IsRunning) return;
+                    IsReapplying = true;
+                    try { await StopCurrentSessionAsync(); }
+                    finally { IsReapplying = false; }
                     return;
                 }
 
-                await StartSelectedServerAsync();
+                IsReapplying = true;
+                try { await StartSelectedServerAsync(); }
+                finally { IsReapplying = false; }
+                }
+                finally
+                {
+                    _reapplyLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -167,27 +158,30 @@ namespace XrayUI.ViewModels
 
         public async Task SwitchToSelectedServerAsync()
         {
-            if (!IsRunning) return;
-            if (IsReapplying) return;
-
             var selectedServer = GetSelectedServer();
-            if (selectedServer is null || ReferenceEquals(selectedServer, _activeServer))
-                return;
+            if (selectedServer is null) return;
+            await ConnectToServerAsync(selectedServer);
+        }
+
+        /// <summary>
+        /// Serializes a user-requested primary proxy switch against all stop/start and config
+        /// reapply paths. The target is captured by the caller so quick list clicks cannot make
+        /// an earlier request start whichever row happened to become selected later.
+        /// </summary>
+        public async Task ConnectToServerAsync(ServerEntry target)
+        {
+            if (target is null) return;
 
             await _reapplyLock.WaitAsync();
             try
             {
-                if (!IsRunning) return;
-
-                selectedServer = GetSelectedServer();
-                if (selectedServer is null || ReferenceEquals(selectedServer, _activeServer))
-                    return;
+                if (IsRunning && ReferenceEquals(target, _activeServer)) return;
 
                 IsReapplying = true;
                 try
                 {
-                    await StopCurrentSessionAsync();
-                    await StartSelectedServerAsync();
+                    if (IsRunning) await StopCurrentSessionAsync();
+                    await StartSelectedServerAsync(target);
                 }
                 catch (Exception ex)
                 {
@@ -216,9 +210,9 @@ namespace XrayUI.ViewModels
             IsRunning = false;
         }
 
-        private async Task<bool> StartSelectedServerAsync()
+        private async Task<bool> StartSelectedServerAsync(ServerEntry? requestedServer = null)
         {
-            var server = GetSelectedServer();
+            var server = requestedServer ?? GetSelectedServer();
             if (server is null)
             {
                 await _dialogs.ShowErrorAsync(L.Error_NoServer, L.Error_NoServerMsg);
@@ -232,17 +226,27 @@ namespace XrayUI.ViewModels
 
             var appSettings = await _settings.LoadSettingsAsync();
 
-            if (!PortHelper.IsPortAvailable(LocalPort))
+            // StopAsync waits for xray.exe, but Windows can retain a listener very briefly.
+            // After that bounded window, recover only a listener that is provably our bundled
+            // core. StartAsync still rebuilds from GetAllServers(), so this path neither
+            // enables nor disables any auxiliary proxy state.
+            if (!await PortHelper.WaitForPortAvailableAsync(LocalPort, TimeSpan.FromSeconds(2)))
             {
-                int suggestedPort = PortHelper.GenerateRandomAvailablePort(10000, 65000);
-                var resolvedPort = await _dialogs.ShowPortConflictPromptAsync(LocalPort, suggestedPort);
-                if (resolvedPort.HasValue && resolvedPort.Value > 0)
+                var recoveredOrphan = await _xray.TryRecoverOrphanedCoreOnPortAsync(LocalPort);
+                var releasedAfterRecovery = recoveredOrphan &&
+                    await PortHelper.WaitForPortAvailableAsync(LocalPort, TimeSpan.FromSeconds(2));
+                if (!releasedAfterRecovery)
                 {
-                    LocalPort = resolvedPort.Value;
-                }
-                else
-                {
-                    return false;
+                    int suggestedPort = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+                    var resolvedPort = await _dialogs.ShowPortConflictPromptAsync(LocalPort, suggestedPort);
+                    if (resolvedPort.HasValue && resolvedPort.Value > 0)
+                    {
+                        LocalPort = resolvedPort.Value;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -688,6 +692,9 @@ namespace XrayUI.ViewModels
 
         [RelayCommand]
         private void ShowLogs() => ShowLogsRequested?.Invoke(this, EventArgs.Empty);
+
+        [RelayCommand]
+        private void ExitApplication() => ExitRequested?.Invoke(this, EventArgs.Empty);
 
         [RelayCommand]
         private void ShowPersonalize() => ShowPersonalizeRequested?.Invoke(this, EventArgs.Empty);

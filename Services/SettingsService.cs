@@ -67,7 +67,16 @@ namespace XrayUI.Services
                 }
 
                 var json = await File.ReadAllTextAsync(SettingsFile).ConfigureAwait(false);
-                _cachedSettings = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.AppSettings) ?? new AppSettings();
+                try
+                {
+                    _cachedSettings = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.AppSettings) ?? new AppSettings();
+                }
+                catch (JsonException ex)
+                {
+                    QuarantineInvalidJson(SettingsFile, ex);
+                    _cachedSettings = new AppSettings { RoutingRegion = InferDefaultRoutingRegion() };
+                    return _cachedSettings;
+                }
 
                 // One-time migration: settings.json written before XrayLogLevel existed only has
                 // the legacy VerboseXrayLog bool. Populate the new field so every other reader
@@ -120,8 +129,16 @@ namespace XrayUI.Services
                     return new List<ServerEntry>();
 
                 var json = await File.ReadAllTextAsync(ServersFile).ConfigureAwait(false);
-                var list = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.ListServerEntry)
-                           ?? [];
+                List<ServerEntry> list;
+                try
+                {
+                    list = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.ListServerEntry) ?? [];
+                }
+                catch (JsonException ex)
+                {
+                    QuarantineInvalidJson(ServersFile, ex);
+                    return [];
+                }
 
                 // Persist once if legacy JSON has no Id keys, so field-initializer-generated
                 // Ids don't regenerate on every launch and break LastAutoConnectServerId.
@@ -165,6 +182,20 @@ namespace XrayUI.Services
             {
                 try { File.Delete(tmp); } catch { }
                 throw;
+            }
+        }
+
+        private static void QuarantineInvalidJson(string path, JsonException error)
+        {
+            try
+            {
+                var backup = $"{path}.invalid-{DateTime.UtcNow:yyyyMMddHHmmss}.json";
+                File.Move(path, backup);
+                Debug.WriteLine($"[SettingsService] Invalid configuration moved to '{backup}': {error.Message}");
+            }
+            catch (Exception moveError)
+            {
+                Debug.WriteLine($"[SettingsService] Failed to preserve invalid configuration '{path}': {moveError.Message}");
             }
         }
     }

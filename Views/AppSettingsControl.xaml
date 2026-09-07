@@ -22,9 +22,14 @@
                     Padding="0,0,16,24">
 
             <!-- ── Title ───────────────────────────────────────────────────── -->
-            <TextBlock Text="软件设置"
-                       FontSize="20"
-                       FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="软件设置"
+                           FontSize="20"
+                           FontWeight="SemiBold" />
+                <Button Grid.Column="1"
+                        Content="返回控制台"
+                        Click="BackToConsoleButton_Click" />
+            </Grid>
 
             <!-- ── 1. System & Startup (Top) ───────────────────────────────── -->
             <StackPanel Spacing="10">
@@ -172,9 +177,9 @@
                             <StackPanel Grid.Column="1"
                                         VerticalAlignment="Center"
                                         Spacing="2">
-                                <TextBlock Text="多节点分流模式"
+                                <TextBlock Text="多代理模式"
                                            FontSize="14" />
-                                <TextBlock Text="允许为不同节点分配独立本地端口，供第三方软件定向分流上网"
+                                <TextBlock Text="可为不同节点启用辅助代理端口，供第三方软件单独使用"
                                            FontSize="12"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>

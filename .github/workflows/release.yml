@@ -37,7 +37,7 @@ jobs:
             $csproj = [xml](Get-Content -Path "XrayUI-dev.csproj" -Raw)
             $ver = $csproj.Project.PropertyGroup.Version
             if (-not $ver -or $ver -like '*-dev') {
-              $ver = '1.1.0'
+              $ver = '1.2.0'
             }
           }
           "version=$ver" | Out-File $env:GITHUB_OUTPUT -Append
@@ -110,7 +110,7 @@ jobs:
       - name: Bundle updater into staging
         shell: pwsh
         run: |
-          $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
+          $publishDir = "_Dist/publish/${{ matrix.rid }}"
           $updaterExe = "updater-rs/target/${{ matrix.rust_target }}/release/xrayui-updater.exe"
           if (-not (Test-Path $updaterExe)) {
             Write-Host "::error::Updater build did not produce $updaterExe"
@@ -122,7 +122,7 @@ jobs:
       - name: Verify AOT exe produced
         shell: pwsh
         run: |
-          $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
+          $publishDir = "_Dist/publish/${{ matrix.rid }}"
           $exe = "$publishDir/XrayUI-Portable.exe"
           Write-Host "Listing $publishDir :"
           if (Test-Path $publishDir) {
@@ -139,7 +139,7 @@ jobs:
       - name: Pack zip
         shell: pwsh
         run: |
-          $publishDir = "bin/Release/net10.0-windows10.0.19041.0/${{ matrix.rid }}/publish"
+          $publishDir = "_Dist/publish/${{ matrix.rid }}"
           $zipName = "XrayUI-${{ matrix.rid }}${{ env.VARIANT }}.zip"
           Compress-Archive -Path "$publishDir/*" -DestinationPath $zipName -CompressionLevel Optimal
           Write-Host "Created $zipName ($((Get-Item $zipName).Length) bytes)"

@@ -10,6 +10,7 @@ xray_speedtest.json
 ## ── 2. .NET & WinUI Build / Publish Outputs ─────────────────────
 [Bb]in/
 [Oo]bj/
+_Dist/
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -101,6 +102,10 @@ $RECYCLE.BIN/
 .windsurf/
 scratch/
 /BuildAndRun.ps1
+/.githooks/
 [Aa]gent.md
 _[Dd]ev/
+_[Ss]ystem/
+_[Ww]ip/
+/XrayUI.code-workspace
 

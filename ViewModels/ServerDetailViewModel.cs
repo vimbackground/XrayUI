@@ -83,6 +83,10 @@ namespace XrayUI.ViewModels
         /// <see cref="GetAllServers"/>, so this VM never references ServerListViewModel.
         /// </summary>
         public Func<Task> OpenSubscriptions { get; set; } = () => Task.CompletedTask;
+        public event EventHandler? ShowRuntimeRequested;
+
+        [RelayCommand]
+        private void ShowRuntime() => ShowRuntimeRequested?.Invoke(this, EventArgs.Empty);
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(GroupVisibility))]
@@ -562,5 +566,4 @@ namespace XrayUI.ViewModels
         }
     }
 }
-
 

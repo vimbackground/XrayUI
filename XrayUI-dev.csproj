@@ -9,6 +9,10 @@
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <!-- Keep local, user-facing artifacts under one obvious root. Intermediate files
+         intentionally stay under obj/ because SDK and WinUI tooling regenerate them. -->
+    <BaseOutputPath>$(MSBuildProjectDirectory)\_Dist\build\</BaseOutputPath>
+    <PublishDir Condition="'$(PublishDir)' == '' and '$(RuntimeIdentifier)' != ''">$(MSBuildProjectDirectory)\_Dist\publish\$(RuntimeIdentifier)\</PublishDir>
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
@@ -51,6 +55,27 @@
     <None Remove="XrayUI.Tests\**" />
     <Page Remove="XrayUI.Tests\**" />
     <ApplicationDefinition Remove="XrayUI.Tests\**" />
+  </ItemGroup>
+
+  <!-- vHarness local snapshots and migration backups live under _wip. Exclude
+       them from SDK default globs so copied source files never enter builds. -->
+  <ItemGroup>
+    <Compile Remove="_wip\**" />
+    <Content Remove="_wip\**" />
+    <None Remove="_wip\**" />
+    <Page Remove="_wip\**" />
+    <ApplicationDefinition Remove="_wip\**" />
+  </ItemGroup>
+
+  <!-- Data/ belongs to the user, not to the application payload. Never let a
+       developer's local portable settings enter a publish output: copying that output over an
+       existing installation would otherwise overwrite the user's subscriptions and settings. -->
+  <ItemGroup>
+    <Compile Remove="Data\**" />
+    <Content Remove="Data\**" />
+    <None Remove="Data\**" />
+    <Page Remove="Data\**" />
+    <ApplicationDefinition Remove="Data\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -136,9 +161,9 @@
 
   <!-- Version: defaults for local builds; CI overrides via -p:Version=<tag> -->
   <PropertyGroup>
-    <Version Condition="'$(Version)' == ''">1.1.0</Version>
-    <FileVersion Condition="'$(FileVersion)' == ''">1.1.0.0</FileVersion>
-    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.1.0.0</AssemblyVersion>
+    <Version Condition="'$(Version)' == ''">1.2.0</Version>
+    <FileVersion Condition="'$(FileVersion)' == ''">1.2.0.0</FileVersion>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">1.2.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <!-- Auto-update channel marker. release.yml publishes two variants per RID:

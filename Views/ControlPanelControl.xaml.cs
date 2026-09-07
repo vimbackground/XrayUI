@@ -7,6 +7,7 @@ namespace XrayUI.Views
     public sealed partial class ControlPanelControl
     {
         private LogWindow? _logWindow;
+        private ProxyRuntimeWindow? _runtimeWindow;
         private CustomRulesWindow? _customRulesWindow;
 
         public ControlPanelViewModel ViewModel { get; set; } = null!;
@@ -24,12 +25,16 @@ namespace XrayUI.Views
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             ViewModel.ShowLogsRequested         += OnShowLogsRequested;
+            if ((Application.Current as App)?.Window is XrayUI.MainWindow mainWindow)
+                mainWindow.ViewModel.ServerDetail.ShowRuntimeRequested += OnShowRuntimeRequested;
             ViewModel.ShowCustomRulesRequested  += OnShowCustomRulesRequested;
         }
 
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.ShowLogsRequested         -= OnShowLogsRequested;
+            if ((Application.Current as App)?.Window is XrayUI.MainWindow mainWindow)
+                mainWindow.ViewModel.ServerDetail.ShowRuntimeRequested -= OnShowRuntimeRequested;
             ViewModel.ShowCustomRulesRequested  -= OnShowCustomRulesRequested;
         }
 
@@ -68,6 +73,25 @@ namespace XrayUI.Views
                 _logWindow.Closed += (_, _) => _logWindow = null;
             }
             _logWindow.Activate();
+        }
+
+        private void OnShowRuntimeRequested(object? sender, EventArgs e)
+        {
+            if (_runtimeWindow is null)
+            {
+                if ((Application.Current as App)?.Window is not XrayUI.MainWindow main) return;
+                _runtimeWindow = new ProxyRuntimeWindow(
+                    ViewModel.XrayService,
+                    () => main.ViewModel.ServerList.Servers,
+                    () => main.ViewModel.ServerDetail.ActiveServer,
+                    () => ViewModel.LocalPort);
+                _runtimeWindow.Closed += (_, _) => _runtimeWindow = null;
+            }
+            else
+            {
+                _runtimeWindow.RefreshTargets();
+            }
+            _runtimeWindow.Activate();
         }
 
         private void OnShowCustomRulesRequested(object? sender, CustomRulesViewModel vm)

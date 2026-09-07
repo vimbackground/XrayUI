@@ -26,14 +26,9 @@
                    FontWeight="SemiBold"
                    Margin="0,0,0,12" />
 
-        <!-- ScrollView, not StackPanel: a StackPanel measures its child with infinite height, so
-             the card was silently clipped from the bottom whenever it outgrew the row instead of
-             becoming scrollable. No bottom padding — the control panel below brings its own
-             breathing room, and every pixel here is one the card can't use. -->
-        <ScrollView Grid.Row="1"
-                    Padding="0,0,12,0">
-
-            <Border
+        <Border Grid.Row="1"
+                Margin="0,0,12,0"
+                VerticalAlignment="Top"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -89,6 +84,10 @@
                                 </HyperlinkButton>
                             </Grid>
                         </StackPanel>
+
+                        <Button Content="查看代理动态信息"
+                                HorizontalAlignment="Left"
+                                Command="{x:Bind ViewModel.ShowRuntimeCommand}" />
 
                         <Grid
                             ColumnSpacing="12"
@@ -457,8 +456,6 @@
                                          IsEnabled="{x:Bind ViewModel.CanCopyShareLink, Mode=OneWay}"
                                          TextToCopy="{x:Bind ViewModel.SelectedShareLink, Mode=OneWay}" />
                 </Grid>
-            </Border>
-
-        </ScrollView>
+        </Border>
     </Grid>
 </UserControl>

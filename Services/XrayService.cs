@@ -261,6 +261,62 @@ namespace XrayUI.Services
         }
 
         /// <summary>
+        /// Best-effort recovery for a core that outlived the UI process which launched it.
+        /// Only a process that both owns the requested local TCP listener and resolves to this
+        /// portable application's bundled xray.exe is eligible. Any uncertainty leaves the
+        /// process untouched and lets the caller retain its normal port-conflict prompt.
+        /// </summary>
+        public async Task<bool> TryRecoverOrphanedCoreOnPortAsync(int port)
+        {
+            var listenerProcessIds = PortHelper.GetTcpListenerProcessIds(port);
+            if (listenerProcessIds.Count == 0)
+            {
+                return false;
+            }
+
+            var recoveredAny = false;
+            foreach (var processId in listenerProcessIds)
+            {
+                if (_process is { Id: var trackedProcessId } && trackedProcessId == processId)
+                {
+                    await StopCoreAsync();
+                    recoveredAny = true;
+                    continue;
+                }
+
+                Process? process = null;
+                try
+                {
+                    process = Process.GetProcessById(processId);
+                    var executablePath = process.MainModule?.FileName;
+                    if (!PortHelper.PathsAreEqual(executablePath, ExePath))
+                    {
+                        continue;
+                    }
+
+                    process.Kill(entireProcessTree: true);
+                    var exitTask = process.WaitForExitAsync();
+                    if (await Task.WhenAny(exitTask, Task.Delay(TimeSpan.FromSeconds(2))) == exitTask)
+                    {
+                        recoveredAny = true;
+                        AppendLog($"[XrayUI] recovered orphaned core PID {processId} on local port {port}");
+                    }
+                }
+                catch (Exception ex) when (
+                    ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+                {
+                    AppendLog($"[XrayUI] could not recover listener PID {processId}: {ex.Message}");
+                }
+                finally
+                {
+                    process?.Dispose();
+                }
+            }
+
+            return recoveredAny;
+        }
+
+        /// <summary>
         /// Kills the xray process and tears down state, without flushing the OS DNS cache.
         /// Used by StartAsync on the restart path so reapply doesn't pay DNS flush latency
         /// on every routing/DNS/proxy-mode toggle. No-op if not running.
