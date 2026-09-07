@@ -35,7 +35,8 @@ jobs:
             $ver = $tag -replace '^v',''
           } else {
             $csproj = [xml](Get-Content -Path "XrayUI-dev.csproj" -Raw)
-            $ver = $csproj.Project.PropertyGroup.Version
+            $versionNode = $csproj.SelectSingleNode('/Project/PropertyGroup/Version')
+            $ver = if ($versionNode) { $versionNode.InnerText.Trim() } else { $null }
             if (-not $ver -or $ver -like '*-dev') {
               $ver = '1.2.0'
             }
@@ -80,6 +81,8 @@ jobs:
       # No separate `dotnet restore` step: PublishAot must be set at restore time
       # for ILCompiler to be pulled in.
       - name: Publish (${{ matrix.rid }}${{ env.VARIANT }}, AOT)
+        env:
+          APP_VERSION: ${{ needs.init.outputs.version }}
         run: >
           dotnet publish XrayUI-dev.csproj
           -c Release
@@ -92,7 +95,7 @@ jobs:
           -p:PublishReadyToRun=false
           -p:WindowsAppSDKSelfContained=${{ matrix.wasdk_sc }}
           -p:CopyOutputSymbolsToPublishDirectory=false
-          -p:Version=${{ needs.init.outputs.version }}
+          "-p:Version=$env:APP_VERSION"
           -p:BuildingForCI=true
 
       - name: Install Rust (${{ matrix.rust_target }})
