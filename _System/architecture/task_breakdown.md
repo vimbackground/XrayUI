@@ -116,6 +116,15 @@ tags:
 - [ ] Decision Item：在可交互 Windows 桌面执行快速切换、辅助代理开关、动态信息、完全退出和 Explorer 重启的图形烟雾测试。
 - 状态：in_progress；自动验收通过，等待图形烟雾测试。方案为 `2026-09-07_xrayui_multi_proxy_reliability_and_experience_plan.md`，快照位于 `_wip/change-snapshots/20260907-xrayui-multi-proxy-reliability`。
 
+## WI-013：本地私有 Git 与公开 GitHub 隔离
+
+- [x] 创建并验证实施前快照及公开历史 bundle 备份。
+- [x] 恢复中断造成的本地工作区与 Git 元数据影响，并以 `492e971` 重建私有恢复提交；未写入远端。
+- [x] 净化本地公开历史，按白名单同步 1.2.0 产品文件；公开 `public-main` 为 `a805177`。
+- [x] 完成禁止路径扫描、公开副本 99/99 测试与 win-x64 Native AOT 发布。
+- [ ] Decision Item：选择是否允许强推公开 `main` 同时触发 GitHub 的 1.2.0 Release 工作流。
+- 状态：in_progress；远端 `main`、tag 与 Release 均尚未改动。
+
 ## WI-011：构建交付目录与工作区保留优化
 
 - [x] 已确认并批准将本地构建、发布交付根目录 adopt 为 `_Dist/`；实施前快照完整性验证通过。

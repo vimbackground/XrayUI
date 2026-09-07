@@ -13,8 +13,8 @@ scope: _System/memory
 created_at: 2026-09-06T23:40:00+08:00
 updated_at: 2026-09-07T03:45:00+08:00
 recorded_at: 2026-09-07T03:45:00+08:00
-current_phase: orphaned_xray_port_recovery_desktop_smoke_test
-next_action: verify_orphaned_core_recovery_on_desktop
+current_phase: private_local_git_public_github_isolation_final_remote_gate
+next_action: await_release_trigger_decision_before_public_force_push
 tags:
   - handoff
   - state
@@ -86,7 +86,7 @@ UE 布局扩展的自动验收已完成：控制行左侧为路由/全局代理/
 
 ## 下一步
 
-Git 恢复复盘已完成并验证；等待开发者选择下一个 Work Item。不要自动开始 `_Dist`、外部同步或远端 Git 上传。
+本地私有 Git 与公开 GitHub 隔离已完成本地恢复、净化与构建验收：私有恢复提交为 `492e971`，公开同步提交为 `a805177`，公开路径检查、99/99 测试及 win-x64 Native AOT 发布通过。旧公开历史 bundle 和实施前快照均已验证。此前一次本地工具参数误用只影响本地 Git 元数据，未触达远端；完整工作区已由快照恢复，私有旧提交对象改以新的恢复提交保留。当前唯一阻断是：推送公开 `main` 会触发 GitHub Release 工作流。等待开发者明确选择“允许同时发布 1.2.0”或“先只安排非发布的远端净化”；选择前不得 push、改远端 tag 或创建 Release。
 
 ## 2026-09-07 同一 Agent 会话交接
 
