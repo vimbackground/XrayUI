@@ -736,6 +736,7 @@ namespace XrayUI
 
         public void StopBackgroundServicesOnExit(bool fastShutdown = false)
         {
+            ViewModel.PersistProxyRunningStateOnExit();
             ViewModel.StopSubscriptionRefreshScheduler();
             ViewModel.ControlPanel.XrayService.StopForShutdown();
             ViewModel.ControlPanel.CleanupTunOnExit(fastShutdown);

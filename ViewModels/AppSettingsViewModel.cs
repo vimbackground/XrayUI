@@ -89,6 +89,9 @@ namespace XrayUI.ViewModels
         [ObservableProperty]
         public partial bool IsStartupEnabled { get; set; }
 
+        [ObservableProperty]
+        public partial bool RestoreProxyStateOnStartup { get; set; }
+
         // ── Hotkeys ───────────────────────────────────────────────────────────
         [ObservableProperty]
         public partial string HotkeyToggleDisplay { get; set; } = "";
@@ -169,6 +172,7 @@ namespace XrayUI.ViewModels
             LocalPortText = LocalPort.ToString();
             AllowLanConnections = s.AllowLanConnections;
             EnableMultiNodeRouting = s.EnableMultiNodeRouting;
+            RestoreProxyStateOnStartup = s.RestoreProxyStateOnStartup;
 
             try
             {
@@ -249,6 +253,7 @@ namespace XrayUI.ViewModels
             }
             s.AllowLanConnections = AllowLanConnections;
             s.EnableMultiNodeRouting = EnableMultiNodeRouting;
+            s.RestoreProxyStateOnStartup = RestoreProxyStateOnStartup;
 
             GlobalHotkeyStore.SaveTo(s);
             await _settings.SaveSettingsAsync(s);

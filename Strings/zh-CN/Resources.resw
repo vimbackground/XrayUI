@@ -509,6 +509,12 @@
   <data name="Startup_SetFailed" xml:space="preserve">
     <value>开机启动设置失败</value>
   </data>
+  <data name="Startup_RestoreProxyStateOnStartup" xml:space="preserve">
+    <value>启动时恢复上次代理状态</value>
+  </data>
+  <data name="Startup_RestoreProxyStateOnStartupDesc" xml:space="preserve">
+    <value>如果退出软件时代理正在运行，下次启动将自动恢复主代理及已启用的辅助代理</value>
+  </data>
   <data name="Confirm_DeleteTitle" xml:space="preserve">
     <value>确认删除</value>
   </data>

@@ -237,15 +237,23 @@ namespace XrayUI.ViewModels
                     await PortHelper.WaitForPortAvailableAsync(LocalPort, TimeSpan.FromSeconds(2));
                 if (!releasedAfterRecovery)
                 {
-                    int suggestedPort = PortHelper.GenerateRandomAvailablePort(10000, 65000);
-                    var resolvedPort = await _dialogs.ShowPortConflictPromptAsync(LocalPort, suggestedPort);
-                    if (resolvedPort.HasValue && resolvedPort.Value > 0)
+                    var listenerProcessIds = PortHelper.GetTcpListenerProcessIds(LocalPort);
+                    if (listenerProcessIds.Count > 0)
                     {
-                        LocalPort = resolvedPort.Value;
+                        int suggestedPort = PortHelper.GenerateRandomAvailablePort(10000, 65000);
+                        var resolvedPort = await _dialogs.ShowPortConflictPromptAsync(LocalPort, suggestedPort);
+                        if (resolvedPort.HasValue && resolvedPort.Value > 0)
+                        {
+                            LocalPort = resolvedPort.Value;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                     else
                     {
-                        return false;
+                        Debug.WriteLine($"[ControlPanel] Port {LocalPort} has no active listener process; proceeding to start core.");
                     }
                 }
             }

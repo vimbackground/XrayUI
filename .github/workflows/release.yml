@@ -1,4 +1,4 @@
-﻿name: release
+name: release
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
             $versionNode = $csproj.SelectSingleNode('/Project/PropertyGroup/Version')
             $ver = if ($versionNode) { $versionNode.InnerText.Trim() } else { $null }
             if (-not $ver -or $ver -like '*-dev') {
-              $ver = '1.2.0'
+              $ver = '1.2.1'
             }
           }
           "version=$ver" | Out-File $env:GITHUB_OUTPUT -Append

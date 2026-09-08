@@ -47,6 +47,8 @@ namespace XrayUI.ViewModels
         public string ActiveServerName =>
             (ControlPanel.IsRunning ? _activeServer : ServerList.SelectedServer)?.Name ?? L.Main_NoSelection;
 
+        public ServerEntry? ActiveServer => _activeServer;
+
         // Tray icon tooltip. Uses (IsRunning || IsReapplying) so it stays in the "running"
         // form across a node switch — IsReapplying brackets the stop→start gap (the same
         // masking StatusText relies on), so the tray text never flickers to "idle" mid-switch.
@@ -190,12 +192,11 @@ namespace XrayUI.ViewModels
                 await _settings.SaveSettingsAsync(s);
             }
 
-            // Only auto-connect when the app was actually launched by the boot task
-            // (which passes --startup-minimized). Manual launches must not auto-connect.
-            // IsStartupEnabled is deliberately not consulted: the launch itself proves
-            // the task exists, and an external launcher passing our internal flag is
-            // opting into boot semantics.
-            if (isBootLaunch && s.IsAutoConnect)
+            // If RestoreProxyStateOnStartup is enabled, restore the exact running state from last exit.
+            // Otherwise, fall back to existing boot launch auto-connect behavior.
+            if (s.RestoreProxyStateOnStartup)
+                await TryRestoreProxyStateAsync(s);
+            else if (isBootLaunch && s.IsAutoConnect)
                 await TryAutoConnectAsync(s);
 
             await ServerList.InitializeSubscriptionRefreshSchedulesAsync(DateTimeOffset.UtcNow);
@@ -310,6 +311,47 @@ namespace XrayUI.ViewModels
                 _uiDispatcher.TryEnqueue(StopTimer);
         }
 
+        /// <summary>
+        /// Captures and persists the current proxy running state (primary server and auxiliary proxies)
+        /// to settings if RestoreProxyStateOnStartup is enabled. Called during app shutdown before core stops.
+        /// </summary>
+        public void PersistProxyRunningStateOnExit()
+        {
+            try
+            {
+                var settings = _settings.LoadSettingsAsync().GetAwaiter().GetResult();
+                if (settings.RestoreProxyStateOnStartup)
+                {
+                    if (ControlPanel.IsRunning && _activeServer is not null)
+                    {
+                        settings.LastRunningServerId = _activeServer.Id;
+                    }
+                    else
+                    {
+                        settings.LastRunningServerId = null;
+                    }
+
+                    if (ServerList.EnableMultiNodeRouting)
+                    {
+                        settings.LastRunningAuxiliaryServerIds = ServerList.Servers
+                            .Where(s => s.IsDedicatedPortActive && s.DedicatedPort is > 0)
+                            .Select(s => s.Id)
+                            .ToList();
+                    }
+                    else
+                    {
+                        settings.LastRunningAuxiliaryServerIds = new List<string>();
+                    }
+
+                    _settings.SaveSettingsAsync(settings).GetAwaiter().GetResult();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Main] Failed to persist proxy running state on exit: {ex.Message}");
+            }
+        }
+
         private string? CurrentProxyUrl() =>
             ControlPanel.IsRunning ? $"socks5://127.0.0.1:{ControlPanel.LocalPort}" : null;
 
@@ -360,6 +402,44 @@ namespace XrayUI.ViewModels
             ServerList.SelectedServer = target;
             if (!ControlPanel.StartStopCommand.CanExecute(null)) return;
             await ControlPanel.StartStopCommand.ExecuteAsync(null);
+        }
+
+        private async Task TryRestoreProxyStateAsync(AppSettings s)
+        {
+            try
+            {
+                // Restore auxiliary proxies if multi-node routing is enabled
+                if (s.EnableMultiNodeRouting && s.LastRunningAuxiliaryServerIds != null)
+                {
+                    var activeAuxSet = new HashSet<string>(s.LastRunningAuxiliaryServerIds, StringComparer.Ordinal);
+                    foreach (var server in ServerList.Servers)
+                    {
+                        if (server.DedicatedPort is > 0)
+                        {
+                            server.IsDedicatedPortActive = activeAuxSet.Contains(server.Id);
+                        }
+                    }
+                }
+
+                // If a primary server was running when exited, reconnect it
+                if (!string.IsNullOrEmpty(s.LastRunningServerId))
+                {
+                    var target = ServerList.Servers.FirstOrDefault(
+                        x => string.Equals(x.Id, s.LastRunningServerId, StringComparison.Ordinal));
+                    if (target is not null)
+                    {
+                        ServerList.SelectedServer = target;
+                        if (ControlPanel.StartStopCommand.CanExecute(null))
+                        {
+                            await ControlPanel.StartStopCommand.ExecuteAsync(null);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Main] TryRestoreProxyState failed: {ex.Message}");
+            }
         }
 
         // ── Personalize navigation ────────────────────────────────────────────
