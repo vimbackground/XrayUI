@@ -86,4 +86,19 @@ public class PortHelperTests
         Assert.False(PortHelper.PathsAreEqual(otherPath, expectedPath));
         Assert.False(PortHelper.PathsAreEqual(null, expectedPath));
     }
+
+    [Fact]
+    public void IsPortAvailable_WhenListenerStopped_ReturnsTrueImmediately()
+    {
+        int port;
+        using (var listener = new TcpListener(IPAddress.Loopback, 0))
+        {
+            listener.Start();
+            port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            Assert.False(PortHelper.IsPortAvailable(port));
+        }
+
+        // Listener stopped; port must become available immediately with SO_REUSEADDR
+        Assert.True(PortHelper.IsPortAvailable(port));
+    }
 }

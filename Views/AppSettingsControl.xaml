@@ -41,36 +41,71 @@
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         CornerRadius="{ThemeResource OverlayCornerRadius}">
-                    <Grid Padding="16,12" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <Grid Padding="16,12" ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <FontIcon Grid.Column="0"
-                                  Glyph="&#xE7E8;"
-                                  FontSize="16"
-                                  VerticalAlignment="Center"
-                                  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xE7E8;"
+                                      FontSize="16"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Spacing="2">
-                            <TextBlock Text="开机自启动"
-                                       FontSize="14" />
-                            <TextBlock Text="登录 Windows 时在后台静默启动本便携版"
-                                       FontSize="12"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        </StackPanel>
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                                <TextBlock Text="开机自启动"
+                                           FontSize="14" />
+                                <TextBlock Text="登录 Windows 时在后台静默启动本便携版"
+                                           FontSize="12"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
 
-                        <ToggleSwitch Grid.Column="2"
-                                      IsOn="{x:Bind ViewModel.IsStartupEnabled, Mode=TwoWay}"
-                                      OnContent=""
-                                      OffContent=""
-                                      MinWidth="0"
-                                      VerticalAlignment="Center" />
-                    </Grid>
+                            <ToggleSwitch Grid.Column="2"
+                                          IsOn="{x:Bind ViewModel.IsStartupEnabled, Mode=TwoWay}"
+                                          OnContent=""
+                                          OffContent=""
+                                          MinWidth="0"
+                                          VerticalAlignment="Center" />
+                        </Grid>
+
+                        <Grid Padding="16,12" ColumnSpacing="12"
+                              BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                              BorderThickness="0,1,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <FontIcon Grid.Column="0"
+                                      Glyph="&#xE777;"
+                                      FontSize="16"
+                                      VerticalAlignment="Center"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                            <StackPanel Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                                <TextBlock Text="启动时恢复上次代理状态"
+                                           FontSize="14" />
+                                <TextBlock Text="如果退出软件时代理正在运行，下次启动将自动恢复主代理及已启用的辅助代理"
+                                           FontSize="12"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+
+                            <ToggleSwitch Grid.Column="2"
+                                          IsOn="{x:Bind ViewModel.RestoreProxyStateOnStartup, Mode=TwoWay}"
+                                          OnContent=""
+                                          OffContent=""
+                                          MinWidth="0"
+                                          VerticalAlignment="Center" />
+                        </Grid>
+                    </StackPanel>
                 </Border>
             </StackPanel>
 

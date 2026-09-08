@@ -12,6 +12,7 @@ namespace XrayUI.Services;
     WriteIndented = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(AppSettings))]
+[JsonSerializable(typeof(List<string>))]
 [JsonSerializable(typeof(List<ServerEntry>))]
 [JsonSerializable(typeof(ServerEntry))]
 [JsonSerializable(typeof(List<CustomRoutingRule>))]

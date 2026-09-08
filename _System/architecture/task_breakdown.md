@@ -11,13 +11,33 @@ audience:
   - agent
 scope: _System/architecture
 created_at: 2026-09-06T23:40:00+08:00
-updated_at: 2026-09-07T01:48:52+08:00
+updated_at: 2026-09-08T00:00:00+08:00
 tags:
   - work-items
   - state
 ---
 
 # XrayUI Work Item Registry
+
+> 当前可用性说明（2026-09-08）：下列历史条目中引用的 `_wip/` 快照、迁移资料、bundle、备份和 `_Dist/` 产物已因开发者授权的工作区清理而不存在；它们只保留为历史事实，不是可用恢复路径。以 WI-014 和 `current_state.md` 顶部的跨 Agent 移交记录为准。
+
+## WI-015：代理状态启动恢复与端口冲突判定优化
+
+- [x] 重构 `PortHelper.IsPortAvailable`，开启 `SO_REUSEADDR` 地址复用，忽略单纯处于 `TIME_WAIT` / `CLOSE_WAIT` 的内核断开残留连接。
+- [x] 优化 `ControlPanelViewModel` 启动与切换主代理时的端口冲突检查：实测仅在存在第三方活动监听进程且清理失败时才弹窗提示修改端口，根除切换或重启时的误报弹窗。
+- [x] 扩充 `AppSettings` 与 `AppSettingsViewModel`，增加 `RestoreProxyStateOnStartup`、`LastRunningServerId`、`LastRunningAuxiliaryServerIds` 数据模型与双向绑定。
+- [x] 在 `AppSettingsControl.xaml` 的系统与启动区域新增「启动时恢复上次代理状态」ToggleSwitch，并补齐中英文多语言资源。
+- [x] 在 `MainWindow.StopBackgroundServicesOnExit` 中接入退出前代理运行状态捕获，并在 `MainViewModel.InitializeAsync` 中实现启动时主代理与辅助代理的无缝自动恢复。
+- [x] 补充 `PortHelperTests` 与 `AppSettingsRestoreStateTests`，102/102 单元测试通过；Release 构建 0 警告 0 错误；Host 架构与文档门禁验证通过。
+- 状态：verified；方案为 `2026-09-08_xrayui_proxy_state_restore_and_port_conflict_fix_plan.md`。
+
+## WI-014：跨 Agent 工具移交与恢复信息核对
+
+- [x] 已停止新开发工作，并读取跨 Agent 移交、平台适配和只读状态核查 SOP。
+- [x] 已核对私有工作树、分支 `private/main`、HEAD `973d7b7`、未跟踪复盘草案及现有方案文件。
+- [x] 已记录工作区清理造成的恢复路径差异：`_wip/`、`_Dist/`、构建缓存、历史 bundle、快照、迁移资料和 `public-main` 工作树已不存在；Git 仍将后者显示为 prunable。
+- [x] 已明确半成品、待办验证、原平台限制和新 Agent 的只读接管第一步；未执行恢复、清理、构建、提交、推送或发布。
+- 状态：verified；后续实施必须由新 Agent 完成平台预检、物理文件核对并获得开发者确认后另行开始。
 
 ## WI-001：vHarness 首次融合
 
@@ -122,8 +142,11 @@ tags:
 - [x] 恢复中断造成的本地工作区与 Git 元数据影响，并以 `492e971` 重建私有恢复提交；未写入远端。
 - [x] 净化本地公开历史，按白名单同步 1.2.0 产品文件；公开 `public-main` 为 `a805177`。
 - [x] 完成禁止路径扫描、公开副本 99/99 测试与 win-x64 Native AOT 发布。
-- [ ] Decision Item：选择是否允许强推公开 `main` 同时触发 GitHub 的 1.2.0 Release 工作流。
-- 状态：in_progress；远端 `main`、tag 与 Release 均尚未改动。
+- [x] 经开发者确认，原子强推已更新公开 `main` 与净化后的 `v1.1.0` 标签；公开路径守卫通过。
+- [x] 修复 GitHub Actions 将 XML 版本元素对象误传给 `dotnet publish` 的问题，并成功发布 `v1.2.0` Release。
+- [x] GitHub Actions run `34107575904` 成功；公开 `main` 为 `8fee103`，公开 Release 为 `v1.2.0`。
+- [ ] Decision Item：如需让私有 `private/main` 包含公开分支的 CI 版本传递修复，作为独立本地 Git 同步决定处理；不得自动推送私有分支。
+- 状态：verified；私有恢复提交和公开历史 bundle 均保留在本地 `_wip/` 恢复路径中。
 
 ## WI-011：构建交付目录与工作区保留优化
 
@@ -136,4 +159,16 @@ tags:
 
 - [x] 已批准版本元数据与 GitHub Release 更新说明同步；实施前快照完整性验证通过。
 - [x] 已同步应用、更新器、工作流兜底版本及 `CHANGELOG.md`；Release 构建、99/99 测试、win-x64 Native AOT 发布和 changelog 提取验证通过。
-- 状态：verified；未创建 Git tag、提交、推送或 GitHub Release。
+- [x] 已由 WI-013 的公开发布流程成功发布 GitHub `v1.2.0` Release；工作流 run `34107575904` 成功。
+- 状态：verified；发布后 CI 版本传递修复位于公开 `main` 的 `8fee103`，私有分支同步保持单独 Decision Item。
+
+## WI-015：1.2.1 代理状态启动恢复、端口冲突误报消除与公开发布
+
+- [x] 已确认并批准正式方案 `_System/reviews/2026-09-08_xrayui_proxy_state_restore_and_port_conflict_fix_plan.md`。
+- [x] 重构 `PortHelper.IsPortAvailable` 增加 `SO_REUSEADDR` 探测，过滤 `TIME_WAIT`/`CLOSE_WAIT` 残留连接；`ControlPanelViewModel` 仅在存在第三方活动监听进程时弹窗，消除主代理切换/重启时的端口误报弹窗。
+- [x] 增加启动恢复代理状态开关与持久化字段，实现退出时记录运行中主/辅代理、启动后自动恢复连接。
+- [x] 版本号同步提升至 1.2.1（`XrayUI-dev.csproj`、`updater-rs/Cargo.toml`、`.github/workflows/release.yml`、`CHANGELOG.md`）。
+- [x] 102/102 单元测试通过，win-x64 Native AOT 发布验证通过，开发者本地测试通过。
+- [ ] 同步至 `public-main` 并推送到 GitHub `origin/main` 触发自动化发布流水线。
+- 状态：in_progress；本地功能与发布验证通过，正在执行 GitHub 公开发布。
+

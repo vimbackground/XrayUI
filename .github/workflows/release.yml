@@ -1,4 +1,4 @@
-﻿name: release
+name: release
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
             $csproj = [xml](Get-Content -Path "XrayUI-dev.csproj" -Raw)
             $ver = $csproj.Project.PropertyGroup.Version
             if (-not $ver -or $ver -like '*-dev') {
-              $ver = '1.2.0'
+              $ver = '1.2.1'
             }
           }
           "version=$ver" | Out-File $env:GITHUB_OUTPUT -Append

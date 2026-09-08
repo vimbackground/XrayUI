@@ -27,6 +27,12 @@ namespace XrayUI.Models
         public bool TunIpv6Enabled { get; set; } = false;
         public bool IsStartupEnabled { get; set; } = false;
         public bool IsAutoConnect    { get; set; } = false;
+        /// <summary>Whether to restore the proxy running state (both main server and auxiliary servers) from when the app last closed.</summary>
+        public bool RestoreProxyStateOnStartup { get; set; } = false;
+        /// <summary>Stable ID (ServerEntry.Id) of the server that was actively running as the main proxy when the app exited.</summary>
+        public string? LastRunningServerId { get; set; }
+        /// <summary>List of server IDs that had active dedicated auxiliary proxy ports when the app exited.</summary>
+        public List<string> LastRunningAuxiliaryServerIds { get; set; } = new();
         /// <summary>true = global proxy (default); false = do not take over the system proxy.</summary>
         public bool IsSystemProxyEnabled { get; set; } = true;
         /// <summary>Stable ID (ServerEntry.Id) of the most recently connected server — used for auto-connect on boot.</summary>

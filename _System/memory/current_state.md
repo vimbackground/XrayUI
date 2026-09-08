@@ -11,16 +11,35 @@ audience:
   - agent
 scope: _System/memory
 created_at: 2026-09-06T23:40:00+08:00
-updated_at: 2026-09-07T03:45:00+08:00
-recorded_at: 2026-09-07T03:45:00+08:00
-current_phase: private_local_git_public_github_isolation_final_remote_gate
-next_action: await_release_trigger_decision_before_public_force_push
+updated_at: 2026-09-08T00:00:00+08:00
+recorded_at: 2026-09-08T00:00:00+08:00
+current_phase: v1_2_1_github_release
+next_action: sync_public_main_and_push_to_origin
 tags:
   - handoff
   - state
+  - release
 ---
 
 # XrayUI 当前状态
+
+## 2026-09-08 1.2.1 版本发布与功能验收（进行中）
+
+- 开发者本地测试通过，正式授权发布到 GitHub。
+- 正式方案 `_System/reviews/2026-09-08_xrayui_proxy_state_restore_and_port_conflict_fix_plan.md` 获批并完成验证。
+- 端口误报根治：重构 `PortHelper.IsPortAvailable` 开启 `SO_REUSEADDR` 地址复用，忽略单纯处于 `TIME_WAIT` / `CLOSE_WAIT` 的内核断开残留连接；优化 `ControlPanelViewModel`，仅在存在第三方活动监听进程且清理失败时才弹窗，彻底根除切换主节点与停启主代理时的改端口误报弹窗。
+- 代理状态启动恢复：扩充 `AppSettings` 与 `AppSettingsViewModel`（`RestoreProxyStateOnStartup`、`LastRunningServerId`、`LastRunningAuxiliaryServerIds`），在设置页「系统与启动」区域提供独立 ToggleSwitch（默认关闭）；在软件退出前记录主/辅代理运行节点，在启动时根据该记录无感恢复主代理连接与辅助代理端口监听。
+- 版本号同步提升至 1.2.1，CHANGELOG.md 已就绪。102/102 单元测试通过，Native AOT 发布验证通过，开发者本地实测通过。
+- 正在同步至公开分支 `public-main` 并推送到 `origin/main` 触发 GitHub Actions 自动化发布。
+
+## 2026-09-08 跨 Agent 工具移交（当前事实）
+
+- 本记录按 `SOP_cross_agent_migration.md` 生成；移交前未开始任何新的功能、修复、构建或发布工作。
+- 当前可确认的私有工作树为仓库根目录，分支 `private/main`，HEAD `973d7b7`。工作树有两项已修改的状态/登记文件，以及一份未跟踪、未经批准的复盘方案草案：`_System/reviews/2026-09-07_xrayui_public_release_isolation_session_retrospective_plan.md`。新 Agent 必须先核对实际文件，不得把本记录视为写入授权。
+- 已确认的方案与半成品：上述公开发布隔离会话复盘方案草案存在，仍未获开发者批准；因此不得执行复盘写入、SOP 更新、提示词更新或经验沉淀。WI-010 的代码自动验收已在先前会话记录为通过，但真实 Windows 图形烟雾测试、Cargo 验证及覆盖更新测试仍未在本会话重新运行，状态保持待办。
+- 重要差异与限制：2026-09-08 的用户授权清理已删除 `_wip/`、`_Dist/`、`obj/` 及 Python 缓存，以释放约 7.2 GB。故本文件早先引用的全部 `_wip/` 快照、Migration Run 资料、公开历史 bundle、恢复前备份和 `_wip/public-main-worktree` 均不再可用；`git worktree list --porcelain` 仍显示该公开工作树为指向不存在位置的 prunable 项。不要自动执行 `git worktree prune`、重建工作树、重新生成构建产物或恢复备份，除非开发者明确决定。
+- 已知平台限制仅代表原会话：可读写仓库根，Shell 为 PowerShell；终端沙箱曾在读取操作时出现 Windows error 1920，后在获得一次性受控审批后完成只读核对；无可交互 Windows 桌面，未确认 Cargo；网络、外部连接器和新平台的审批机制均不得继承或假设。
+- 新 Agent 的安全第一步：按 `SOP_agent_platform_adaptation.md` 和 `SOP_read_only_state_audit.md` 仅做能力与文件核对，向开发者报告平台、实际工作树、草案、缺失恢复制品、待验证项和最安全下一步；等待明确确认后才实施。
 
 ## 当前阶段
 
@@ -86,7 +105,18 @@ UE 布局扩展的自动验收已完成：控制行左侧为路由/全局代理/
 
 ## 下一步
 
-本地私有 Git 与公开 GitHub 隔离已完成本地恢复、净化与构建验收：私有恢复提交为 `492e971`，公开同步提交为 `a805177`，公开路径检查、99/99 测试及 win-x64 Native AOT 发布通过。旧公开历史 bundle 和实施前快照均已验证。此前一次本地工具参数误用只影响本地 Git 元数据，未触达远端；完整工作区已由快照恢复，私有旧提交对象改以新的恢复提交保留。当前唯一阻断是：推送公开 `main` 会触发 GitHub Release 工作流。等待开发者明确选择“允许同时发布 1.2.0”或“先只安排非发布的远端净化”；选择前不得 push、改远端 tag 或创建 Release。
+本地私有 Git 与公开 GitHub 隔离、历史净化和 1.2.0 发布均已完成。公开 `main` 当前为 `8fee103`，公开路径守卫通过；GitHub Actions run `34107575904` 成功，`v1.2.0` Release 已发布。私有根工作树位于 `private/main` 的 `973d7b7`，保留私有治理资料，且绝不推送。实施前快照、公开历史 bundle 与恢复前文件备份均保留在 `_wip/`。
+
+下次唯一第一步：读取本文件、Work Item Registry 与 `_System/reviews/2026-09-07_xrayui_public_release_isolation_session_retrospective_plan.md`，询问开发者是否批准该草案复盘；未获批准前不得写入复盘、SOP、提示词或通用经验。公开工作树中的 `8fee103` 仅包含已发布的 CI 版本传递修复，尚未回写私有分支；如需同步，必须作为单独、明确的本地 Git 决定处理。
+
+## 2026-09-07 本次会话安全交接
+
+- 已完成且已验证：公开历史已移除 `_Dev/`、`_System/`、`_wip/`、`Agent.md` 和工作区文件；公开分支路径守卫、99/99 单元测试、win-x64 Native AOT 发布均通过；GitHub `v1.2.0` Release 和工作流均成功。
+- 已完成但未在私有根工作树回写：公开分支提交 `8fee103` 修复 GitHub Actions 将 XML 版本元素对象误传给 `dotnet publish` 的问题；该修复已在线验证，但私有 `private/main` 仍停在 `973d7b7`。
+- 半成品：复盘方案 `_System/reviews/2026-09-07_xrayui_public_release_isolation_session_retrospective_plan.md` 已创建并通过 Host Architecture、Host Documentation、21 项治理测试和 `git diff --check` 的批准前预验证，但尚未获开发者批准，未开始复盘写入。
+- 未验证或待办：WI-010 的真实 Windows 桌面图形烟雾测试、关闭后立即启用主代理的端口恢复、辅助代理状态保持、托盘重建、Cargo 验证和覆盖更新测试仍待执行。
+- 工作树：私有根当前仅有未跟踪的复盘方案草案，以及由治理测试生成的 `_System/tools/common/__pycache__/` 与 `_System/tools/common/tests/__pycache__/`；它们均未暂存、未提交、未删除。公开工作树 `public-main` 在 `8fee103`，无未提交改动。
+- 恢复路径：实施前快照 `_wip/change-snapshots/20260907-xrayui-private-local-public-github`；公开历史 bundle `_wip/github-public-before-history-rewrite.bundle`；恢复前文件备份 `_wip/restore-backup-20260907-172125`。不删除这些制品。
 
 ## 2026-09-07 同一 Agent 会话交接
 
