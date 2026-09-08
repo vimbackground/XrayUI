@@ -23,14 +23,15 @@ tags:
 
 # XrayUI 当前状态
 
-## 2026-09-08 1.2.1 版本发布与功能验收（进行中）
+## 2026-09-08 1.2.1 版本发布与功能验收（已发布到 GitHub）
 
 - 开发者本地测试通过，正式授权发布到 GitHub。
 - 正式方案 `_System/reviews/2026-09-08_xrayui_proxy_state_restore_and_port_conflict_fix_plan.md` 获批并完成验证。
 - 端口误报根治：重构 `PortHelper.IsPortAvailable` 开启 `SO_REUSEADDR` 地址复用，忽略单纯处于 `TIME_WAIT` / `CLOSE_WAIT` 的内核断开残留连接；优化 `ControlPanelViewModel`，仅在存在第三方活动监听进程且清理失败时才弹窗，彻底根除切换主节点与停启主代理时的改端口误报弹窗。
 - 代理状态启动恢复：扩充 `AppSettings` 与 `AppSettingsViewModel`（`RestoreProxyStateOnStartup`、`LastRunningServerId`、`LastRunningAuxiliaryServerIds`），在设置页「系统与启动」区域提供独立 ToggleSwitch（默认关闭）；在软件退出前记录主/辅代理运行节点，在启动时根据该记录无感恢复主代理连接与辅助代理端口监听。
 - 版本号同步提升至 1.2.1，CHANGELOG.md 已就绪。102/102 单元测试通过，Native AOT 发布验证通过，开发者本地实测通过。
-- 正在同步至公开分支 `public-main` 并推送到 `origin/main` 触发 GitHub Actions 自动化发布。
+- 已同步至公开分支 `public-main`（提交 `71296e2`），通过禁止路径与敏感资料审查，成功推送到 GitHub `origin/main`。
+- GitHub Actions 自动化发布流水线触发并执行中（Run ID: `34222669925`，https://github.com/vimbackground/XrayUI/actions/runs/34222669925）。
 
 ## 2026-09-08 跨 Agent 工具移交（当前事实）
 

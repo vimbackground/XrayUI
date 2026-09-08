@@ -169,6 +169,8 @@ tags:
 - [x] 增加启动恢复代理状态开关与持久化字段，实现退出时记录运行中主/辅代理、启动后自动恢复连接。
 - [x] 版本号同步提升至 1.2.1（`XrayUI-dev.csproj`、`updater-rs/Cargo.toml`、`.github/workflows/release.yml`、`CHANGELOG.md`）。
 - [x] 102/102 单元测试通过，win-x64 Native AOT 发布验证通过，开发者本地测试通过。
-- [ ] 同步至 `public-main` 并推送到 GitHub `origin/main` 触发自动化发布流水线。
-- 状态：in_progress；本地功能与发布验证通过，正在执行 GitHub 公开发布。
+- [x] 同步至 `public-main`（提交 `71296e2`），通过禁止路径审查，推送到 GitHub `origin/main` 触发自动化发布。
+- [x] GitHub Actions 发布流水线运行中（Run ID: `34222669925`，https://github.com/vimbackground/XrayUI/actions/runs/34222669925）。
+- 状态：verified；本地功能与远程推送均已完成，自动化流水线正在构建发布制品。
+
 
