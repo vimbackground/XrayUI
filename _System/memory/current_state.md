@@ -11,10 +11,10 @@ audience:
   - agent
 scope: _System/memory
 created_at: 2026-09-06T23:40:00+08:00
-updated_at: 2026-09-08T00:00:00+08:00
-recorded_at: 2026-09-08T00:00:00+08:00
-current_phase: v1_2_1_github_release
-next_action: sync_public_main_and_push_to_origin
+updated_at: 2026-09-08T20:00:00+08:00
+recorded_at: 2026-09-08T20:00:00+08:00
+current_phase: v1_2_1_release_completed_session_handoff
+next_action: await_developer_instructions_for_next_work_item
 tags:
   - handoff
   - state
@@ -23,15 +23,15 @@ tags:
 
 # XrayUI 当前状态
 
-## 2026-09-08 1.2.1 版本发布与功能验收（已发布到 GitHub）
+## 2026-09-08 1.2.1 版本发布与功能验收（已正式发布并上线）
 
 - 开发者本地测试通过，正式授权发布到 GitHub。
-- 正式方案 `_System/reviews/2026-09-08_xrayui_proxy_state_restore_and_port_conflict_fix_plan.md` 获批并完成验证。
+- 正式方案 `_System/reviews/2026-09-08_xrayui_proxy_state_restore_and_port_conflict_fix_plan.md` 获批并完成完整验证（WI-015 状态 verified）。
 - 端口误报根治：重构 `PortHelper.IsPortAvailable` 开启 `SO_REUSEADDR` 地址复用，忽略单纯处于 `TIME_WAIT` / `CLOSE_WAIT` 的内核断开残留连接；优化 `ControlPanelViewModel`，仅在存在第三方活动监听进程且清理失败时才弹窗，彻底根除切换主节点与停启主代理时的改端口误报弹窗。
 - 代理状态启动恢复：扩充 `AppSettings` 与 `AppSettingsViewModel`（`RestoreProxyStateOnStartup`、`LastRunningServerId`、`LastRunningAuxiliaryServerIds`），在设置页「系统与启动」区域提供独立 ToggleSwitch（默认关闭）；在软件退出前记录主/辅代理运行节点，在启动时根据该记录无感恢复主代理连接与辅助代理端口监听。
 - 版本号同步提升至 1.2.1，CHANGELOG.md 已就绪。102/102 单元测试通过，Native AOT 发布验证通过，开发者本地实测通过。
-- 已同步至公开分支 `public-main`（提交 `71296e2`），通过禁止路径与敏感资料审查，成功推送到 GitHub `origin/main`。
-- GitHub Actions 自动化发布流水线触发并执行中（Run ID: `34222669925`，https://github.com/vimbackground/XrayUI/actions/runs/34222669925）。
+- 已同步至公开分支 `public-main`（提交 `71296e2`），通过禁止路径与敏感资料审查（0 个内部文件），成功推送到 GitHub `origin/main`。
+- GitHub Actions 自动化发布流水线（Run ID: `34222669925`）构建执行完毕并成功退出，GitHub Release `v1.2.1` 已正式上线发布（包含 win-x64 / win-arm64 常规版与 wasdk 独立版共 4 份 zip 及 SHA256 校验和）：https://github.com/vimbackground/XrayUI/releases/tag/v1.2.1。
 
 ## 2026-09-08 跨 Agent 工具移交（当前事实）
 
@@ -104,13 +104,25 @@ UE 布局扩展的自动验收已完成：控制行左侧为路由/全局代理/
 - 本次复盘写入前快照：`_wip/change-snapshots/20260907-git-recovery-retrospective`；外部 vHarness 同步未执行。
 - Git 恢复复盘验收通过：Host Architecture、Host Documentation、vHarness 34 项测试、21 条提示词编号、11 个唯一 EXP、13 个 SOP 引用、格式和快照完整性均通过。
 
-## 下一步
+## 2026-09-08 会话交接与下一步
 
-本地私有 Git 与公开 GitHub 隔离、历史净化和 1.2.0 发布均已完成。公开 `main` 当前为 `8fee103`，公开路径守卫通过；GitHub Actions run `34107575904` 成功，`v1.2.0` Release 已发布。私有根工作树位于 `private/main` 的 `973d7b7`，保留私有治理资料，且绝不推送。实施前快照、公开历史 bundle 与恢复前文件备份均保留在 `_wip/`。
+- 实际记录时间：`2026-09-08T20:00:00+08:00`。
+- 本次完成且已验证：
+  1. 端口可用性判定优化与 `ControlPanelViewModel` 逻辑重构，彻底根除切换主节点与停启主代理时的改端口弹窗误报；
+  2. 启动时恢复代理状态功能实现：增加 `RestoreProxyStateOnStartup` 及主/辅运行节点 ID 记录，退出时准确持久化、启动时自动重连；
+  3. 版本号统一升级为 1.2.1，CHANGELOG.md 顶部增补更新日志；
+  4. 自动化单元测试 102/102 全部通过；win-x64 Native AOT 本地发布成功并在开发者机器上实测验收通过；
+  5. 分支严格隔离：私有开发与治理资料完整保留在本地 `private/main` 分支（绝不推送），仅同步 16 个产品源码及配置到 `public-main` 分支；
+  6. 远程发布：推送 `public-main:main` 成功，触发 GitHub Actions run `34222669925`，成功发布 GitHub Release `v1.2.1`（https://github.com/vimbackground/XrayUI/releases/tag/v1.2.1）。
+- 尚未验证 / 待办事项：
+  1. WI-010 原有跨平台 Cargo 编译与更新器覆盖更新测试（需 Rust 工具链环境）；
+  2. 复盘方案草案 `_System/reviews/2026-09-07_xrayui_public_release_isolation_session_retrospective_plan.md` 仍保持未批准状态；
+  3. 本地 `_Dist/publish/` 下已生成 1.2.1 win-x64 可执行制品，可按需使用或清理。
+- 当前 Git 状态：私有根工作树位于 `private/main`，HEAD 干净；公开分支 `public-main` 与远端 `origin/main` 均对齐在 `71296e2`（Release v1.2.1）。
+- 下次唯一第一步：读取 `Agent.md`、`_System/memory/current_state.md` 和 `_System/architecture/task_breakdown.md`，核对物理文件与 Git 工作树状态，向开发者汇报就绪情况并等待选择新的开发任务或复盘批准。
 
-下次唯一第一步：读取本文件、Work Item Registry 与 `_System/reviews/2026-09-07_xrayui_public_release_isolation_session_retrospective_plan.md`，询问开发者是否批准该草案复盘；未获批准前不得写入复盘、SOP、提示词或通用经验。公开工作树中的 `8fee103` 仅包含已发布的 CI 版本传递修复，尚未回写私有分支；如需同步，必须作为单独、明确的本地 Git 决定处理。
+## 2026-09-07 历史交接记录
 
-## 2026-09-07 本次会话安全交接
 
 - 已完成且已验证：公开历史已移除 `_Dev/`、`_System/`、`_wip/`、`Agent.md` 和工作区文件；公开分支路径守卫、99/99 单元测试、win-x64 Native AOT 发布均通过；GitHub `v1.2.0` Release 和工作流均成功。
 - 已完成但未在私有根工作树回写：公开分支提交 `8fee103` 修复 GitHub Actions 将 XML 版本元素对象误传给 `dotnet publish` 的问题；该修复已在线验证，但私有 `private/main` 仍停在 `973d7b7`。

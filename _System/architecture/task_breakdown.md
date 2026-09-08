@@ -170,7 +170,7 @@ tags:
 - [x] 版本号同步提升至 1.2.1（`XrayUI-dev.csproj`、`updater-rs/Cargo.toml`、`.github/workflows/release.yml`、`CHANGELOG.md`）。
 - [x] 102/102 单元测试通过，win-x64 Native AOT 发布验证通过，开发者本地测试通过。
 - [x] 同步至 `public-main`（提交 `71296e2`），通过禁止路径审查，推送到 GitHub `origin/main` 触发自动化发布。
-- [x] GitHub Actions 发布流水线运行中（Run ID: `34222669925`，https://github.com/vimbackground/XrayUI/actions/runs/34222669925）。
-- 状态：verified；本地功能与远程推送均已完成，自动化流水线正在构建发布制品。
+- [x] GitHub Actions 发布流水线执行成功（Run ID: `34222669925`），GitHub Release `v1.2.1` 已正式上线发布（https://github.com/vimbackground/XrayUI/releases/tag/v1.2.1）。
+- 状态：verified；本地功能开发、测试验收、分支隔离同步与 GitHub Actions 线上发布已全部圆满完成。
 
 
