@@ -84,7 +84,13 @@ namespace XrayUI.Views
                     ViewModel.XrayService,
                     () => main.ViewModel.ServerList.Servers,
                     () => main.ViewModel.ServerDetail.ActiveServer,
-                    () => ViewModel.LocalPort);
+                    () => ViewModel.LocalPort,
+                    async ()
+                    {
+                        if (ViewModel.StartStopCommand.CanExecute(null))
+                            await ViewModel.StartStopCommand.ExecuteAsync(null);
+                    },
+                    server => main.ViewModel.ServerList.ToggleDedicatedPort(server));
                 _runtimeWindow.Closed += (_, _) => _runtimeWindow = null;
             }
             else
