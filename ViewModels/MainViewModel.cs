@@ -24,6 +24,8 @@ namespace XrayUI.ViewModels
         private string _activeLatencyText = string.Empty;
         private bool _showPersonalize;
         private bool _showAppSettings;
+        private readonly HashSet<string> _geminiAutoSwitchAttempted = new(StringComparer.Ordinal);
+        private bool _geminiAutoSwitchInProgress;
 
         public ServerListViewModel   ServerList   { get; }
         public ServerDetailViewModel ServerDetail { get; }
@@ -105,6 +107,7 @@ namespace XrayUI.ViewModels
             ControlPanel.GetAllServers = () => ServerList.Servers;
             ControlPanel.CanStartSelectedServer = () => ServerList.CanRunSelectedServer;
             ServerDetail.GetAllServers = () => ServerList.Servers;
+            ServerDetail.RequestSwitchToNextGeminiServer = SwitchToNextGeminiServerAsync;
             ServerDetail.ResolveGroupName = ServerList.GetGroupDisplayName;
             ServerDetail.OpenSubscriptions = ServerList.OpenSubscriptionsOnManagePageAsync;
             // A subscription rename/delete changes the detail pane's group label without touching
@@ -467,6 +470,8 @@ namespace XrayUI.ViewModels
             if (server is null) return;
             if (ControlPanel.IsReapplying) return;
 
+            _geminiAutoSwitchAttempted.Clear();
+
             // An auxiliary proxy is controlled independently from the primary proxy. Reapplying
             // the single Xray core may briefly interrupt traffic, but it never changes the
             // selected primary server or the enabled state of other auxiliary proxies.
@@ -502,8 +507,36 @@ namespace XrayUI.ViewModels
         private async Task SetPrimaryProxyAsync(ServerEntry? server)
         {
             if (server is null || ControlPanel.IsReapplying) return;
+            _geminiAutoSwitchAttempted.Clear();
             ServerList.SelectedServer = server;
             await ControlPanel.ConnectToServerAsync(server);
+        }
+
+        private async Task SwitchToNextGeminiServerAsync(ServerEntry failedServer)
+        {
+            if (!ControlPanel.IsRunning
+                || ControlPanel.IsReapplying
+                || !ReferenceEquals(_activeServer, failedServer))
+            {
+                return;
+            }
+
+            _geminiAutoSwitchAttempted.Add(failedServer.Id);
+            var nextServer = ServerList.Servers.FirstOrDefault(
+                server => !_geminiAutoSwitchAttempted.Contains(server.Id));
+            if (nextServer is null) return;
+
+            _geminiAutoSwitchAttempted.Add(nextServer.Id);
+            ServerList.SelectedServer = nextServer;
+            _geminiAutoSwitchInProgress = true;
+            try
+            {
+                await ControlPanel.ConnectToServerAsync(nextServer);
+            }
+            finally
+            {
+                _geminiAutoSwitchInProgress = false;
+            }
         }
 
         private void OpenPersonalize()
@@ -678,6 +711,8 @@ namespace XrayUI.ViewModels
             if (e.PropertyName != nameof(ControlPanelViewModel.IsRunning)) return;
 
             var isRunning = ControlPanel.IsRunning;
+            if (!isRunning && !_geminiAutoSwitchInProgress)
+                _geminiAutoSwitchAttempted.Clear();
             UpdateActiveServer(isRunning ? ServerList.SelectedServer : null);
             ServerList.IsProxyRunning = isRunning;
             OnPropertyChanged(nameof(ActiveServerName));
