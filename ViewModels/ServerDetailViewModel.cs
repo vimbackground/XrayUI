@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -24,6 +24,7 @@ namespace XrayUI.ViewModels
         private AiUnlockStatus? _openAiStatus;
         private AiUnlockStatus? _claudeStatus;
         private AiUnlockStatus? _geminiStatus;
+        private bool _geminiSwitchRequested;
 
         public ServerDetailViewModel(LatencyProbeService latencyProbe, AiUnlockCheckService aiUnlockCheck)
         {
@@ -37,6 +38,9 @@ namespace XrayUI.ViewModels
         }
 
         public Func<IEnumerable<ServerEntry>> GetAllServers { get; set; } = () => Array.Empty<ServerEntry>();
+
+        /// <summary>Requests that the primary connection try another server after Gemini is blocked.</summary>
+        public Func<ServerEntry, Task> RequestSwitchToNextGeminiServer { get; set; } = _ => Task.CompletedTask;
 
         /// <summary>
         /// Resolves a node's group label. Set by MainViewModel so this VM can read the
@@ -457,6 +461,7 @@ namespace XrayUI.ViewModels
             }
 
             ClearAiUnlockResults();
+            _geminiSwitchRequested = false;
             UpdateAiUnlockDisplay();
             _ = RunAiUnlockChecksAsync(httpProxyPort);
         }
@@ -470,11 +475,11 @@ namespace XrayUI.ViewModels
             // batching with Task.WhenAll (which would gate every dot on the slowest
             // check — Gemini). The await resumes on the UI thread, so touching the
             // status brushes here is safe.
-            async Task RunOne(Task<AiUnlockStatus> check, Action<AiUnlockStatus> assign)
+            async Task RunOne(Task<AiUnlockStatus> check, Func<AiUnlockStatus, Task> assign)
             {
                 var status = await check;
                 if (cts.IsCancellationRequested) return;
-                assign(status);
+                await assign(status);
                 UpdateAiUnlockDisplay();
             }
 
@@ -483,9 +488,29 @@ namespace XrayUI.ViewModels
                 // All three requests are kicked off before the first await, so they
                 // still run in parallel.
                 await Task.WhenAll(
-                    RunOne(_aiUnlockCheck.CheckOpenAiAsync(httpProxyPort, cts.Token), s => _openAiStatus = s),
-                    RunOne(_aiUnlockCheck.CheckClaudeAsync(httpProxyPort, cts.Token), s => _claudeStatus = s),
-                    RunOne(_aiUnlockCheck.CheckGeminiAsync(httpProxyPort, cts.Token), s => _geminiStatus = s));
+                    RunOne(_aiUnlockCheck.CheckOpenAiAsync(httpProxyPort, cts.Token), s =>
+                    {
+                        _openAiStatus = s;
+                        return Task.CompletedTask;
+                    }),
+                    RunOne(_aiUnlockCheck.CheckClaudeAsync(httpProxyPort, cts.Token), s =>
+                    {
+                        _claudeStatus = s;
+                        return Task.CompletedTask;
+                    }),
+                    RunOne(_aiUnlockCheck.CheckGeminiAsync(httpProxyPort, cts.Token), async s =>
+                    {
+                        _geminiStatus = s;
+                        if (s == AiUnlockStatus.Blocked
+                            && !_geminiSwitchRequested
+                            && IsProxyRunning
+                            && SelectedServer is not null
+                            && ReferenceEquals(SelectedServer, ActiveServer))
+                        {
+                            _geminiSwitchRequested = true;
+                            await RequestSwitchToNextGeminiServer(ActiveServer);
+                        }
+                    }));
             }
             catch (OperationCanceledException)
             {
