@@ -8,10 +8,12 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
             <TextBlock Text="查看" VerticalAlignment="Center" />
             <ComboBox x:Name="TargetSelector" Grid.Column="1" SelectionChanged="TargetSelector_SelectionChanged" />
-            <Button Grid.Column="2" Content="复制" Click="CopyButton_Click" />
+            <Button x:Name="StopTargetButton" Grid.Column="2" Content="关闭当前代理"
+                    Click="StopTargetButton_Click" />
+            <Button Grid.Column="3" Content="复制" Click="CopyButton_Click" />
         </Grid>
         <TextBlock x:Name="StatusText" Grid.Row="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         <ScrollView x:Name="LogScrollViewer" Grid.Row="2" ContentOrientation="Both"
