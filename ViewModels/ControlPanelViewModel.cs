@@ -91,7 +91,7 @@ namespace XrayUI.ViewModels
             StartStopButtonContent = L.ControlPanel_Start;
             LocalPort              = 16890;
             RoutingMode            = "smart";
-            IsSystemProxyEnabled   = true;
+            IsSystemProxyEnabled   = false;
         }
 
         // ── Running state ─────────────────────────────────────────────────────────────────────────────────────────────
