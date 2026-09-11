@@ -33,8 +33,8 @@ namespace XrayUI.Models
         public string? LastRunningServerId { get; set; }
         /// <summary>List of server IDs that had active dedicated auxiliary proxy ports when the app exited.</summary>
         public List<string> LastRunningAuxiliaryServerIds { get; set; } = new();
-        /// <summary>true = global proxy (default); false = do not take over the system proxy.</summary>
-        public bool IsSystemProxyEnabled { get; set; } = true;
+        /// <summary>true = global proxy; false = do not take over the system proxy (default).</summary>
+        public bool IsSystemProxyEnabled { get; set; } = false;
         /// <summary>Stable ID (ServerEntry.Id) of the most recently connected server — used for auto-connect on boot.</summary>
         public string? LastAutoConnectServerId { get; set; }
         /// <summary>Legacy (pre-Id) name-based setting. Read once for migration on first load after upgrade.</summary>
