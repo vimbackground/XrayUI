@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using XrayUI.Helpers;
@@ -16,18 +17,24 @@ namespace XrayUI.Views
         private readonly Func<IEnumerable<ServerEntry>> _servers;
         private readonly Func<ServerEntry?> _primary;
         private readonly Func<int> _localPort;
+        private readonly Func<Task> _stopPrimary;
+        private readonly Func<ServerEntry, Task> _stopAuxiliary;
 
         public ProxyRuntimeWindow(
             XrayService xray,
             Func<IEnumerable<ServerEntry>> servers,
             Func<ServerEntry?> primary,
-            Func<int> localPort)
+            Func<int> localPort,
+            Func<Task> stopPrimary,
+            Func<ServerEntry, Task> stopAuxiliary)
         {
             InitializeComponent();
             _xray = xray;
             _servers = servers;
             _primary = primary;
             _localPort = localPort;
+            _stopPrimary = stopPrimary;
+            _stopAuxiliary = stopAuxiliary;
             Title = "代理动态信息";
             AppWindow.Resize(new Windows.Graphics.SizeInt32(820, 560));
             ThemeHelper.FollowAppTheme(this, WindowRoot);
@@ -77,7 +84,23 @@ namespace XrayUI.Views
             StatusText.Text = _xray.IsRunning
                 ? $"运行中 · {target.Label} · 本地端口 {target.Port} · 最近 {lines.Length} 条信息"
                 : $"未运行 · {target.Label} · 最近 {lines.Length} 条信息";
+            StopTargetButton.Content = target.IsPrimary ? "关闭当前主代理" : "关闭当前辅助代理";
+            StopTargetButton.IsEnabled = target.IsPrimary ? _xray.IsRunning : target.Server?.IsDedicatedPortActive == true;
             LogScrollViewer.ScrollTo(LogScrollViewer.HorizontalOffset, LogScrollViewer.ScrollableHeight);
+        }
+
+        private async void StopTargetButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (TargetSelector.SelectedItem is not RuntimeTarget target) return;
+
+            StopTargetButton.IsEnabled = false;
+            if (target.IsPrimary)
+                await _stopPrimary();
+            else if (target.Server is not null)
+                await _stopAuxiliary(target.Server);
+
+            RefreshTargets();
+            Render();
         }
 
         private void CopyButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -92,6 +115,8 @@ namespace XrayUI.Views
             public required string Key { get; init; }
             public required string Label { get; init; }
             public required int Port { get; init; }
+            public bool IsPrimary => Key == "primary";
+            public ServerEntry? Server { get; init; }
             public string? InboundTag { get; init; }
             public string? OutboundTag { get; init; }
             public override string ToString() => Label;
@@ -115,6 +140,7 @@ namespace XrayUI.Views
                 Key = server.Id,
                 Label = $"辅助代理 · {server.Name} :{server.DedicatedPort}",
                 Port = server.DedicatedPort!.Value,
+                Server = server,
                 InboundTag = $"inbound_dedicated_{server.DedicatedPort}",
                 OutboundTag = $"outbound_dedicated_{server.Id}"
             };
