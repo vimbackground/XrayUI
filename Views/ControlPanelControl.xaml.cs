@@ -85,7 +85,7 @@ namespace XrayUI.Views
                     () => main.ViewModel.ServerList.Servers,
                     () => main.ViewModel.ServerDetail.ActiveServer,
                     () => ViewModel.LocalPort,
-                    async ()
+                    async () =>
                     {
                         if (ViewModel.StartStopCommand.CanExecute(null))
                             await ViewModel.StartStopCommand.ExecuteAsync(null);
