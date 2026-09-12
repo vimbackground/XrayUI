@@ -8,6 +8,7 @@ namespace XrayUI.Views
     {
         private LogWindow? _logWindow;
         private ProxyRuntimeWindow? _runtimeWindow;
+        private ProxyStatusWindow? _proxyStatusWindow;
         private CustomRulesWindow? _customRulesWindow;
 
         public ControlPanelViewModel ViewModel { get; set; } = null!;
@@ -18,6 +19,8 @@ namespace XrayUI.Views
             ToolTipService.SetToolTip(PersonalizeButton, L.ControlPanel_Personalize);
             ToolTipService.SetToolTip(ModeSettingsButton, L.ControlPanel_ModeSettings);
             ToolTipService.SetToolTip(AppSettingsButton, L.ControlPanel_AppSettings);
+            ToolTipService.SetToolTip(RuntimeButton, "代理动态信息");
+            ToolTipService.SetToolTip(ProxyStatusButton, "已启用代理");
         }
 
         // Called by MainWindow after ViewModel is assigned (via x:Bind the property is set before Loaded)
@@ -25,6 +28,8 @@ namespace XrayUI.Views
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             ViewModel.ShowLogsRequested         += OnShowLogsRequested;
+            ViewModel.ShowRuntimeRequested      += OnShowRuntimeRequested;
+            ViewModel.ShowProxyStatusRequested  += OnShowProxyStatusRequested;
             if ((Application.Current as App)?.Window is XrayUI.MainWindow mainWindow)
                 mainWindow.ViewModel.ServerDetail.ShowRuntimeRequested += OnShowRuntimeRequested;
             ViewModel.ShowCustomRulesRequested  += OnShowCustomRulesRequested;
@@ -33,6 +38,8 @@ namespace XrayUI.Views
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.ShowLogsRequested         -= OnShowLogsRequested;
+            ViewModel.ShowRuntimeRequested      -= OnShowRuntimeRequested;
+            ViewModel.ShowProxyStatusRequested  -= OnShowProxyStatusRequested;
             if ((Application.Current as App)?.Window is XrayUI.MainWindow mainWindow)
                 mainWindow.ViewModel.ServerDetail.ShowRuntimeRequested -= OnShowRuntimeRequested;
             ViewModel.ShowCustomRulesRequested  -= OnShowCustomRulesRequested;
@@ -62,6 +69,16 @@ namespace XrayUI.Views
             w.Close();
         }
 
+        public void CloseProxyStatusWindow()
+        {
+            var w = _proxyStatusWindow;
+            if (w is null)
+                return;
+
+            _proxyStatusWindow = null;
+            w.Close();
+        }
+
         private void OnShowLogsRequested(object? sender, EventArgs e)
         {
             if (_logWindow is null)
@@ -84,6 +101,7 @@ namespace XrayUI.Views
                     ViewModel.XrayService,
                     () => main.ViewModel.ServerList.Servers,
                     () => main.ViewModel.ServerDetail.ActiveServer,
+                    main.ViewModel.ServerList.GetGroupDisplayName,
                     () => ViewModel.LocalPort,
                     async () =>
                     {
@@ -98,6 +116,34 @@ namespace XrayUI.Views
                 _runtimeWindow.RefreshTargets();
             }
             _runtimeWindow.Activate();
+        }
+
+        private void OnShowProxyStatusRequested(object? sender, EventArgs e)
+        {
+            if ((Application.Current as App)?.Window is not XrayUI.MainWindow main) return;
+
+            if (_proxyStatusWindow is null)
+            {
+                _proxyStatusWindow = new ProxyStatusWindow(
+                    ViewModel.XrayService,
+                    () => main.ViewModel.ServerList.Servers,
+                    () => main.ViewModel.ServerDetail.ActiveServer,
+                    main.ViewModel.ServerList.GetGroupDisplayName,
+                    () => ViewModel.LocalPort,
+                    async () =>
+                    {
+                        if (ViewModel.StartStopCommand.CanExecute(null))
+                            await ViewModel.StartStopCommand.ExecuteAsync(null);
+                    },
+                    server => main.ViewModel.ServerList.ToggleDedicatedPort(server));
+                _proxyStatusWindow.Closed += (_, _) => _proxyStatusWindow = null;
+            }
+            else
+            {
+                _proxyStatusWindow.RefreshProxies();
+            }
+
+            _proxyStatusWindow.Activate();
         }
 
         private void OnShowCustomRulesRequested(object? sender, CustomRulesViewModel vm)

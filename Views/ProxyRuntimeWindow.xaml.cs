@@ -16,6 +16,7 @@ namespace XrayUI.Views
         private readonly XrayService _xray;
         private readonly Func<IEnumerable<ServerEntry>> _servers;
         private readonly Func<ServerEntry?> _primary;
+        private readonly Func<ServerEntry?, string> _subscription;
         private readonly Func<int> _localPort;
         private readonly Func<Task> _stopPrimary;
         private readonly Func<ServerEntry, Task> _stopAuxiliary;
@@ -24,6 +25,7 @@ namespace XrayUI.Views
             XrayService xray,
             Func<IEnumerable<ServerEntry>> servers,
             Func<ServerEntry?> primary,
+            Func<ServerEntry?, string> subscription,
             Func<int> localPort,
             Func<Task> stopPrimary,
             Func<ServerEntry, Task> stopAuxiliary)
@@ -32,6 +34,7 @@ namespace XrayUI.Views
             _xray = xray;
             _servers = servers;
             _primary = primary;
+            _subscription = subscription;
             _localPort = localPort;
             _stopPrimary = stopPrimary;
             _stopAuxiliary = stopAuxiliary;
@@ -52,15 +55,16 @@ namespace XrayUI.Views
         public void RefreshTargets()
         {
             var selected = TargetSelector.SelectedItem as RuntimeTarget;
-            var targets = new List<RuntimeTarget>
-            {
-                RuntimeTarget.Primary(_primary(), _localPort())
-            };
+            var primary = _primary();
+            var targets = new List<RuntimeTarget>();
+            if (_xray.IsRunning)
+                targets.Add(RuntimeTarget.Primary(primary, _subscription(primary), _localPort()));
             targets.AddRange(_servers()
-                .Where(s => s.DedicatedPort is > 0)
-                .Select(RuntimeTarget.Auxiliary));
+                .Where(s => s.DedicatedPort is > 0 && s.IsDedicatedPortActive)
+                .Select(s => RuntimeTarget.Auxiliary(s, _subscription(s))));
             TargetSelector.ItemsSource = targets;
-            TargetSelector.SelectedItem = targets.FirstOrDefault(t => t.Key == selected?.Key) ?? targets[0];
+            TargetSelector.SelectedItem = targets.FirstOrDefault(t => t.Key == selected?.Key)
+                ?? targets.FirstOrDefault();
         }
 
         private void TargetSelector_SelectionChanged(object sender, SelectionChangedEventArgs e) => Render();
@@ -74,7 +78,13 @@ namespace XrayUI.Views
         private void Render()
         {
             var target = TargetSelector.SelectedItem as RuntimeTarget;
-            if (target is null) return;
+            if (target is null)
+            {
+                LogText.Text = "当前没有正在运行的代理。";
+                StatusText.Text = "无运行中的代理";
+                StopTargetButton.IsEnabled = false;
+                return;
+            }
 
             var lines = _xray.GetLogBuffer()
                 .Where(line => target.IsRelevant(line))
@@ -130,15 +140,17 @@ namespace XrayUI.Views
                     || line.Contains(OutboundTag!, StringComparison.Ordinal);
             }
 
-            public static RuntimeTarget Primary(ServerEntry? server, int port) => new()
+            public static RuntimeTarget Primary(ServerEntry? server, string subscription, int port) => new()
             {
-                Key = "primary", Label = $"主代理{(server is null ? string.Empty : $" · {server.Name}")}", Port = port
+                Key = "primary",
+                Label = $"主代理 · {server?.Name ?? "未知节点"} · 订阅：{subscription} · 端口：{port}",
+                Port = port
             };
 
-            public static RuntimeTarget Auxiliary(ServerEntry server) => new()
+            public static RuntimeTarget Auxiliary(ServerEntry server, string subscription) => new()
             {
                 Key = server.Id,
-                Label = $"辅助代理 · {server.Name} :{server.DedicatedPort}",
+                Label = $"辅助代理 · {server.Name} · 订阅：{subscription} · 端口：{server.DedicatedPort}",
                 Port = server.DedicatedPort!.Value,
                 Server = server,
                 InboundTag = $"inbound_dedicated_{server.DedicatedPort}",

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using XrayUI.Helpers;
+using XrayUI.Models;
 
 namespace XrayUI.Services
 {
@@ -46,6 +47,10 @@ namespace XrayUI.Services
         private int _logHead;    // index of the next write slot
         private int _logCount;   // number of valid entries (<= LogBufferMax)
         private readonly Lock _bufferLock = new();
+
+        public ProxyTelemetry Telemetry { get; } = new();
+        public XrayStatsService Stats { get; } = new();
+        public int StatsApiPort { get; private set; }
 
         public bool IsRunning => _process is { HasExited: false };
 
@@ -103,6 +108,7 @@ namespace XrayUI.Services
                 }
             }
 
+            Telemetry.Observe(line);
             LogReceived?.Invoke(this, line);
         }
 
@@ -150,7 +156,7 @@ namespace XrayUI.Services
             }
         }
 
-        public async Task<bool> StartAsync(string configJson)
+        public async Task<bool> StartAsync(string configJson, int statsApiPort = 0)
         {
             if (IsRunning)
             {
@@ -161,6 +167,9 @@ namespace XrayUI.Services
             }
 
             LastError = string.Empty;
+            Telemetry.Reset();
+            Stats.Reset();
+            StatsApiPort = statsApiPort;
 
             if (!File.Exists(ExePath))
             {

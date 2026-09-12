@@ -304,6 +304,7 @@ namespace XrayUI
             _isHiddenToTray = true;
             ControlPanel?.CloseLogWindow();
             ControlPanel?.CloseCustomRulesWindow();
+            ControlPanel?.CloseProxyStatusWindow();
 
             AppWindow.IsShownInSwitchers = false;
             AppWindow.Hide();

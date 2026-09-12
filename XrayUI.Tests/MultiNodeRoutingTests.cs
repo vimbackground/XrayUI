@@ -8,6 +8,27 @@ namespace XrayUI.Tests;
 public class MultiNodeRoutingTests
 {
     [Fact]
+    public void Build_EnablesInboundTrafficStatsApi()
+    {
+        var server = new ServerEntry
+        {
+            Host = "example.com",
+            Port = 443,
+            Protocol = "vless",
+            Uuid = "11111111-1111-1111-1111-111111111111"
+        };
+        var settings = new AppSettings { LocalMixedPort = 10808 };
+
+        var doc = JsonNode.Parse(XrayConfigBuilder.Build(server, settings))!.AsObject();
+
+        Assert.Equal("127.0.0.1:10809", doc["api"]!["listen"]!.GetValue<string>());
+        Assert.Contains("StatsService", doc["api"]!["services"]!.AsArray().Select(x => x!.GetValue<string>()));
+        Assert.NotNull(doc["stats"]);
+        Assert.True(doc["policy"]!["system"]!["statsInboundUplink"]!.GetValue<bool>());
+        Assert.True(doc["policy"]!["system"]!["statsInboundDownlink"]!.GetValue<bool>());
+    }
+
+    [Fact]
     public void Build_WhenMultiNodeDisabled_OnlyBuildsPrimaryInboundAndOutbound()
     {
         var mainServer = new ServerEntry
