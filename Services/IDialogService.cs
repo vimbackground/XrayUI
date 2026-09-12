@@ -62,5 +62,7 @@ namespace XrayUI.Services
         Task<bool> ShowFirstRunImportPromptAsync(string sourceSummary);
         Task<int?> ShowPortConflictPromptAsync(int port, int suggestedPort);
         Task<(int port, bool allowLan, bool remove)?> ShowEditDedicatedPortDialogAsync(ServerEntry server, IEnumerable<int> otherUsedPorts);
+        Task<(bool createNew, ServerEntry? replacement)?> ShowDedicatedPortSlotChoiceDialogAsync(
+            ServerEntry target, IEnumerable<ServerEntry> existingSlots);
     }
 }

@@ -27,7 +27,8 @@ namespace XrayUI.Services
         public static string Build(
             ServerEntry server,
             AppSettings settings,
-            IEnumerable<ServerEntry>? availableServers = null)
+            IEnumerable<ServerEntry>? availableServers = null,
+            int? statsApiPort = null)
         {
             var auxServers = (settings.EnableMultiNodeRouting && availableServers != null)
                 ? availableServers
@@ -39,6 +40,9 @@ namespace XrayUI.Services
             var config = new JsonObject
             {
                 ["log"] = BuildLog(settings),
+                    ["api"] = BuildStatsApi(statsApiPort ?? GetStatsApiPort(settings.LocalMixedPort)),
+                ["stats"] = new JsonObject(),
+                ["policy"] = BuildStatsPolicy(),
                 ["dns"] = BuildDns(settings),
                 ["inbounds"] = BuildInbounds(settings, auxServers),
                 ["outbounds"] = BuildOutbounds(server, settings, availableServers, auxServers),
@@ -67,6 +71,25 @@ namespace XrayUI.Services
         /// <summary>True when xray will be built with a fakedns pool wired to the TUN inbound.</summary>
         private static bool IsFakeDnsActive(AppSettings settings) =>
             settings.IsTunMode && settings.FakeDnsEnabled;
+
+        internal static int GetStatsApiPort(int localPort) =>
+            localPort == 65535 ? 65534 : localPort + 1;
+
+        private static JsonObject BuildStatsApi(int apiPort) => new()
+        {
+            ["tag"] = "api",
+            ["listen"] = $"127.0.0.1:{apiPort}",
+            ["services"] = CreateStringArray("StatsService")
+        };
+
+        private static JsonObject BuildStatsPolicy() => new()
+        {
+            ["system"] = new JsonObject
+            {
+                ["statsInboundUplink"] = true,
+                ["statsInboundDownlink"] = true
+            }
+        };
 
         private static JsonObject BuildLog(AppSettings settings)
         {

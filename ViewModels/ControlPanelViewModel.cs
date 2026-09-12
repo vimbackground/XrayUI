@@ -68,6 +68,8 @@ namespace XrayUI.ViewModels
         }
 
         public event EventHandler? ShowLogsRequested;
+        public event EventHandler? ShowRuntimeRequested;
+        public event EventHandler? ShowProxyStatusRequested;
         public event EventHandler? ExitRequested;
         public event EventHandler? ShowPersonalizeRequested;
         public event EventHandler? ShowAppSettingsRequested;
@@ -257,7 +259,6 @@ namespace XrayUI.ViewModels
                     }
                 }
             }
-
             appSettings.LocalMixedPort      = LocalPort;
             appSettings.AllowLanConnections = AllowLanConnections;
             appSettings.RoutingMode         = RoutingMode;
@@ -271,8 +272,9 @@ namespace XrayUI.ViewModels
                 await CleanupPersistedTunRoutesAsync(appSettings);
             }
 
-            var configJson = XrayConfigBuilder.Build(server, appSettings, GetAllServers());
-            var ok = await _xray.StartAsync(configJson);
+            var statsApiPort = ResolveStatsApiPort(LocalPort);
+            var configJson = XrayConfigBuilder.Build(server, appSettings, GetAllServers(), statsApiPort);
+            var ok = await _xray.StartAsync(configJson, statsApiPort);
 
             if (!ok)
             {
@@ -307,6 +309,22 @@ namespace XrayUI.ViewModels
 
 
             return true;
+        }
+
+        private static int ResolveStatsApiPort(int localPort)
+        {
+            var preferred = XrayConfigBuilder.GetStatsApiPort(localPort);
+            if (preferred != localPort && PortHelper.IsPortAvailable(preferred))
+                return preferred;
+
+            for (var attempt = 0; attempt < 8; attempt++)
+            {
+                var candidate = PortHelper.GenerateRandomAvailablePort();
+                if (candidate != localPort && PortHelper.IsPortAvailable(candidate))
+                    return candidate;
+            }
+
+            return preferred;
         }
 
         private async Task HandleStartStopFailureAsync(Exception ex)
@@ -353,9 +371,16 @@ namespace XrayUI.ViewModels
                     settings.IsTunMode             = IsTunMode;
                     settings.IsSystemProxyEnabled  = IsSystemProxyEnabled;
 
-                    var cfg = XrayConfigBuilder.Build(activeServer, settings, availableServers: GetAllServers());
+                    var statsApiPort = _xray.StatsApiPort > 0
+                        ? _xray.StatsApiPort
+                        : ResolveStatsApiPort(LocalPort);
+                    var cfg = XrayConfigBuilder.Build(
+                        activeServer,
+                        settings,
+                        availableServers: GetAllServers(),
+                        statsApiPort: statsApiPort);
 
-                    var ok = await _xray.StartAsync(cfg);
+                    var ok = await _xray.StartAsync(cfg, statsApiPort);
                     if (!ok)
                     {
                         var detail = string.IsNullOrEmpty(_xray.LastError)
@@ -697,6 +722,12 @@ namespace XrayUI.ViewModels
         }
 
         // ── Logs ──────────────────────────────────────────────────────────────
+
+        [RelayCommand]
+        private void ShowRuntime() => ShowRuntimeRequested?.Invoke(this, EventArgs.Empty);
+
+        [RelayCommand]
+        private void ShowProxyStatus() => ShowProxyStatusRequested?.Invoke(this, EventArgs.Empty);
 
         [RelayCommand]
         private void ShowLogs() => ShowLogsRequested?.Invoke(this, EventArgs.Empty);

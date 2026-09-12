@@ -1870,6 +1870,24 @@ namespace XrayUI.ViewModels
 
             if (!server.DedicatedPort.HasValue || server.DedicatedPort.Value <= 0)
             {
+                var existingSlots = Servers.Where(candidate => candidate != server && candidate.HasDedicatedPort);
+                var choice = await _dialogs.ShowDedicatedPortSlotChoiceDialogAsync(server, existingSlots);
+                if (!choice.HasValue) return;
+
+                if (!choice.Value.createNew && choice.Value.replacement is ServerEntry replacement)
+                {
+                    server.DedicatedPort = replacement.DedicatedPort;
+                    server.AllowDedicatedLan = replacement.AllowDedicatedLan;
+                    replacement.DedicatedPort = null;
+                    replacement.IsDedicatedPortActive = false;
+                    server.IsDedicatedPortActive = true;
+                    await SaveAsync();
+
+                    if (IsProxyRunning && RequestReapplyRouting is not null)
+                        await RequestReapplyRouting.Invoke();
+                    return;
+                }
+
                 await EditDedicatedPort(server);
                 return;
             }

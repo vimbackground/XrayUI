@@ -114,6 +114,28 @@
                     <FontIcon Glyph="&#xE713;" FontSize="16" />
                 </Button>
 
+                <!-- 4. 代理动态信息 -->
+                <Button x:Name="RuntimeButton"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        VerticalAlignment="Center"
+                        Padding="8"
+                        ToolTipService.ToolTip="代理动态信息"
+                        Command="{x:Bind ViewModel.ShowRuntimeCommand}">
+                    <FontIcon Glyph="&#xE9D9;" FontSize="16" />
+                </Button>
+
+                <!-- 5. 已启用代理 -->
+                <Button x:Name="ProxyStatusButton"
+                        Background="Transparent"
+                        BorderBrush="Transparent"
+                        VerticalAlignment="Center"
+                        Padding="8"
+                        ToolTipService.ToolTip="已启用代理"
+                        Command="{x:Bind ViewModel.ShowProxyStatusCommand}">
+                    <FontIcon Glyph="&#xE8FD;" FontSize="16" />
+                </Button>
+
             </StackPanel>
         </Grid>
 

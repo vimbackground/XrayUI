@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Microsoft.UI.Xaml.Automation;
 using XrayUI.Controls;
@@ -891,6 +892,73 @@ namespace XrayUI.Services
             if (result != ContentDialogResult.Primary) return null;
 
             return (CurrentPortValue(), lanToggle.IsOn, false);
+        }
+
+        public async Task<(bool createNew, ServerEntry? replacement)?> ShowDedicatedPortSlotChoiceDialogAsync(
+            ServerEntry target, IEnumerable<ServerEntry> existingSlots)
+        {
+            var slots = existingSlots
+                .Where(server => server.DedicatedPort is > 0)
+                .ToList();
+            var slotPicker = new ComboBox
+            {
+                ItemsSource = slots,
+                DisplayMemberPath = nameof(ServerEntry.Name),
+                PlaceholderText = "选择要替换的辅助代理",
+                IsEnabled = slots.Count > 0,
+                MinWidth = 280
+            };
+            var selectedSlotText = new TextBlock
+            {
+                Opacity = 0.7,
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            void UpdateSelectedSlotText()
+            {
+                if (slotPicker.SelectedItem is not ServerEntry slot)
+                {
+                    selectedSlotText.Text = slots.Count == 0
+                        ? "当前没有可替换的辅助代理。"
+                        : "选择一个已有辅助代理后，可复用它的端口槽位。";
+                    return;
+                }
+
+                selectedSlotText.Text =
+                    $"将复用端口 {slot.DedicatedPort}，当前节点“{slot.Name}”的辅助代理将被关闭。";
+            }
+
+            slotPicker.SelectionChanged += (_, _) => UpdateSelectedSlotText();
+            UpdateSelectedSlotText();
+
+            var dialog = CreateDialog();
+            dialog.Title = $"启动辅助代理 - {target.Name}";
+            dialog.PrimaryButtonText = "创建新辅助槽位";
+            dialog.SecondaryButtonText = slots.Count > 0 ? "替换选中辅助代理" : string.Empty;
+            dialog.CloseButtonText = L.Dialog_Cancel;
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = new StackPanel
+            {
+                Width = 360,
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "可以为当前节点创建新的辅助代理槽位，也可以复用已有槽位。",
+                        TextWrapping = TextWrapping.Wrap
+                    },
+                    slotPicker,
+                    selectedSlotText
+                }
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+                return (true, null);
+            if (result == ContentDialogResult.Secondary && slotPicker.SelectedItem is ServerEntry replacement)
+                return (false, replacement);
+            return null;
         }
 
         public async Task<bool> ShowFirstRunImportPromptAsync(string sourceSummary)
