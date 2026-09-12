@@ -208,6 +208,7 @@ namespace XrayUI.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DedicatedPortDisplay))]
         [NotifyPropertyChangedFor(nameof(HasDedicatedPort))]
+        [NotifyPropertyChangedFor(nameof(DedicatedPortSlotDisplay))]
         [NotifyPropertyChangedFor(nameof(UsesAuxiliaryProxyAction))]
         [NotifyPropertyChangedFor(nameof(IsCurrentProxyActionActive))]
         public partial int? DedicatedPort { get; set; }
@@ -226,6 +227,11 @@ namespace XrayUI.Models
 
         [JsonIgnore]
         public bool HasDedicatedPort => DedicatedPort is > 0;
+
+        [JsonIgnore]
+        public string DedicatedPortSlotDisplay => DedicatedPort is > 0
+            ? $"端口 {DedicatedPort} · {Name}"
+            : Name;
 
         // Runtime-only display value for the primary proxy's local listening port.
         [JsonIgnore]

@@ -8,6 +8,18 @@ namespace XrayUI.Tests;
 public class MultiNodeRoutingTests
 {
     [Fact]
+    public void DedicatedPortSlotDisplay_ShowsPortBeforeServerName()
+    {
+        var server = new ServerEntry
+        {
+            Name = "Japan Dedicated",
+            DedicatedPort = 10809
+        };
+
+        Assert.Equal("端口 10809 · Japan Dedicated", server.DedicatedPortSlotDisplay);
+    }
+
+    [Fact]
     public void Build_EnablesInboundTrafficStatsApi()
     {
         var server = new ServerEntry

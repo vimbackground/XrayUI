@@ -894,19 +894,26 @@ namespace XrayUI.Services
             return (CurrentPortValue(), lanToggle.IsOn, false);
         }
 
-        public async Task<(bool createNew, ServerEntry? replacement)?> ShowDedicatedPortSlotChoiceDialogAsync(
+        public async Task<(bool createNew, ServerEntry? replacement, IReadOnlyList<ServerEntry> removedSlots)?> ShowDedicatedPortSlotChoiceDialogAsync(
             ServerEntry target, IEnumerable<ServerEntry> existingSlots)
         {
             var slots = existingSlots
                 .Where(server => server.DedicatedPort is > 0)
                 .ToList();
+            var removedSlots = new List<ServerEntry>();
             var slotPicker = new ComboBox
             {
                 ItemsSource = slots,
-                DisplayMemberPath = nameof(ServerEntry.Name),
+                DisplayMemberPath = nameof(ServerEntry.DedicatedPortSlotDisplay),
                 PlaceholderText = "选择要替换的辅助代理",
                 IsEnabled = slots.Count > 0,
                 MinWidth = 280
+            };
+            var removeSlotButton = new Button
+            {
+                Content = "删除选中槽位",
+                IsEnabled = false,
+                HorizontalAlignment = HorizontalAlignment.Left
             };
             var selectedSlotText = new TextBlock
             {
@@ -929,6 +936,20 @@ namespace XrayUI.Services
             }
 
             slotPicker.SelectionChanged += (_, _) => UpdateSelectedSlotText();
+            slotPicker.SelectionChanged += (_, _) =>
+                removeSlotButton.IsEnabled = slotPicker.SelectedItem is ServerEntry;
+            removeSlotButton.Click += (_, _) =>
+            {
+                if (slotPicker.SelectedItem is not ServerEntry slot) return;
+
+                slots.Remove(slot);
+                removedSlots.Add(slot);
+                slotPicker.ItemsSource = null;
+                slotPicker.ItemsSource = slots;
+                slotPicker.IsEnabled = slots.Count > 0;
+                removeSlotButton.IsEnabled = false;
+                UpdateSelectedSlotText();
+            };
             UpdateSelectedSlotText();
 
             var dialog = CreateDialog();
@@ -949,15 +970,18 @@ namespace XrayUI.Services
                         TextWrapping = TextWrapping.Wrap
                     },
                     slotPicker,
+                    removeSlotButton,
                     selectedSlotText
                 }
             };
 
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
-                return (true, null);
+                return (true, null, removedSlots);
             if (result == ContentDialogResult.Secondary && slotPicker.SelectedItem is ServerEntry replacement)
-                return (false, replacement);
+                return (false, replacement, removedSlots);
+            if (removedSlots.Count > 0)
+                return (false, null, removedSlots);
             return null;
         }
 

@@ -1874,6 +1874,12 @@ namespace XrayUI.ViewModels
                 var choice = await _dialogs.ShowDedicatedPortSlotChoiceDialogAsync(server, existingSlots);
                 if (!choice.HasValue) return;
 
+                foreach (var removedSlot in choice.Value.removedSlots)
+                {
+                    removedSlot.DedicatedPort = null;
+                    removedSlot.IsDedicatedPortActive = false;
+                }
+
                 if (!choice.Value.createNew && choice.Value.replacement is ServerEntry replacement)
                 {
                     server.DedicatedPort = replacement.DedicatedPort;
@@ -1881,6 +1887,15 @@ namespace XrayUI.ViewModels
                     replacement.DedicatedPort = null;
                     replacement.IsDedicatedPortActive = false;
                     server.IsDedicatedPortActive = true;
+                    await SaveAsync();
+
+                    if (IsProxyRunning && RequestReapplyRouting is not null)
+                        await RequestReapplyRouting.Invoke();
+                    return;
+                }
+
+                if (!choice.Value.createNew)
+                {
                     await SaveAsync();
 
                     if (IsProxyRunning && RequestReapplyRouting is not null)
