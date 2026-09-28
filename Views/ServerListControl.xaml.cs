@@ -231,7 +231,7 @@ namespace XrayUI.Views
                 };
                 flyout.Items.Add(primaryItem);
 
-                if (ViewModel.EnableMultiNodeRouting && server.IsActive != true)
+                if (ViewModel.EnableMultiNodeRouting && (!server.IsActive || server.IsDedicatedPortActive))
                 {
                     var isDedicatedActive = server.IsDedicatedPortActive;
                     var toggleDedicatedText = isDedicatedActive ? "停止辅助代理" : "启动辅助代理";
