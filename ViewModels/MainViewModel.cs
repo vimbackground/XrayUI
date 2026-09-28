@@ -502,6 +502,13 @@ namespace XrayUI.ViewModels
         private async Task SetPrimaryProxyAsync(ServerEntry? server)
         {
             if (server is null || ControlPanel.IsReapplying) return;
+
+            if (server.IsDedicatedPortActive)
+            {
+                server.IsDedicatedPortActive = false;
+                await ServerList.SaveAsync();
+            }
+
             ServerList.SelectedServer = server;
             await ControlPanel.ConnectToServerAsync(server);
         }
@@ -707,7 +714,14 @@ namespace XrayUI.ViewModels
                 _activeLatencyText = server is not null ? ServerDetail.LatencyText : string.Empty;
                 ServerDetail.ActiveServer = server;
                 if (server is not null)
+                {
                     server.IsActive = true;
+                    if (server.IsDedicatedPortActive)
+                    {
+                        server.IsDedicatedPortActive = false;
+                        _ = ServerList.SaveAsync();
+                    }
+                }
                 return;
             }
 
@@ -724,6 +738,11 @@ namespace XrayUI.ViewModels
             {
                 server.IsActive = true;
                 server.RuntimeProxyPort = ControlPanel.LocalPort;
+                if (server.IsDedicatedPortActive)
+                {
+                    server.IsDedicatedPortActive = false;
+                    _ = ServerList.SaveAsync();
+                }
             }
         }
 
