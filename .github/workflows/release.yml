@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rid: [win-x64, win-arm64]
+        rid: [win-x64]
         # false = framework-dependent WinAppSDK (needs Windows App Runtime installed,
         # smaller zip; the auto-update channel tracks these). true = runtime bundled
         # into the app folder ("-wasdk" zips, no installer needed, much larger).
@@ -61,9 +61,6 @@ jobs:
           - rid: win-x64
             platform: x64
             rust_target: x86_64-pc-windows-msvc
-          - rid: win-arm64
-            platform: ARM64
-            rust_target: aarch64-pc-windows-msvc
 
     env:
       # Suffix for zip/artifact names: "" or "-wasdk".
@@ -214,11 +211,9 @@ jobs:
             "",
             "#### 🌟 推荐常规版 / Normal version (Recommended)",
             "- **x64 (绝大多数 Windows 电脑)**: [XrayUI-win-x64.zip]($dlBase/XrayUI-win-x64.zip)",
-            "- **ARM64 (骁龙/Surface Pro X 等)**: [XrayUI-win-arm64.zip]($dlBase/XrayUI-win-arm64.zip)",
             "",
             "#### 📦 包含 WinAppSDK 运行时独立版（仅在常规版提示缺少组件无法启动时使用）",
             "- [x64 独立版]($dlBase/XrayUI-win-x64-wasdk.zip)",
-            "- [ARM64 独立版]($dlBase/XrayUI-win-arm64-wasdk.zip)",
             "",
             "---",
             "",
