@@ -173,4 +173,18 @@ tags:
 - [x] GitHub Actions 发布流水线执行成功（Run ID: `34222669925`），GitHub Release `v1.2.1` 已正式上线发布（https://github.com/vimbackground/XrayUI/releases/tag/v1.2.1）。
 - 状态：verified；本地功能开发、测试验收、分支隔离同步与 GitHub Actions 线上发布已全部圆满完成。
 
+## WI-016：1.2.2 多代理模式辅代理状态死锁修复与公开发布
+
+- [x] 修复多代理模式下辅代理状态死锁问题：
+  - `ServerListControl.xaml.cs` 右键菜单允许节点在处于辅代理状态时始终显示“停止辅助代理”；
+  - `MainViewModel.cs` 在设为主代理和确认主代理状态时自动强制清除辅代理标记；
+  - `ServerListViewModel.cs` 拦截对活动主代理节点开启辅代理的操作；
+  - `SaveAsync` 权限调整支持跨模型状态持久化。
+- [x] 版本号同步提升至 1.2.2（`XrayUI-dev.csproj`、`updater-rs/Cargo.toml`、`.github/workflows/release.yml`、`CHANGELOG.md`）。
+- [x] 102/102 单元测试通过，本地 Native AOT win-x64 发布编译成功（输出位于 `_Dist/publish/win-x64/`）。
+- [x] 同步至 `public-main`（提交 `4a29944`），通过分支隔离与禁止路径审查，推送到 GitHub `origin/main` 并打标签 `v1.2.2`。
+- [x] GitHub Actions 自动化发布流水线触发并执行中（https://github.com/vimbackground/XrayUI/actions/runs/36374672694）。
+- 状态：verified；本地修复、测试、编译及 GitHub 发布推送全部完成。
+
+
 

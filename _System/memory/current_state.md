@@ -23,6 +23,15 @@ tags:
 
 # XrayUI 当前状态
 
+## 2026-09-28 1.2.2 版本发布与缺陷修复（已发布到 GitHub）
+
+- 开发者要求升级小版本并发布到 GitHub。
+- 修复多代理模式辅代理状态死锁问题：右键菜单在节点处于辅代理状态时始终允许选择“停止辅助代理”；设为主代理或确认活动主代理时强制清空辅代理标记；拦截对活动主代理开启辅代理的操作。
+- 版本号同步提升至 1.2.2（`XrayUI-dev.csproj`、`updater-rs/Cargo.toml`、`.github/workflows/release.yml`、`CHANGELOG.md`）。
+- 单元测试 102/102 全部通过，win-x64 Native AOT 本地发布成功（产物位于 `_Dist/publish/win-x64/`）。
+- 严格遵循分支隔离与禁止路径审查规范，仅同步公开产品源码与配置至 `public-main`（提交 `4a29944`），推送到 GitHub `origin/main` 并打上 `v1.2.2` 标签。
+- GitHub Actions 自动化发布流水线触发并执行中（https://github.com/vimbackground/XrayUI/actions/runs/36374672694）。
+
 ## 2026-09-08 1.2.1 版本发布与功能验收（已正式发布并上线）
 
 - 开发者本地测试通过，正式授权发布到 GitHub。
