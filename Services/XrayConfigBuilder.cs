@@ -42,7 +42,8 @@ namespace XrayUI.Services
                 ["dns"] = BuildDns(settings),
                 ["inbounds"] = BuildInbounds(settings, auxServers),
                 ["outbounds"] = BuildOutbounds(server, settings, availableServers, auxServers),
-                ["routing"] = BuildRouting(settings, auxServers)
+                ["routing"] = BuildRouting(settings, auxServers),
+                ["policy"] = BuildPolicy()
             };
 
             if (IsFakeDnsActive(settings))
@@ -67,6 +68,43 @@ namespace XrayUI.Services
         /// <summary>True when xray will be built with a fakedns pool wired to the TUN inbound.</summary>
         private static bool IsFakeDnsActive(AppSettings settings) =>
             settings.IsTunMode && settings.FakeDnsEnabled;
+
+        private static JsonObject BuildPolicy()
+        {
+            return new JsonObject
+            {
+                ["levels"] = new JsonObject
+                {
+                    ["0"] = new JsonObject
+                    {
+                        ["handshake"] = 10,
+                        ["connIdle"] = 3600,
+                        // AI coding tools (Copilot, Codex, Cline) send the HTTP request and
+                        // then immediately half-close the upload TCP half (FIN). xray's default
+                        // uplinkOnly = 2 would tear down the full tunnel just 2 s after that
+                        // FIN, which cuts any streaming reply mid-stream and leaves the IDE
+                        // spinner hanging. 30 s gives streaming responses (setup-default-sandbox,
+                        // long codegen, etc.) enough runway while still reclaiming connections
+                        // that never get a server reply.
+                        ["uplinkOnly"] = 30,
+                        // Symmetric: once the server finishes a chunked/SSE response and closes
+                        // the download half, give the client 30 s to read the tail before we
+                        // reclaim the slot — avoids cutting the last packet of a slow drain.
+                        ["downlinkOnly"] = 30,
+                        ["bufferSize"] = 0
+                    }
+                }
+            };
+        }
+
+        private static JsonObject BuildKeepAliveSockopt()
+        {
+            return new JsonObject
+            {
+                ["tcpKeepAliveIdle"] = 100,
+                ["tcpKeepAliveInterval"] = 30
+            };
+        }
 
         private static JsonObject BuildLog(AppSettings settings)
         {
@@ -103,13 +141,17 @@ namespace XrayUI.Services
             AddNode(list, new JsonObject
             {
                 ["tag"] = XrayConfigConstants.MixedInboundTag,
-                ["protocol"] = "socks",
+                ["protocol"] = "mixed",
                 ["listen"] = settings.AllowLanConnections ? "0.0.0.0" : "127.0.0.1",
                 ["port"] = settings.LocalMixedPort,
                 ["settings"] = new JsonObject
                 {
                     ["auth"] = "noauth",
                     ["udp"] = true
+                },
+                ["streamSettings"] = new JsonObject
+                {
+                    ["sockopt"] = BuildKeepAliveSockopt()
                 }
             });
 
@@ -119,7 +161,7 @@ namespace XrayUI.Services
                 AddNode(list, new JsonObject
                 {
                     ["tag"] = $"inbound_dedicated_{aux.DedicatedPort.Value}",
-                    ["protocol"] = "socks",
+                    ["protocol"] = "mixed",
                     ["listen"] = aux.AllowDedicatedLan ? "0.0.0.0" : "127.0.0.1",
                     ["port"] = aux.DedicatedPort.Value,
                     ["settings"] = new JsonObject
@@ -127,10 +169,15 @@ namespace XrayUI.Services
                         ["auth"] = "noauth",
                         ["udp"] = true
                     },
+                    ["streamSettings"] = new JsonObject
+                    {
+                        ["sockopt"] = BuildKeepAliveSockopt()
+                    },
                     ["sniffing"] = new JsonObject
                     {
                         ["enabled"] = true,
-                        ["destOverride"] = CreateStringArray("http", "tls", "quic")
+                        ["destOverride"] = CreateStringArray("http", "tls", "quic"),
+                        ["routeOnly"] = true
                     }
                 });
             }
@@ -152,6 +199,10 @@ namespace XrayUI.Services
             if (settings.FakeDnsEnabled)
             {
                 sniffing["metadataOnly"] = false;
+            }
+            else
+            {
+                sniffing["routeOnly"] = true;
             }
 
             // IPv6 is opt-in: only when enabled do we hand the TUN a v6 gateway and hijack ::/0,
@@ -264,7 +315,8 @@ namespace XrayUI.Services
                 foreach (var outbound in list.OfType<JsonObject>())
                 {
                     var tag = outbound["tag"]?.GetValue<string>();
-                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag)
+                    if (tag is ProxyOutboundTag or DirectOutboundTag or ChainEntryOutboundTag
+                        || (tag != null && (tag.StartsWith("outbound_dedicated_") || tag.StartsWith("chain-entry-"))))
                     {
                         ApplyOutboundInterface(outbound, outboundInterface);
                     }
@@ -387,7 +439,8 @@ namespace XrayUI.Services
                 },
                 ["streamSettings"] = new JsonObject
                 {
-                    ["network"] = "tcp"
+                    ["network"] = "tcp",
+                    ["sockopt"] = BuildKeepAliveSockopt()
                 }
             };
 
@@ -725,7 +778,8 @@ namespace XrayUI.Services
             var stream = new JsonObject
             {
                 ["network"] = network,
-                ["security"] = security
+                ["security"] = security,
+                ["sockopt"] = BuildKeepAliveSockopt()
             };
 
             if (security == "tls")
@@ -742,6 +796,17 @@ namespace XrayUI.Services
                 // rather than in the shared builder that hysteria2 also goes through.
                 tlsSettings["fingerprint"] =
                     string.IsNullOrWhiteSpace(server.Fingerprint) ? "chrome" : server.Fingerprint;
+
+                // Force ALPN to http/1.1 for all non-gRPC transports. HTTP/2 multiplexes
+                // multiple streams over one connection: a large Codex/Copilot streaming reply
+                // can exhaust the h2 flow-control window and block every other stream, causing
+                // VS Code AI extensions to hang permanently until restart. HTTP/1.1 gives each
+                // connection its own channel and is immune to this head-of-line issue.
+                // gRPC is exempt because it mandates h2 at the protocol level.
+                if (network != "grpc")
+                {
+                    tlsSettings["alpn"] = CreateStringArray("http/1.1");
+                }
 
                 if (string.Equals(server.Protocol, "vless", StringComparison.OrdinalIgnoreCase)
                     && !string.IsNullOrWhiteSpace(server.EchConfigList))
@@ -1104,6 +1169,19 @@ namespace XrayUI.Services
                 ["type"] = "field",
                 ["outboundTag"] = ProxyOutboundTag,
                 ["domain"] = CreateStringArray("geosite:google")
+            });
+            // Windows NCSI (Network Connectivity Status Indicator) sends periodic probe
+            // requests to msftncsi.com / msftconnecttest.com to check internet reachability.
+            // Routing these through an HTTP proxy causes "unexpected EOF" warnings and makes
+            // Windows believe the network is down — which triggers reconnection storms in apps
+            // like VS Code extensions. Route them direct so NCSI always gets a clean response.
+            AddNode(rules, new JsonObject
+            {
+                ["type"] = "field",
+                ["outboundTag"] = DirectOutboundTag,
+                ["domain"] = CreateStringArray(
+                    "domain:msftncsi.com",
+                    "domain:msftconnecttest.com")
             });
             var (geositeDomestic, geoipDomestic) = RegionGeoTokens(settings.RoutingRegion);
             AddNode(rules, new JsonObject
