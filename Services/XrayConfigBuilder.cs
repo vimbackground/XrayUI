@@ -77,21 +77,18 @@ namespace XrayUI.Services
                 {
                     ["0"] = new JsonObject
                     {
-                        ["handshake"] = 10,
+                        ["handshake"] = 15,
                         ["connIdle"] = 3600,
-                        // AI coding tools (Copilot, Codex, Cline) send the HTTP request and
-                        // then immediately half-close the upload TCP half (FIN). xray's default
-                        // uplinkOnly = 2 would tear down the full tunnel just 2 s after that
-                        // FIN, which cuts any streaming reply mid-stream and leaves the IDE
-                        // spinner hanging. 30 s gives streaming responses (setup-default-sandbox,
-                        // long codegen, etc.) enough runway while still reclaiming connections
-                        // that never get a server reply.
-                        ["uplinkOnly"] = 30,
-                        // Symmetric: once the server finishes a chunked/SSE response and closes
-                        // the download half, give the client 30 s to read the tail before we
-                        // reclaim the slot — avoids cutting the last packet of a slow drain.
-                        ["downlinkOnly"] = 30,
-                        ["bufferSize"] = 0
+                        // AI coding tools (Copilot, Codex, Cline) often generate responses for
+                        // complex queries or large context windows (100k+ tokens) that take 1-3
+                        // minutes of reasoning/prefill before emitting tokens. 300s (5 minutes)
+                        // gives ample runway so long-running responses are never terminated early.
+                        ["uplinkOnly"] = 300,
+                        // Symmetric: give clients ample time to drain chunked/SSE/WebSocket streams.
+                        ["downlinkOnly"] = 300,
+                        // Allocate 1024 KB buffer pool per connection so compressed multi-hundred-KB
+                        // prompt payloads and streaming chunks transfer smoothly without write stalls.
+                        ["bufferSize"] = 1024
                     }
                 }
             };
@@ -101,8 +98,11 @@ namespace XrayUI.Services
         {
             return new JsonObject
             {
-                ["tcpKeepAliveIdle"] = 100,
-                ["tcpKeepAliveInterval"] = 30
+                // Send TCP keepalive probes after 15 seconds of silence so intermediate NAT routers,
+                // stateful firewalls, and cloud middleboxes do not drop the idle TCP connection
+                // during long LLM reasoning/thinking phases.
+                ["tcpKeepAliveIdle"] = 15,
+                ["tcpKeepAliveInterval"] = 10
             };
         }
 
@@ -152,6 +152,12 @@ namespace XrayUI.Services
                 ["streamSettings"] = new JsonObject
                 {
                     ["sockopt"] = BuildKeepAliveSockopt()
+                },
+                ["sniffing"] = new JsonObject
+                {
+                    ["enabled"] = true,
+                    ["destOverride"] = CreateStringArray("http", "tls", "quic"),
+                    ["routeOnly"] = true
                 }
             });
 
